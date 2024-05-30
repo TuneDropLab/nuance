@@ -1,14 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:nuance/models/auth_model.dart';
-
+import 'package:nuance/utils/constants.dart';
 
 class AuthService {
   final String clientId = 'YOUR_CLIENT_ID';
   final String clientSecret = 'YOUR_CLIENT_SECRET';
   final String redirectUri = 'nuance://callback';
-  final String authorizeUrl = 'https://many-shepherd-11.clerk.accounts.dev/oauth/authorize';
-  final String tokenUrl = 'https://many-shepherd-11.clerk.accounts.dev/oauth/token';
+  final String tokenUrl = '$baseURL/oauth/token';
 
   Future<AuthModel> authenticate(String code) async {
     final response = await http.post(

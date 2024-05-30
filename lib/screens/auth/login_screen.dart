@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:nuance/providers/auth_provider.dart';
+import 'package:nuance/utils/constants.dart';
 
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class LoginScreen extends ConsumerWidget {
           onPressed: () async {
             final result = await FlutterWebAuth.authenticate(
               url:
-                  'https://many-shepherd-11.clerk.accounts.dev/oauth/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=nuance://callback&scope=profile email',
+                  '$baseURL/oauth/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=nuance://callback&scope=profile email',
               callbackUrlScheme: 'nuance',
             );
             final code = Uri.parse(result).queryParameters['code'];
