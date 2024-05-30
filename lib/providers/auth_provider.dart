@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/auth_model.dart';
 import 'package:nuance/services/auth_service.dart';
 
-
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService();
 });
 
-final authStateProvider = StateNotifierProvider<AuthStateNotifier, AuthModel?>((ref) {
+final authStateProvider =
+    StateNotifierProvider<AuthStateNotifier, AuthModel?>((ref) {
   return AuthStateNotifier(ref);
 });
 
