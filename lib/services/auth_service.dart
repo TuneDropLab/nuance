@@ -4,29 +4,22 @@ import 'package:nuance/models/auth_model.dart';
 import 'package:nuance/utils/constants.dart';
 
 class AuthService {
-  final String clientId = 'YOUR_CLIENT_ID';
-  final String clientSecret = 'YOUR_CLIENT_SECRET';
-  final String redirectUri = 'nuance://callback';
-  final String tokenUrl = '$baseURL/oauth/token';
+  // ...
 
-  Future<AuthModel> authenticate(String code) async {
-    final response = await http.post(
-      Uri.parse(tokenUrl),
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: {
-        'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': redirectUri,
-        'client_id': clientId,
-        'client_secret': clientSecret,
-      },
-    );
+  Future<AuthModel> loginWithSpotify() async {
+    final response = await http.get(Uri.parse('$baseURL/auth/login'));
 
+    print("HIIIIIII, ${response.body}");
+    print("HIIIIIII, ${response.statusCode}");
+    print("HIIIIIII, ${response.request}");
     if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      return AuthModel.fromJson(data);
+      // If the server returns a 200 OK response, then parse the JSON.
+      // You'll need to replace this with whatever logic is appropriate
+      // for your app.
+      return AuthModel.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to authenticate');
+      // If the server returns an unsuccessful response code, throw an exception.
+      throw Exception('Failed to log in with Spotify');
     }
   }
 }
