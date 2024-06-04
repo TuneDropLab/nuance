@@ -1,1 +1,1 @@
-const baseURL = "https://many-shepherd-11.clerk.accounts.dev";
+const baseURL = "http://localhost:3000";
