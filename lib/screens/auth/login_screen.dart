@@ -1,30 +1,88 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
-import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/utils/constants.dart';
 
-class LoginScreen extends ConsumerWidget {
+import 'dart:async';
+
+import 'package:uni_links2/uni_links.dart';
+
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  String _status = '';
+  StreamSubscription? _sub;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinkListener();
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  void _initDeepLinkListener() {
+    _sub = linkStream.listen((String? link) {
+      if (link != null) {
+        Uri uri = Uri.parse(link);
+        String? token = uri.queryParameters['token'];
+        if (token != null) {
+          setState(() {
+            _status = 'Logged in with token: $token';
+          });
+          Navigator.of(context).pushNamed("/");
+          // Navigate to another screen or perform other actions
+        }
+      }
+    }, onError: (err) {
+      setState(() {
+        _status = 'Failed to get deep link: $err';
+      });
+    });
+  }
+
+  Future<void> _authenticate() async {
+    const authUrl = '$baseURL/auth/login';
+    const callbackUrlScheme = "nuance";
+
+    try {
+      await FlutterWebAuth.authenticate(
+        url: authUrl,
+        callbackUrlScheme: callbackUrlScheme,
+      );
+    } on PlatformException catch (e) {
+      setState(() {
+        _status = 'Error: ${e.message}';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(
+        title: const Text('Login'),
+      ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            final result = await FlutterWebAuth.authenticate(
-              url:
-                  '$baseURL/oauth/authorize?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=nuance://callback&scope=profile email',
-              callbackUrlScheme: 'nuance',
-            );
-            final code = Uri.parse(result).queryParameters['code'];
-            if (code != null) {
-              ref.read(authStateProvider.notifier).login(code);
-            }
-          },
-          child: const Text('Login with Spotify'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Status: $_status'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _authenticate,
+              child: const Text('Login'),
+            ),
+          ],
         ),
       ),
     );
