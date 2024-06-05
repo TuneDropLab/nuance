@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
   final String? accessToken;
+  static var routeName = '/home';
+
   const HomeScreen({super.key, this.accessToken});
 
   @override
