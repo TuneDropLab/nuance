@@ -6,14 +6,15 @@ import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:nuance/utils/constants.dart';
 
 class LoginScreen extends StatefulWidget {
+  static const routeName = '/';
   const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  String _status = '';
+  late String _status;
 
   Future<void> _authenticate() async {
     const authUrl = '$baseURL/auth/login';
@@ -24,8 +25,15 @@ class _LoginScreenState extends State<LoginScreen> {
         url: authUrl,
         callbackUrlScheme: callbackUrlScheme,
       );
+      _status = "Alright";
       print("USER RESULT!!!!: $result");
       log("USER RESULT!!!!: $result");
+      log("Authentication Result: $result");
+
+      final uri = Uri.parse(result);
+      final sessionData = uri.queryParameters['session'];
+
+      log("Session data: $sessionData");
 
       // Handle the redirect URI and extract user data
       // final userAccessToken =
@@ -38,6 +46,12 @@ class _LoginScreenState extends State<LoginScreen> {
         _status = 'Error: ${e.message}';
       });
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _status = "Untouchedd";
   }
 
   @override
