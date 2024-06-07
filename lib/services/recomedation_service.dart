@@ -6,12 +6,14 @@ import 'package:nuance/utils/constants.dart';
 
 class RecommendationsService {
   Future<List<RecommendationModel>> getRecommendations(
-      String accessToken) async {
-    final response = await http.get(
+      String accessToken, String userMessage) async {
+    final response = await http.post(
       Uri.parse('$baseURL/recommendations'),
       headers: {
         'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
       },
+      body: jsonEncode({'userMessage': userMessage}),
     );
     log("RESPONSE: ${response.body}");
 
@@ -19,6 +21,7 @@ class RecommendationsService {
       final List<dynamic> data = jsonDecode(response.body)['recommendations'];
       return data.map((json) => RecommendationModel.fromJson(json)).toList();
     } else {
+      log('Failed to load recommendations: ${response.body}');
       throw Exception('Failed to load recommendations');
     }
   }

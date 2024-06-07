@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 class AppTheme {
   static const Color primaryColor = Color(0xFF92A9BD); // Green
   static const Color secondaryColor = Color(0xFFD3DEDC); // Blue
-  static const Color backgroundColor = Color(0xFFFFFFFF); // White
   static const Color textColor = Color(0xFF333333); // Not fully black
 
   static ThemeData get lightTheme {
     return ThemeData(
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: backgroundColor,
+      scaffoldBackgroundColor: Colors.white,
       textTheme: const TextTheme(
         displayLarge: TextStyle(
             color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
@@ -29,11 +28,14 @@ class AppTheme {
             color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
         titleSmall: TextStyle(
             color: textColor, fontSize: 12, fontWeight: FontWeight.w500),
+        bodySmall: TextStyle(color: textColor, fontSize: 12),
         labelLarge: TextStyle(
-            color: backgroundColor, fontSize: 14, fontWeight: FontWeight.bold),
+            color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+        labelSmall: TextStyle(
+            color: textColor, fontSize: 10, fontWeight: FontWeight.bold),
       ),
       appBarTheme: AppBarTheme(
-        color: backgroundColor,
+        color: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: textColor),
         toolbarTextStyle: const TextTheme(
@@ -58,7 +60,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          foregroundColor: backgroundColor,
+          foregroundColor: Colors.white,
           backgroundColor: primaryColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -77,7 +79,7 @@ class AppTheme {
         ),
       ),
       cardTheme: CardTheme(
-        color: backgroundColor,
+        color: Colors.white,
         elevation: 1,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8.0),
@@ -86,37 +88,12 @@ class AppTheme {
       iconTheme: const IconThemeData(
         color: primaryColor,
       ),
-      pageTransitionsTheme: PageTransitionsTheme(
+      pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: _MinimalistPageTransitionsBuilder(),
-          TargetPlatform.iOS: _MinimalistPageTransitionsBuilder(),
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),
-      colorScheme: ColorScheme.fromSwatch()
-          .copyWith(
-            primary: primaryColor,
-            secondary: secondaryColor,
-            background: backgroundColor,
-            surface: backgroundColor,
-          )
-          .copyWith(secondary: secondaryColor)
-          .copyWith(background: backgroundColor),
-    );
-  }
-}
-
-class _MinimalistPageTransitionsBuilder extends PageTransitionsBuilder {
-  @override
-  Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) {
-    return FadeTransition(
-      opacity: animation,
-      child: child,
     );
   }
 }
