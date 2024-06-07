@@ -99,10 +99,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 //   // borderSide: const BorderSide(color: Colors.white, width: 1),
                 //   borderRadius: BorderRadius.circular(24),
                 // ),
-                focusedBorder: const OutlineInputBorder(
-                    // borderSide: const BorderSide(color: Colors.black, width: 2),
-                    // borderRadius: BorderRadius.circular(4),
-                    ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor, width: 2),
+                  // borderRadius: BorderRadius.circular(4),
+                ),
                 contentPadding: const EdgeInsets.all(12),
               ),
               hintTexts: const [
