@@ -105,10 +105,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
             ),
           ),
           onPressed: () async {
-            // state = const AsyncLoading();
-            // await authService.logout();
             Get.back();
-            // state = const AsyncData(null);
           },
         )
       ],

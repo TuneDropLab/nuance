@@ -50,7 +50,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               data: (data) {
                 if (data == null) {
                   return CupertinoButton(
-                    child: const CircleAvatar(),
+                    child: const CircleAvatar(
+                      radius: 30,
+                    ),
                     onPressed: () {
                       sessionData.logout();
                     },
@@ -92,7 +94,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: AppTheme.textColor,
                 ),
               ),
-              error: (error, stack) => const CircleAvatar(),
+              error: (error, stack) => const CircleAvatar(
+                radius: 30,
+              ),
             ),
           ),
         ],
@@ -103,6 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: AnimatedTextField(
+              animationDuration: const Duration(milliseconds: 98000),
               animationType: Animationtype.slide,
               focusNode: focusNode,
               onTapOutside: (event) {
