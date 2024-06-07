@@ -106,11 +106,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 contentPadding: const EdgeInsets.all(12),
               ),
+              hintTextStyle: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: 14,
+              ),
               hintTexts: const [
-                'Chill Lo-Fi beats to help me study',
-                '21 Savage Songs from 2016',
+                'Chill Lo-Fi Beats to Help Me Study',
+                '21 Savage Songs From 2016',
                 'Classical Music for Kids',
-                '1990\'s RnB',
+                '1970\'s RnB For Long Drives',
               ],
               onSubmitted: (value) {
                 setState(() {
