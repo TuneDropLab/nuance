@@ -1,25 +1,45 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:nuance/models/auth_model.dart';
-import 'package:nuance/utils/constants.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
-  // ...
+  final FlutterSecureStorage secureStorage;
 
-  Future<AuthModel> loginWithSpotify() async {
-    final response = await http.get(Uri.parse('$baseURL/auth/login'));
+  AuthService(this.secureStorage);
 
-    print("HIIIIIII, ${response.body}");
-    print("HIIIIIII, ${response.statusCode}");
-    print("HIIIIIII, ${response.request}");
-    if (response.statusCode == 200) {
-      // If the server returns a 200 OK response, then parse the JSON.
-      // You'll need to replace this with whatever logic is appropriate
-      // for your app.
-      return AuthModel.fromJson(jsonDecode(response.body));
-    } else {
-      // If the server returns an unsuccessful response code, throw an exception.
-      throw Exception('Failed to log in with Spotify');
+  Future<void> loginWithSpotify(String sessionData) async {
+    final sessionJson = jsonDecode(sessionData);
+    await secureStorage.write(
+        key: 'access_token', value: sessionJson['access_token']);
+    await secureStorage.write(
+        key: 'refresh_token', value: sessionJson['refresh_token']);
+    await secureStorage.write(
+        key: 'expires_at', value: sessionJson['expires_at'].toString());
+    // Assuming user details are also stored
+    await secureStorage.write(
+        key: 'user', value: jsonEncode(sessionJson['user']));
+  }
+
+  Future<Map<String, dynamic>?> getSessionData() async {
+    final accessToken = await secureStorage.read(key: 'access_token');
+    final refreshToken = await secureStorage.read(key: 'refresh_token');
+    final expiresAt = await secureStorage.read(key: 'expires_at');
+    final user = await secureStorage.read(key: 'user');
+
+    if (accessToken != null &&
+        refreshToken != null &&
+        expiresAt != null &&
+        user != null) {
+      return {
+        'access_token': accessToken,
+        'refresh_token': refreshToken,
+        'expires_at': int.parse(expiresAt),
+        'user': jsonDecode(user),
+      };
     }
+    return null;
+  }
+
+  Future<void> logout() async {
+    await secureStorage.deleteAll();
   }
 }
