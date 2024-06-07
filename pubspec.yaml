@@ -46,6 +46,9 @@ dependencies:
   url_launcher: ^6.1.14
   # flutter_inappwebview: ^6.0.0
   rive: ^0.13.4
+  flutter_secure_storage: ^9.2.2
+  get: ^4.6.5
+
   # uni_links2: ^0.6.0+2
   # http_client_helper: ^3.0.0
   # flutter_web_auth_2: ^3.1.2
