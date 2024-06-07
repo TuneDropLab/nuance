@@ -1,19 +1,23 @@
 import 'dart:developer';
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
+import 'package:get/get.dart';
+import 'package:nuance/providers/auth_provider.dart';
+import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   static const routeName = '/';
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   late String _status;
 
   Future<void> _authenticate() async {
@@ -35,11 +39,20 @@ class _LoginScreenState extends State<LoginScreen> {
 
       log("Session data: $sessionData");
 
-      // Handle the redirect URI and extract user data
-      // final userAccessToken =
-      //     Uri.parse(result).fragment; // Use fragment instead of queryParameters
-      final userAccessToken = Uri.parse(result).queryParameters['code'];
-      log("USER ACCESS TOKEN: $userAccessToken");
+      if (sessionData != null) {
+        final authService = ref.read(authServiceProvider);
+        await authService.loginWithSpotify(sessionData);
+
+        setState(() {
+          _status = 'Authenticated';
+          Get.to(
+            const HomeScreen(),
+            transition: Transition.zoom,
+          );
+        });
+      }
+
+      // Navigate to the next screen or update UI state
     } on PlatformException catch (e) {
       setState(() {
         log("ERROR MESSAGE: ${e.message}");
@@ -51,22 +64,22 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _status = "Untouchedd";
+    _status = "Untouched";
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      // appBar: AppBar(
+      //   title: const Text('Login'),
+      // ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Status: $_status'),
             const SizedBox(height: 16),
-            ElevatedButton(
+            CupertinoButton.filled(
               onPressed: _authenticate,
               child: const Text('Login'),
             ),
