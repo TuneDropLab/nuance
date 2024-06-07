@@ -29,147 +29,156 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sessionData = ref.read(sessionProvider.notifier);
 
     log("HOME SCREEN: $sessionState");
+    final focusNode = FocusNode();
 
-    return Scaffold(
-      appBar: AppBar(
-        // backgroundColor: AppTheme.primaryColor,
-        actionsIconTheme: const IconThemeData(size: 40),
-        title: const Text('Home Screen'),
-        automaticallyImplyLeading: false,
-        centerTitle: false,
-        actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.logout),
-          //   tooltip: 'Logout',
-          //   onPressed: () {
-          //     sessionData.logout();
-          //   },
-          // ),
-          sessionState.when(
-            data: (data) {
-              if (data == null) {
+    return GestureDetector(
+      onTap: () {
+        focusNode.unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // backgroundColor: AppTheme.primaryColor,
+          actionsIconTheme: const IconThemeData(size: 40),
+          title: const Text('Home Screen'),
+          automaticallyImplyLeading: false,
+          centerTitle: false,
+          actions: [
+            // IconButton(
+            //   icon: const Icon(Icons.logout),
+            //   tooltip: 'Logout',
+            //   onPressed: () {
+            //     sessionData.logout();
+            //   },
+            // ),
+            sessionState.when(
+              data: (data) {
+                if (data == null) {
+                  return CupertinoButton(
+                    child: const CircleAvatar(),
+                    onPressed: () {
+                      sessionData.logout();
+                    },
+                  );
+                }
+
                 return CupertinoButton(
-                  child: const CircleAvatar(),
+                  // color: Colors.amber,
                   onPressed: () {
                     sessionData.logout();
                   },
-                );
-              }
-
-              return CupertinoButton(
-                // color: Colors.amber,
-                onPressed: () {
-                  sessionData.logout();
-                },
-                child: CachedNetworkImage(
-                  imageBuilder: (context, imageProvider) => Container(
-                    width: 30.0,
-                    height: 100.0,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                        image: imageProvider,
-                        // fit: BoxFit.cover,
+                  child: CachedNetworkImage(
+                    imageBuilder: (context, imageProvider) => Container(
+                      width: 30.0,
+                      height: 100.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: imageProvider,
+                          // fit: BoxFit.cover,
+                        ),
                       ),
                     ),
-                  ),
-                  fit: BoxFit.fill,
-                  height: 150,
-                  imageUrl: data.user["user_metadata"]["avatar_url"],
-                  placeholder: (context, url) => const Center(
-                    child: CircularProgressIndicator(
-                      color: AppTheme.textColor,
+                    fit: BoxFit.fill,
+                    height: 150,
+                    imageUrl: data.user["user_metadata"]["avatar_url"],
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.textColor,
+                      ),
                     ),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
                   ),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                ),
-              );
-            },
-            loading: () => const Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.textColor,
-              ),
-            ),
-            error: (error, stack) => const CircleAvatar(),
-          ),
-        ],
-      ),
-      body: Container(
-        decoration: const BoxDecoration(),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: AnimatedTextField(
-              animationType: Animationtype.slide,
-              controller: _controller,
-              decoration: InputDecoration(
-                // filled: false,
-                // prefixIcon: const Icon(Icons.sea),
-                suffixIcon: Icon(
-                  Icons.add_circle,
-                  color: Theme.of(context).iconTheme.color,
-                ),
-                // border: OutlineInputBorder(
-                //   // borderSide: const BorderSide(color: Colors.white, width: 1),
-                //   borderRadius: BorderRadius.circular(24),
-                // ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor, width: 2),
-                  // borderRadius: BorderRadius.circular(4),
-                ),
-                contentPadding: const EdgeInsets.all(12),
-              ),
-              hintTextStyle: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontSize: 14,
-              ),
-              hintTexts: const [
-                'Chill Lo-Fi Beats to Help Me Study',
-                '21 Savage Songs From 2016',
-                'Classical Music for Kids',
-                '1970\'s RnB For Long Drives',
-              ],
-              onSubmitted: (value) {
-                setState(() {
-                  // _userMessage = value;
-                });
+                );
               },
+              loading: () => const Center(
+                child: CircularProgressIndicator(
+                  color: AppTheme.textColor,
+                ),
+              ),
+              error: (error, stack) => const CircleAvatar(),
             ),
+          ],
+        ),
+        body: Container(
+          decoration: const BoxDecoration(),
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: AnimatedTextField(
+                animationType: Animationtype.slide,
+                focusNode: focusNode,
+                controller: _controller,
+                decoration: InputDecoration(
+                  // filled: false,
+                  // prefixIcon: const Icon(Icons.sea),
+                  suffixIcon: Icon(
+                    Icons.add_circle,
+                    color: Theme.of(context).iconTheme.color,
+                  ),
+                  // border: OutlineInputBorder(
+                  //   // borderSide: const BorderSide(color: Colors.white, width: 1),
+                  //   borderRadius: BorderRadius.circular(24),
+                  // ),
+
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor, width: 2),
+                    // borderRadius: BorderRadius.circular(4),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                hintTextStyle: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontSize: 14,
+                ),
+                hintTexts: const [
+                  'Chill Lo-Fi Beats to Help Me Study',
+                  '21 Savage Songs From 2016',
+                  'Classical Music for Kids',
+                  '1970\'s RnB For Long Drives',
+                ],
+                onSubmitted: (value) {
+                  setState(() {
+                    // _userMessage = value;
+                  });
+                },
+              ),
+            ),
+            // Column(
+            //   children: [
+            //     // Center(
+            //     //   child:
+            //     // ),
+            //     // Expanded(
+            //     //   child: recommendationsState.when(
+            //     //     data: (recommendations) {
+            //     //       return ListView.builder(
+            //     //         itemCount: recommendations.length,
+            //     //         itemBuilder: (context, index) {
+            //     //           final recommendation = recommendations[index];
+            //     //           return ListTile(
+            //     //             title: Text(recommendation.title),
+            //     //             subtitle: Text(recommendation.artist),
+            //     //             onTap: () {
+            //     //               // Navigator.push(
+            //     //               //   context,
+            //     //               //   MaterialPageRoute(
+            //     //               //     // builder: (context) => TrackInfoScreen(songs: [recommendation.id]),
+            //     //               //   ),
+            //     //               // );
+            //     //             },
+            //     //           );
+            //     //         },
+            //     //       );
+            //     //     },
+            //     //     loading: () => const CircularProgressIndicator(),
+            //     //     error: (error, stack) => Text('Error: $error'),
+            //     //   ),
+            //     // ),
+            //   ],
+            // ),
           ),
-          // Column(
-          //   children: [
-          //     // Center(
-          //     //   child:
-          //     // ),
-          //     // Expanded(
-          //     //   child: recommendationsState.when(
-          //     //     data: (recommendations) {
-          //     //       return ListView.builder(
-          //     //         itemCount: recommendations.length,
-          //     //         itemBuilder: (context, index) {
-          //     //           final recommendation = recommendations[index];
-          //     //           return ListTile(
-          //     //             title: Text(recommendation.title),
-          //     //             subtitle: Text(recommendation.artist),
-          //     //             onTap: () {
-          //     //               // Navigator.push(
-          //     //               //   context,
-          //     //               //   MaterialPageRoute(
-          //     //               //     // builder: (context) => TrackInfoScreen(songs: [recommendation.id]),
-          //     //               //   ),
-          //     //               // );
-          //     //             },
-          //     //           );
-          //     //         },
-          //     //       );
-          //     //     },
-          //     //     loading: () => const CircularProgressIndicator(),
-          //     //     error: (error, stack) => Text('Error: $error'),
-          //     //   ),
-          //     // ),
-          //   ],
-          // ),
         ),
       ),
     );
