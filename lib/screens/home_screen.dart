@@ -47,6 +47,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // ),
           sessionState.when(
             data: (data) {
+              if (data == null) {
+                return CupertinoButton(
+                  child: const CircleAvatar(),
+                  onPressed: () {
+                    sessionData.logout();
+                  },
+                );
+              }
+
               return CupertinoButton(
                 // color: Colors.amber,
                 onPressed: () {
@@ -66,7 +75,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   fit: BoxFit.fill,
                   height: 150,
-                  imageUrl: data?.user["user_metadata"]["avatar_url"],
+                  imageUrl: data.user["user_metadata"]["avatar_url"],
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(
+                      color: AppTheme.textColor,
+                    ),
+                  ),
                   errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),
               );
