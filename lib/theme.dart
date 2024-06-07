@@ -26,18 +26,18 @@ class AppTheme {
         color: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: textColor),
-        toolbarTextStyle: const TextTheme(
-          titleLarge: TextStyle(
+        toolbarTextStyle: GoogleFonts.inter(
+          textStyle: const TextStyle(
             color: textColor,
             fontSize: 20,
           ),
-        ).bodyMedium,
-        titleTextStyle: const TextTheme(
-          titleLarge: TextStyle(
+        ),
+        titleTextStyle: GoogleFonts.lobster(
+          textStyle: const TextStyle(
             color: textColor,
             fontSize: 20,
           ),
-        ).titleLarge,
+        ),
       ),
       buttonTheme: ButtonThemeData(
         buttonColor: primaryColor,
