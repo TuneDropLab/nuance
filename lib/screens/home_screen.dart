@@ -55,6 +55,7 @@ class HomeScreen extends ConsumerWidget {
                   fit: BoxFit.fill,
                   height: 150,
                   imageUrl: data?.user["user_metadata"]["avatar_url"],
+                  errorWidget: (context, url, error) => const Icon(Icons.error),
                 ),
               );
             },

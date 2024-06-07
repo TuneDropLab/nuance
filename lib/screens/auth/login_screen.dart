@@ -77,6 +77,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Text('Status: $_status'),
             const SizedBox(height: 16),
             CupertinoButton.filled(
+              pressedOpacity: 0.3,
               onPressed: _authenticate,
               child: const Text('Login'),
             ),
