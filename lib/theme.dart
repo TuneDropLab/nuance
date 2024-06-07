@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color primaryColor = Color(0xFF92A9BD); // Green
@@ -9,30 +10,17 @@ class AppTheme {
     return ThemeData(
       primaryColor: primaryColor,
       scaffoldBackgroundColor: Colors.white,
-      textTheme: const TextTheme(
-        displayLarge: TextStyle(
-            color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
-        displayMedium: TextStyle(
-            color: textColor, fontSize: 22, fontWeight: FontWeight.bold),
-        displaySmall: TextStyle(
-            color: textColor, fontSize: 20, fontWeight: FontWeight.bold),
-        headlineMedium: TextStyle(
-            color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
-        headlineSmall: TextStyle(
-            color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
-        titleLarge: TextStyle(
-            color: textColor, fontSize: 14, fontWeight: FontWeight.bold),
-        bodyLarge: TextStyle(color: textColor, fontSize: 16),
-        bodyMedium: TextStyle(color: textColor, fontSize: 14),
-        titleMedium: TextStyle(
-            color: textColor, fontSize: 14, fontWeight: FontWeight.w500),
-        titleSmall: TextStyle(
-            color: textColor, fontSize: 12, fontWeight: FontWeight.w500),
-        bodySmall: TextStyle(color: textColor, fontSize: 12),
-        labelLarge: TextStyle(
-            color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-        labelSmall: TextStyle(
-            color: textColor, fontSize: 10, fontWeight: FontWeight.bold),
+      textTheme: GoogleFonts.interTextTheme(
+        ThemeData.light().textTheme.copyWith(
+              displayLarge: const TextStyle(
+                color: textColor,
+                fontSize: 20,
+              ),
+              displayMedium: const TextStyle(
+                color: textColor,
+                fontSize: 18,
+              ),
+            ),
       ),
       appBarTheme: AppBarTheme(
         color: Colors.white,
