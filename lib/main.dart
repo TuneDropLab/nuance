@@ -15,7 +15,7 @@ void main() async {
   final container = ProviderContainer();
   final authService = container.read(authServiceProvider);
   final sessionData = await authService.getSessionData();
-  log("1 PUNCH: $sessionData");
+
 
   runApp(
     ProviderScope(
