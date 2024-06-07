@@ -1,4 +1,5 @@
-// main.dart
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -14,6 +15,7 @@ void main() async {
   final container = ProviderContainer();
   final authService = container.read(authServiceProvider);
   final sessionData = await authService.getSessionData();
+  log("1 PUNCH: $sessionData");
 
   runApp(
     ProviderScope(

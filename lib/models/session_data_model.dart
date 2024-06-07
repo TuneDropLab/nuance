@@ -1,31 +1,50 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
+
+@immutable
 class SessionData {
-  final String id;
   final String accessToken;
   final String refreshToken;
   final String expiresAt;
   final Map<String, dynamic> user;
 
-  SessionData({
-    required this.id,
+  const SessionData({
     required this.accessToken,
     required this.refreshToken,
     required this.expiresAt,
     required this.user,
   });
 
-  factory SessionData.fromJson(Map<String, dynamic> json) {
+  SessionData copyWith({
+    String? accessToken,
+    String? refreshToken,
+    String? expiresAt,
+    Map<String, dynamic>? user,
+  }) {
     return SessionData(
-      id: json['id'],
-      accessToken: json['accessToken'],
-      refreshToken: json['refreshToken'],
-      expiresAt: json['expiresAt'],
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
+      expiresAt: expiresAt ?? this.expiresAt,
+      user: user ?? this.user,
+    );
+  }
+
+  factory SessionData.fromJson(Map<String, dynamic> json) {
+    log("SESSION DATA FROM JSON: $json");
+    if (json == null) {
+      throw Exception('Session data is null');
+    }
+    return SessionData(
+      accessToken: json['access_token'],
+      refreshToken: json['refresh_token'],
+      expiresAt: json['expires_at'].toString(),
       user: json['user'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'accessToken': accessToken,
       'refreshToken': refreshToken,
       'expiresAt': expiresAt,

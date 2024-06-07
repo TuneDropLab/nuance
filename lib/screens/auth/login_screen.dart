@@ -43,13 +43,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         final authService = ref.read(authServiceProvider);
         await authService.loginWithSpotify(sessionData);
 
-        setState(() {
-          _status = 'Authenticated';
-          Get.to(
-            const HomeScreen(),
-            transition: Transition.zoom,
-          );
-        });
+        await Get.to(
+          () => const HomeScreen(),
+          transition: Transition.zoom,
+        );
       }
 
       // Navigate to the next screen or update UI state

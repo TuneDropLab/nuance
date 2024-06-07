@@ -8,7 +8,6 @@ class AppTheme {
 
   static ThemeData get lightTheme {
     return ThemeData(
-      
       primaryColor: primaryColor,
       scaffoldBackgroundColor: backgroundColor,
       textTheme: const TextTheme(
@@ -36,7 +35,7 @@ class AppTheme {
       appBarTheme: AppBarTheme(
         color: backgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: backgroundColor),
+        iconTheme: const IconThemeData(color: textColor),
         toolbarTextStyle: const TextTheme(
           titleLarge: TextStyle(
             color: textColor,
@@ -104,12 +103,7 @@ class AppTheme {
           .copyWith(background: backgroundColor),
     );
   }
-  
 }
-
-
-
-
 
 class _MinimalistPageTransitionsBuilder extends PageTransitionsBuilder {
   @override

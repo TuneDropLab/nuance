@@ -1,7 +1,8 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/theme.dart';
 
 class HomeScreen extends ConsumerWidget {
   static const routeName = '/home';
@@ -10,35 +11,69 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sessionData = ref.watch(sessionProvider);
+    final sessionState = ref.watch(sessionProvider);
+
+    log("HOME SCREEN: $sessionState");
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Home Screen'),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () {
+              ref.read(sessionProvider.notifier).logout();
+            },
+          ),
+        ],
       ),
       body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF6A88E5),
-                Color(0xFF00B1CC),
-              ],
+        decoration: const BoxDecoration(
+            // Customize the container decoration if needed
             ),
-          ),
-          child: Center(
-            child: _buildSessionDataWidget(sessionData!),
-          )),
-    );
-  }
+        child: Center(
+          child: sessionState.when(
+            data: (sessionData) {
+              if (sessionData == null) {
+                return const Text('No session data available.');
+              }
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Text("Access Token: ${sessionData.accessToken}"),
+                  const SizedBox(height: 50),
+                  // You can add other session data display here
 
-  Widget _buildSessionDataWidget(SessionData sessionData) {
-    return Text(
-      'Access Token: ${sessionData.accessToken}',
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 18,
+                  sessionState.when(
+                    data: (sessionData) {
+                      if (sessionData == null) {
+                        return Text(
+                            "Access Token: ${sessionData!.accessToken}");
+                      }
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text("Access Token: ${sessionData.accessToken}"),
+                          const SizedBox(height: 50),
+                          // You can add other session data display here
+                        ],
+                      );
+                    },
+                    loading: () => const CircularProgressIndicator(
+                      backgroundColor: Colors.amber,
+                      color: AppTheme.textColor,
+                    ),
+                    error: (error, stack) => Text('Error: $error'),
+                  ),
+                ],
+              );
+            },
+            loading: () => const CircularProgressIndicator(),
+            error: (error, stack) => Text('Error: $error'),
+          ),
+        ),
       ),
     );
   }

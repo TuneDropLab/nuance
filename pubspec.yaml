@@ -40,6 +40,7 @@ dependencies:
   logger: ^2.3.0
   # adaptive_theme: ^3.6.0
   sentry_flutter: ^8.2.0
+  animated_gradient: ^0.0.2
   spotify: ^0.13.1
   custom_signin_buttons: ^1.0.2
   flutter_riverpod: ^2.4.10
@@ -48,6 +49,7 @@ dependencies:
   rive: ^0.13.4
   flutter_secure_storage: ^9.2.2
   get: ^4.6.5
+  cached_network_image: ^3.3.1
 
   # uni_links2: ^0.6.0+2
   # http_client_helper: ^3.0.0
