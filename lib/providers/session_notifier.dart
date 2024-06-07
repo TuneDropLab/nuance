@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/services/auth_service.dart';
+import 'package:nuance/theme.dart';
 
 class SessionNotifier extends AsyncNotifier<SessionData?> {
   late final AuthService authService;
@@ -46,19 +47,72 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
 
   Future<void> logout() async {
     // Get.dialog
-    Get.defaultDialog(
-      title: "Hello",
-      content: const Text("You are logging out"),
-      confirm: MaterialButton(
-        onPressed: () async {
-          state = const AsyncLoading();
-          await authService.logout();
-          Get.offAllNamed(LoginScreen.routeName);
-          state = const AsyncData(null);
-        },
-        child: const Text("OK"),
+    Get.dialog(
+        // title: "Hello",
+        // content: const Text("You are logging out"),
+        // confirm: MaterialButton(
+        //   onPressed: () async {
+        //     state = const AsyncLoading();
+        //     await authService.logout();
+        //     Get.offAllNamed(LoginScreen.routeName);
+        //     state = const AsyncData(null);
+        //   },
+        //   child: const Text("OK"),
+        // ),
+        CupertinoAlertDialog(
+      title: const Text(
+        "Sign Out",
+        style: TextStyle(
+          // wordSpacing: 2,
+          letterSpacing: 0.5,
+          fontSize: 18,
+        ),
       ),
-    );
+      content: const Text(
+        "Confirm Sign Out",
+        style: TextStyle(
+          letterSpacing: 0.5,
+          color: CupertinoColors.darkBackgroundGray,
+          fontSize: 14,
+        ),
+        selectionColor: CupertinoColors.systemGrey4,
+      ),
+      actions: <Widget>[
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          child: const Text(
+            "Yes",
+            style: TextStyle(
+              color: AppTheme.textColor,
+              fontSize: 20,
+            ),
+          ),
+          onPressed: () async {
+            state = const AsyncLoading();
+            await authService.logout();
+            Get.offAllNamed(
+              LoginScreen.routeName,
+            );
+            state = const AsyncData(null);
+          },
+        ),
+        CupertinoDialogAction(
+          child: const Text(
+            "No",
+            style: TextStyle(
+              color: AppTheme.textColor,
+              fontSize: 20,
+            ),
+          ),
+          onPressed: () async {
+            // state = const AsyncLoading();
+            // await authService.logout();
+            Get.back();
+            // state = const AsyncData(null);
+          },
+        )
+      ],
+    ));
   }
 }
 
