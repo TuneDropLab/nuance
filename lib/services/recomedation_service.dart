@@ -8,13 +8,14 @@ class RecommendationsService {
   Future<List<RecommendationModel>> getRecommendations(
       String accessToken, String userMessage) async {
     final response = await http.post(
-      Uri.parse('$baseURL/recommendations'),
+      Uri.parse('$baseURL/gemini/recommendations'),
       headers: {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json',
       },
       body: jsonEncode({'userMessage': userMessage}),
     );
+    log("REQUEST: ${response.request.toString()}");
     log("RESPONSE: ${response.body}");
 
     if (response.statusCode == 200) {
