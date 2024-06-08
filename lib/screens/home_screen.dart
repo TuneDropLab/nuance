@@ -19,17 +19,26 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController();
-  final String _userMessage = '';
+  String _userMessage = '';
 
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    final recommendationsState =
-        ref.watch(recommendationsProvider(_userMessage));
+    // final recommendationsState =
+    //     ref.watch(recommendationsProvider(_userMessage));
     final sessionData = ref.read(sessionProvider.notifier);
 
     log("HOME SCREEN: $sessionState");
     final focusNode = FocusNode();
+
+    void submit() {
+      focusNode.unfocus();
+      setState(() {
+        _userMessage = _controller.text;
+      });
+      ref.read(recommendationsProvider(_userMessage));
+      _controller.clear();
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -37,13 +46,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         automaticallyImplyLeading: false,
         centerTitle: false,
         actions: [
-          // IconButton(
-          //   icon: const Icon(Icons.logout),
-          //   tooltip: 'Logout',
-          //   onPressed: () {
-          //     sessionData.logout();
-          //   },
-          // ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: sessionState.when(
@@ -72,7 +74,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         shape: BoxShape.circle,
                         image: DecorationImage(
                           image: imageProvider,
-                          // fit: BoxFit.cover,
                         ),
                       ),
                     ),
@@ -115,21 +116,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               controller: _controller,
               decoration: InputDecoration(
-                // filled: false,
-                // prefixIcon: const Icon(Icons.sea),
-                suffixIcon: Icon(
-                  Icons.add_circle,
-                  color: Theme.of(context).iconTheme.color,
+                suffixIcon: CupertinoButton(
+                  onPressed: () {
+                    submit();
+                  },
+                  child: Icon(
+                    Icons.add_circle,
+                    color: Theme.of(context).iconTheme.color,
+                  ),
                 ),
-                // border: OutlineInputBorder(
-                //   // borderSide: const BorderSide(color: Colors.white, width: 1),
-                //   borderRadius: BorderRadius.circular(24),
-                // ),
-
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
                       color: Theme.of(context).primaryColor, width: 2),
-                  // borderRadius: BorderRadius.circular(4),
                 ),
                 contentPadding: const EdgeInsets.all(12),
               ),
@@ -144,45 +142,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 '1970\'s RnB For Long Drives',
               ],
               onSubmitted: (value) {
-                setState(() {
-                  // _userMessage = value;
-                });
+                submit();
               },
             ),
           ),
-          // Column(
-          //   children: [
-          //     // Center(
-          //     //   child:
-          //     // ),
-          //     // Expanded(
-          //     //   child: recommendationsState.when(
-          //     //     data: (recommendations) {
-          //     //       return ListView.builder(
-          //     //         itemCount: recommendations.length,
-          //     //         itemBuilder: (context, index) {
-          //     //           final recommendation = recommendations[index];
-          //     //           return ListTile(
-          //     //             title: Text(recommendation.title),
-          //     //             subtitle: Text(recommendation.artist),
-          //     //             onTap: () {
-          //     //               // Navigator.push(
-          //     //               //   context,
-          //     //               //   MaterialPageRoute(
-          //     //               //     // builder: (context) => TrackInfoScreen(songs: [recommendation.id]),
-          //     //               //   ),
-          //     //               // );
-          //     //             },
-          //     //           );
-          //     //         },
-          //     //       );
-          //     //     },
-          //     //     loading: () => const CircularProgressIndicator(),
-          //     //     error: (error, stack) => Text('Error: $error'),
-          //     //   ),
-          //     // ),
-          //   ],
-          // ),
         ),
       ),
     );
