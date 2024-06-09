@@ -19,7 +19,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(
-    text: 'drake songs',
+    text: '',
   );
   @override
   Widget build(BuildContext context) {
