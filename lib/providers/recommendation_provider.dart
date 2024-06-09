@@ -1,13 +1,14 @@
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 
 import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/services/recomedation_service.dart';
 
 final recommendationsProvider =
-    FutureProvider.family<List<RecommendationModel>, String>(
+    FutureProvider.family<List<SongModel>, String>(
         (ref, userMessage) async {
   try {
     log("RECOMMEDATIONS PROVIDER CALLED");

@@ -45,13 +45,15 @@ dependencies:
   spotify: ^0.13.1
   custom_signin_buttons: ^1.0.2
   flutter_riverpod: ^2.4.10
-  url_launcher: ^6.1.14
+  url_launcher: ^6.3.0
   # flutter_inappwebview: ^6.0.0
   rive: ^0.13.4
   flutter_secure_storage: ^9.2.2
   get: ^4.6.5
   cached_network_image: ^3.3.1
   google_fonts: ^6.2.1
+  audioplayers: ^6.0.0
+  
 
   # uni_links2: ^0.6.0+2
   # http_client_helper: ^3.0.0

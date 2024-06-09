@@ -18,8 +18,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final TextEditingController _controller = TextEditingController();
-
+  final TextEditingController _controller = TextEditingController(
+    text: 'drake songs',
+  );
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
@@ -112,6 +113,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               controller: _controller,
               decoration: InputDecoration(
+                filled: false,
                 suffixIcon: CupertinoButton(
                   onPressed: () {
                     submit();
@@ -121,10 +123,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     color: Theme.of(context).iconTheme.color,
                   ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor, width: 2),
-                ),
+                // focusedBorder: OutlineInputBorder(
+                //   borderSide: BorderSide(
+                //       color: Theme.of(context).primaryColor, width: 2),
+                // ),
                 contentPadding: const EdgeInsets.all(12),
               ),
               hintTextStyle: TextStyle(
