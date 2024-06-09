@@ -19,8 +19,15 @@ class RecommendationsService {
     log("RESPONSE: ${response.body}");
 
     if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body)['recommendations'];
-      return data.map((json) => RecommendationModel.fromJson(json)).toList();
+      log("RESPONSE DATA: ${response.statusCode}");
+      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      log("RESPONSE DATA: $data");
+
+      final List<dynamic> songsJson = data['recommendations']['songs'];
+      return songsJson
+          .map((item) => RecommendationModel.fromJson(item))
+          .toList();
     } else {
       log('Failed to load recommendations: ${response.body}');
       throw Exception('Failed to load recommendations');
