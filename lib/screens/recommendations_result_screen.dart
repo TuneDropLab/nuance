@@ -8,16 +8,16 @@ import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/theme.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  static const routeName = '/home';
+class RecommendationsResult extends ConsumerStatefulWidget {
+  static const routeName = '/rec_results';
 
-  const HomeScreen({super.key});
+  const RecommendationsResult({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<RecommendationsResult> createState() => _RecommendationsResultState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _RecommendationsResultState extends ConsumerState<RecommendationsResult> {
   final TextEditingController _controller = TextEditingController();
   String _userMessage = '';
 
@@ -51,20 +51,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: sessionState.when(
               data: (data) {
                 if (data == null) {
-                  return InkWell(
-                    splashColor: Colors.pink,
-                    onTap: () {
-                      // sessionData.logout();
-                    },
-                    child: Container(
-                      width: 40.0,
-                      height: 120.0,
-                      decoration: const BoxDecoration(
-                        color: Colors.yellow,
-                        shape: BoxShape.circle,
-                      ),
-                      // child: const CircleAvatar(),
+                  return CupertinoButton(
+                    child: const CircleAvatar(
+                      radius: 30,
                     ),
+                    onPressed: () {
+                      sessionData.logout();
+                    },
                   );
                 }
 
@@ -75,7 +68,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                   child: CachedNetworkImage(
                     imageBuilder: (context, imageProvider) => Container(
-                      width: 40.0,
+                      width: 50.0,
                       height: 100.0,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
@@ -85,7 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     fit: BoxFit.fill,
-                    // height: 150,
+                    height: 150,
                     imageUrl: data.user["user_metadata"]["avatar_url"],
                     placeholder: (context, url) => const Center(
                       child: CircularProgressIndicator(

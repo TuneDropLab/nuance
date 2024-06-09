@@ -10,7 +10,7 @@ class AppTheme {
     return ThemeData(
       primaryColor: primaryColor,
       scaffoldBackgroundColor: Colors.white,
-      textTheme: GoogleFonts.interTextTheme(
+      textTheme: GoogleFonts.anekBanglaTextTheme(
         ThemeData.light().textTheme.copyWith(
               displayLarge: const TextStyle(
                 color: textColor,
@@ -32,7 +32,7 @@ class AppTheme {
             fontSize: 20,
           ),
         ),
-        titleTextStyle: GoogleFonts.lobster(
+        titleTextStyle: GoogleFonts.anekBangla(
           textStyle: const TextStyle(
             color: textColor,
             fontSize: 20,
