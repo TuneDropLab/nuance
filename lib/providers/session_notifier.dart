@@ -21,7 +21,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
   Future<SessionData?> _loadSession() async {
     try {
       final sessionData = await authService.getSessionData();
-      log("LOADING SESSION FROM SESSION NOTIFIER!!!: $sessionData");
+      // log("LOADING SESSION FROM SESSION NOTIFIER!!!: $sessionData");
       if (sessionData != null) {
         return SessionData.fromJson(sessionData);
       }
