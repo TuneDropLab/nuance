@@ -6,6 +6,7 @@ import 'package:nuance/screens/recommendations_result_screen.dart';
 Map<String, Widget Function(BuildContext)> routes = {
   LoginScreen.routeName: (context) => const LoginScreen(),
   HomeScreen.routeName: (context) => const HomeScreen(),
-  RecommendationsResult.routeName: (context) => const RecommendationsResult(),
+  RecommendationsResultScreen.routeName: (context) =>
+      const RecommendationsResultScreen(),
   // Define other routes here
 };
