@@ -14,12 +14,13 @@ class RecommendationsResult extends ConsumerStatefulWidget {
   const RecommendationsResult({super.key});
 
   @override
-  ConsumerState<RecommendationsResult> createState() => _RecommendationsResultState();
+  ConsumerState<RecommendationsResult> createState() =>
+      _RecommendationsResultState();
 }
 
 class _RecommendationsResultState extends ConsumerState<RecommendationsResult> {
   final TextEditingController _controller = TextEditingController();
-  String _userMessage = '';
+  final String _userMessage = '';
 
   @override
   Widget build(BuildContext context) {
@@ -32,12 +33,13 @@ class _RecommendationsResultState extends ConsumerState<RecommendationsResult> {
     final focusNode = FocusNode();
 
     void submit() {
-      focusNode.unfocus();
-      setState(() {
-        _userMessage = _controller.text;
-      });
-      ref.read(recommendationsProvider(_userMessage));
-      _controller.clear();
+      // focusNode.unfocus();
+      // setState(() {
+      //   _userMessage = _controller.text;
+      // });
+      // ref.read(recommendationsProvider(_userMessage));
+      // _controller.clear();
+      Navigator.pushNamed(context, RecommendationsResult.routeName);
     }
 
     return Scaffold(
