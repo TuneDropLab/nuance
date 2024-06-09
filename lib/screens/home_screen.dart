@@ -4,8 +4,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -19,25 +19,21 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController();
-  String _userMessage = '';
 
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    // final recommendationsState =
-    //     ref.watch(recommendationsProvider(_userMessage));
     final sessionData = ref.read(sessionProvider.notifier);
 
-    log("HOME SCREEN: $sessionState");
+    // log("HOME SCREEN: ${sessionState.data}");
     final focusNode = FocusNode();
 
     void submit() {
       focusNode.unfocus();
-      setState(() {
-        _userMessage = _controller.text;
-      });
-      ref.read(recommendationsProvider(_userMessage));
-      _controller.clear();
+      final userMessage = _controller.text;
+
+      Navigator.pushNamed(context, RecommendationsResultScreen.routeName,
+          arguments: {'search_term': userMessage});
     }
 
     return Scaffold(
@@ -51,20 +47,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: sessionState.when(
               data: (data) {
                 if (data == null) {
-                  return InkWell(
-                    splashColor: Colors.pink,
-                    onTap: () {
-                      // sessionData.logout();
-                    },
-                    child: Container(
-                      width: 40.0,
-                      height: 120.0,
-                      decoration: const BoxDecoration(
-                        color: Colors.yellow,
-                        shape: BoxShape.circle,
-                      ),
-                      // child: const CircleAvatar(),
+                  return CupertinoButton(
+                    child: const CircleAvatar(
+                      radius: 30,
                     ),
+                    onPressed: () {
+                      sessionData.logout();
+                    },
                   );
                 }
 
@@ -75,7 +64,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   },
                   child: CachedNetworkImage(
                     imageBuilder: (context, imageProvider) => Container(
-                      width: 40.0,
+                      width: 50.0,
                       height: 100.0,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
@@ -85,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     fit: BoxFit.fill,
-                    // height: 150,
+                    height: 150,
                     imageUrl: data.user["user_metadata"]["avatar_url"],
                     placeholder: (context, url) => const Center(
                       child: CircularProgressIndicator(
@@ -115,6 +104,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: AnimatedTextField(
+              animationDuration: const Duration(milliseconds: 98000),
+              animationType: Animationtype.slide,
               focusNode: focusNode,
               onTapOutside: (event) {
                 FocusManager.instance.primaryFocus?.unfocus();
@@ -130,34 +121,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     color: Theme.of(context).iconTheme.color,
                   ),
                 ),
-
-                // focusedBorder: OutlineInputBorder(
-                //   borderSide: BorderSide(
-                //       color: Theme.of(context).primaryColor, width: 2),
-                // ),
-                hintMaxLines: 1,
-                helperMaxLines: 1,
-                fillColor: Colors.white,
-
-                // filled: false,
-                border: const OutlineInputBorder(
+                focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(
-                    color: Colors.white,
-                    width: 0.3,
-                  ),
+                      color: Theme.of(context).primaryColor, width: 2),
                 ),
                 contentPadding: const EdgeInsets.all(12),
               ),
-              animationDuration: const Duration(milliseconds: 98000),
-              animationType: Animationtype.slide,
               hintTextStyle: TextStyle(
-                color: Theme.of(context).inputDecorationTheme.iconColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+                color: Theme.of(context).hintColor,
+                fontSize: 14,
               ),
               hintTexts: const [
                 'Chill Lo-Fi Beats to Help Me Study',
-                // '21 Savage Songs From 2016',
+                '21 Savage Songs From 2016',
                 'Classical Music for Kids',
                 '1970\'s RnB For Long Drives',
               ],
