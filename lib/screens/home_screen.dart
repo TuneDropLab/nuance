@@ -76,14 +76,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     fit: BoxFit.fill,
                     height: 150,
-                    imageUrl: data.user["user_metadata"]["avatar_url"],
+                    imageUrl: data.user["user_metadata"]["avatar_url"] ?? '',
                     placeholder: (context, url) => const Center(
                       child: CircularProgressIndicator(
                         color: AppTheme.textColor,
                       ),
                     ),
                     errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
+                      Container(
+                      width: 50.0,
+                      height: 100.0,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black12
+                        // image: DecorationImage(
+                        //   // image: imageProvider,
+                        // ),
+                      ),
+                    ),
                   ),
                 );
               },
@@ -136,8 +146,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               hintTexts: const [
                 'Chill Lo-Fi Beats to Help Me Study',
                 '21 Savage Songs From 2016',
-                'Classical Music for Kids',
+                'Songs like Owl City Fireflies',
                 '1970\'s RnB For Long Drives',
+                'Songs to Help Me Sleep',
               ],
               onSubmitted: (value) {
                 submit();
