@@ -140,7 +140,8 @@ class _RecommendationsResultScreenState
                                 },
                               ),
                               title: Text(playlist.name),
-                              subtitle: Text("${playlist.totalTracks} songs"),
+                              subtitle: Text(
+                                  "${playlist.totalTracks} ${playlist.totalTracks >= 2 ? "songs" : "song"} "),
                               enabled: !isCurrentLoading &&
                                   addTracksState.maybeWhen(
                                     loading: () => false,
