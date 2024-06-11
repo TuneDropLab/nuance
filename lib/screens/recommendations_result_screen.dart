@@ -158,7 +158,7 @@ class _RecommendationsResultScreenState
                                       _loadingPlaylistId = null;
                                     });
                                     Navigator.pop(context); // Close modal
-                                    Navigator.pop(context); // Navigate back to home screen
+                                    // Navigator.pop(context); // Navigate back to home screen
                                   }).catchError((error) {
                                     setState(() {
                                       _loadingPlaylistId = null;
