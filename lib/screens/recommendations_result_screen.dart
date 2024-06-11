@@ -140,7 +140,7 @@ class _RecommendationsResultScreenState
                                 },
                               ),
                               title: Text(playlist.name),
-                              subtitle: Text(playlist.uri),
+                              subtitle: Text("${playlist.totalTracks} songs"),
                               enabled: !isCurrentLoading &&
                                   addTracksState.maybeWhen(
                                     loading: () => false,
@@ -195,8 +195,8 @@ class _RecommendationsResultScreenState
                                       width: 20,
                                       height: 20,
                                       child: CupertinoActivityIndicator(
-                                        // strokeWidth: 2,
-                                      ),
+                                          // strokeWidth: 2,
+                                          ),
                                     )
                                   : null,
                             );
