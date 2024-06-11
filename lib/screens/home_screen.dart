@@ -33,8 +33,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       focusNode.unfocus();
       final userMessage = _controller.text;
 
-      Navigator.pushNamed(context, RecommendationsResultScreen.routeName,
-          arguments: {'search_term': userMessage});
+      Navigator.pushNamed(
+        context,
+        RecommendationsResultScreen.routeName,
+        arguments: {
+          'search_term': userMessage,
+          'sessionState': sessionState,
+        },
+      );
     }
 
     return Scaffold(
@@ -82,17 +88,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         color: AppTheme.textColor,
                       ),
                     ),
-                    errorWidget: (context, url, error) =>
-                      Container(
+                    errorWidget: (context, url, error) => Container(
                       width: 50.0,
                       height: 100.0,
                       decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black12
-                        // image: DecorationImage(
-                        //   // image: imageProvider,
-                        // ),
-                      ),
+                          shape: BoxShape.circle, color: Colors.black12
+                          // image: DecorationImage(
+                          //   // image: imageProvider,
+                          // ),
+                          ),
                     ),
                   ),
                 );

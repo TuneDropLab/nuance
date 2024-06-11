@@ -20,6 +20,9 @@ class SongModel {
   final int popularity;
   final String trackUrl;
   final String previewUrl;
+  final String albumUri;
+  final String artistUri;
+  final String trackUri;
 
   SongModel({
     required this.id,
@@ -41,10 +44,12 @@ class SongModel {
     required this.popularity,
     required this.trackUrl,
     required this.previewUrl,
+    required this.albumUri,
+    required this.artistUri,
+    required this.trackUri,
   });
 
   factory SongModel.fromJson(Map<String, dynamic> json) {
-    log("json DATA: $json");
     return SongModel(
       id: json['id'],
       name: json['name'],
@@ -72,6 +77,11 @@ class SongModel {
       popularity: json['popularity'],
       trackUrl: json['external_urls']['spotify'],
       previewUrl: json['preview_url'] ?? '',
+      albumUri: json['album']['uri'],
+      artistUri: (json['artists'] as List)
+          .map((artist) => artist['uri'] as String)
+          .join(','),
+      trackUri: json['uri'],
     );
   }
 
@@ -96,6 +106,9 @@ class SongModel {
       'popularity': popularity,
       'trackUrl': trackUrl,
       'previewUrl': previewUrl,
+      'albumUri': albumUri,
+      'artistUri': artistUri,
+      'trackUri': trackUri,
     };
   }
 }

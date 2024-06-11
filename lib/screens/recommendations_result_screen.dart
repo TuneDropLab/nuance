@@ -2,8 +2,13 @@ import 'dart:developer';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/models/song_model.dart';
+import 'package:nuance/providers/playlist_provider.dart';
+import 'package:nuance/models/playlist_model.dart';
+import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/providers/add_tracks_provider.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -20,6 +25,18 @@ class _RecommendationsResultScreenState
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   SongModel? _currentSong;
+  String? searchTerm;
+  AsyncValue<SessionData?>? sessionState;
+  String? _loadingPlaylistId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    searchTerm = arguments['search_term'] as String?;
+    sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
+    log("STATE : ${sessionState?.value?.accessToken}");
+  }
 
   void _togglePlay(SongModel song) async {
     if (song.previewUrl.isEmpty) {
@@ -66,16 +83,160 @@ class _RecommendationsResultScreenState
     );
   }
 
+  void _showPlaylists(BuildContext context, List<SongModel> recommendations) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.93,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25.0),
+              topRight: Radius.circular(25.0),
+            ),
+          ),
+          child: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 15),
+                child: Text("Add to Playlist"),
+              ),
+              Expanded(
+                child: Consumer(
+                  builder: (context, ref, child) {
+                    final playlistsState = ref.watch(playlistProvider);
+                    final addTracksState = ref.watch(addTracksProvider);
+
+                    return playlistsState.when(
+                      data: (playlists) {
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: playlists.length,
+                          itemBuilder: (context, index) {
+                            final playlist = playlists[index];
+                            final isCurrentLoading =
+                                _loadingPlaylistId == playlist.id;
+
+                            return ListTile(
+                              leading: Image.network(
+                                playlist.imageUrl,
+                                width: 50,
+                                height: 50,
+                                fit: BoxFit.cover,
+                              ),
+                              title: Text(playlist.name),
+                              subtitle: Text(playlist.uri),
+                              enabled: !isCurrentLoading &&
+                                  addTracksState.maybeWhen(
+                                    loading: () => false,
+                                    orElse: () => true,
+                                  ),
+                              onTap: () {
+                                if (sessionState?.value?.accessToken != null) {
+                                  final trackIds = recommendations
+                                      .map((song) => song.trackUri)
+                                      .toList();
+
+                                  final params = AddTracksParams(
+                                    accessToken:
+                                        sessionState!.value!.accessToken,
+                                    playlistId: playlist.id,
+                                    trackIds: trackIds,
+                                  );
+
+                                  setState(() {
+                                    _loadingPlaylistId = playlist.id;
+                                  });
+
+                                  ref
+                                      .read(addTracksProvider.notifier)
+                                      .addTracksToPlaylist(params)
+                                      .then((_) {
+                                    setState(() {
+                                      _loadingPlaylistId = null;
+                                    });
+                                    Navigator.pop(context); // Close modal
+                                    Navigator.pop(context); // Navigate back to home screen
+                                  }).catchError((error) {
+                                    setState(() {
+                                      _loadingPlaylistId = null;
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Failed to add tracks to playlist.')),
+                                    );
+                                  });
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('No access token found.')),
+                                  );
+                                }
+                              },
+                              trailing: isCurrentLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : null,
+                            );
+                          },
+                        );
+                      },
+                      loading: () => const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                      error: (error, stack) => Center(
+                        child: Text('Error: $error'),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    final searchTerm = arguments['search_term'] as String;
+    if (searchTerm == null) {
+      return const Scaffold(
+        body: Center(child: Text('No search term found')),
+      );
+    }
 
-    final recommendationsState = ref.watch(recommendationsProvider(searchTerm));
+    final recommendationsState = ref.watch(recommendationsProvider(searchTerm!));
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(searchTerm),
+        title: Text(searchTerm ?? ''),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.playlist_play),
+            onPressed: () {
+              recommendationsState.when(
+                data: (recommendations) {
+                  _showPlaylists(context, recommendations);
+                },
+                loading: () {
+                  // Handle loading state if needed
+                },
+                error: (error, stack) {
+                  // Handle error state if needed
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: recommendationsState.when(
         data: (recommendations) {
@@ -86,8 +247,7 @@ class _RecommendationsResultScreenState
               final recommendation = recommendations[index];
               return ListTile(
                 leading: GestureDetector(
-                  onTap: () =>
-                      _showArtworkOverlay(context, recommendation.artworkUrl),
+                  onTap: () => _showArtworkOverlay(context, recommendation.artworkUrl),
                   child: Image.network(
                     recommendation.artworkUrl,
                     width: 50,
@@ -96,8 +256,7 @@ class _RecommendationsResultScreenState
                 ),
                 title: Text(recommendation.name),
                 subtitle: Text(recommendation.artists.join(', ')),
-                trailing:
-                    recommendation.explicit ? const Icon(Icons.explicit) : null,
+                trailing: recommendation.explicit ? const Icon(Icons.explicit) : null,
                 onTap: () => _togglePlay(recommendation),
               );
             },
