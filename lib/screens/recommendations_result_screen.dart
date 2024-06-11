@@ -1,5 +1,7 @@
 import 'dart:developer';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/session_data_model.dart';
@@ -120,11 +122,22 @@ class _RecommendationsResultScreenState
                                 _loadingPlaylistId == playlist.id;
 
                             return ListTile(
-                              leading: Image.network(
-                                playlist.imageUrl,
-                                width: 50,
-                                height: 50,
-                                fit: BoxFit.cover,
+                              // leading: Image.network(
+                              //   playlist.imageUrl,
+                              //   width: 50,
+                              //   height: 50,
+                              //   fit: BoxFit.cover,
+                              // ),
+                              leading: CachedNetworkImage(
+                                height: 40,
+                                width: 40,
+                                imageUrl: playlist.imageUrl,
+                                placeholder: (context, url) {
+                                  return Container(
+                                      alignment: Alignment.center,
+                                      child:
+                                          const CupertinoActivityIndicator());
+                                },
                               ),
                               title: Text(playlist.name),
                               subtitle: Text(playlist.uri),
@@ -172,7 +185,8 @@ class _RecommendationsResultScreenState
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                        content: Text('No access token found.')),
+                                        content:
+                                            Text('No access token found.')),
                                   );
                                 }
                               },
@@ -180,8 +194,8 @@ class _RecommendationsResultScreenState
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                                      child: CupertinoActivityIndicator(
+                                        // strokeWidth: 2,
                                       ),
                                     )
                                   : null,
@@ -190,7 +204,7 @@ class _RecommendationsResultScreenState
                         );
                       },
                       loading: () => const Center(
-                        child: CircularProgressIndicator(),
+                        child: CupertinoActivityIndicator(),
                       ),
                       error: (error, stack) => Center(
                         child: Text('Error: $error'),
@@ -214,7 +228,8 @@ class _RecommendationsResultScreenState
       );
     }
 
-    final recommendationsState = ref.watch(recommendationsProvider(searchTerm!));
+    final recommendationsState =
+        ref.watch(recommendationsProvider(searchTerm!));
 
     return Scaffold(
       appBar: AppBar(
@@ -247,23 +262,35 @@ class _RecommendationsResultScreenState
               final recommendation = recommendations[index];
               return ListTile(
                 leading: GestureDetector(
-                  onTap: () => _showArtworkOverlay(context, recommendation.artworkUrl),
-                  child: Image.network(
-                    recommendation.artworkUrl,
-                    width: 50,
-                    height: 50,
+                  onTap: () =>
+                      _showArtworkOverlay(context, recommendation.artworkUrl),
+                  // child: Image.network(
+                  //   recommendation.artworkUrl,
+                  //   width: 50,
+                  //   height: 50,
+                  // ),
+                  child: CachedNetworkImage(
+                    height: 40,
+                    width: 40,
+                    imageUrl: recommendation.artworkUrl,
+                    placeholder: (context, url) {
+                      return Container(
+                          alignment: Alignment.center,
+                          child: const CupertinoActivityIndicator());
+                    },
                   ),
                 ),
                 title: Text(recommendation.name),
                 subtitle: Text(recommendation.artists.join(', ')),
-                trailing: recommendation.explicit ? const Icon(Icons.explicit) : null,
+                trailing:
+                    recommendation.explicit ? const Icon(Icons.explicit) : null,
                 onTap: () => _togglePlay(recommendation),
               );
             },
           );
         },
         loading: () => const Center(
-          child: CircularProgressIndicator(),
+          child: CupertinoActivityIndicator(),
         ),
         error: (error, stack) => Center(
           child: Text('Error: $error'),

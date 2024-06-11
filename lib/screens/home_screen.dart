@@ -20,6 +20,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(
     text: '',
+    // text: 'drake songs',
   );
   @override
   Widget build(BuildContext context) {
@@ -84,7 +85,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     height: 150,
                     imageUrl: data.user["user_metadata"]["avatar_url"] ?? '',
                     placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(
+                      child: CupertinoActivityIndicator(
                         color: AppTheme.textColor,
                       ),
                     ),
@@ -102,7 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 );
               },
               loading: () => const Center(
-                child: CircularProgressIndicator(
+                child: CupertinoActivityIndicator(
                   color: AppTheme.textColor,
                 ),
               ),
