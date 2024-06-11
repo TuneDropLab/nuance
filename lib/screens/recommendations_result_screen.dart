@@ -45,7 +45,8 @@ class _RecommendationsResultScreenState
   void _togglePlay(SongModel song) async {
     if (song.previewUrl.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No preview available for this song.')),
+        const SnackBar(
+            content: Text('Use spotify Premium to preview this song')),
       );
       return;
     }
@@ -87,13 +88,18 @@ class _RecommendationsResultScreenState
     );
   }
 
-  void _showPlaylists(BuildContext context, List<SongModel> recommendations) {
+  void _showPlaylists(
+      BuildContext context, WidgetRef ref, List<SongModel> recommendations) {
     showModalBottomSheet(
+      useSafeArea: true,
+      showDragHandle: true,
+      useRootNavigator: true,
+      routeSettings: const RouteSettings(name: '/playlists'),
       context: context,
       isScrollControlled: true,
       builder: (context) {
         return Container(
-          height: MediaQuery.of(context).size.height * 0.93,
+          // height: MediaQuery.of(context).size.height * 0.93,
           decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.only(
@@ -102,116 +108,106 @@ class _RecommendationsResultScreenState
             ),
           ),
           child: Column(
-            // mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                width: Get.width,
-                alignment: Alignment.bottomCenter,
-                color: AppTheme.textColor.withOpacity(0.011),
-                padding: const EdgeInsets.only(top: 35, bottom: 30),
+                width: MediaQuery.of(context).size.width,
+                alignment: Alignment.bottomLeft,
+                color: Colors.grey.withOpacity(0.011),
+                padding: const EdgeInsets.only(
+                  top: 25,
+                  bottom: 20,
+                  left: 15,
+                  right: 15,
+                ),
                 child: const Text(
-                  "Add to Playlist",
-                  style: TextStyle(color: AppTheme.textColor, fontSize: 14),
+                  "Add to your Music Library",
+                  style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
               ),
               Expanded(
                 child: Consumer(
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
-                    final addTracksState = ref.watch(addTracksProvider);
 
                     return playlistsState.when(
                       data: (playlists) {
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: playlists.length,
-                          itemBuilder: (context, index) {
-                            final playlist = playlists[index];
-                            final isCurrentLoading =
-                                _loadingPlaylistId == playlist.id;
+                        return Stack(
+                          children: [
+                            ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: playlists.length,
+                              itemBuilder: (context, index) {
+                                final playlist = playlists[index];
 
-                            return ListTile(
-                              // leading: Image.network(
-                              //   playlist.imageUrl,
-                              //   width: 50,
-                              //   height: 50,
-                              //   fit: BoxFit.cover,
-                              // ),
-                              leading: CachedNetworkImage(
-                                height: 40,
-                                width: 40,
-                                imageUrl: playlist.imageUrl,
-                                placeholder: (context, url) {
-                                  return Container(
-                                      alignment: Alignment.center,
-                                      child:
-                                          const CupertinoActivityIndicator());
-                                },
-                              ),
-                              title: Text(playlist.name),
-                              subtitle: Text(
-                                  "${playlist.totalTracks} ${playlist.totalTracks >= 2 ? "songs" : "song"} "),
-                              enabled: !isCurrentLoading &&
-                                  addTracksState.maybeWhen(
-                                    loading: () => false,
-                                    orElse: () => true,
+                                return ListTile(
+                                  leading: CachedNetworkImage(
+                                    height: 40,
+                                    width: 40,
+                                    imageUrl: playlist.imageUrl,
+                                    placeholder: (context, url) {
+                                      return Container(
+                                          alignment: Alignment.center,
+                                          child:
+                                              const CupertinoActivityIndicator());
+                                    },
                                   ),
-                              onTap: () {
-                                if (sessionState?.value?.accessToken != null) {
-                                  final trackIds = recommendations
-                                      .map((song) => song.trackUri)
-                                      .toList();
+                                  title: Text(playlist.name),
+                                  subtitle: Text(
+                                      "${playlist.totalTracks} ${playlist.totalTracks >= 2 ? "songs" : "song"} "),
+                                  onTap: () {
+                                    if (sessionState?.value?.accessToken !=
+                                        null) {
+                                      final trackIds = recommendations
+                                          .map((song) => song.trackUri)
+                                          .toList();
 
-                                  final params = AddTracksParams(
-                                    accessToken:
-                                        sessionState!.value!.accessToken,
-                                    playlistId: playlist.id,
-                                    trackIds: trackIds,
-                                  );
+                                      final params = AddTracksParams(
+                                        accessToken:
+                                            sessionState!.value!.accessToken,
+                                        playlistId: playlist.id,
+                                        trackIds: trackIds,
+                                      );
 
-                                  setState(() {
-                                    _loadingPlaylistId = playlist.id;
-                                  });
-
-                                  ref
-                                      .read(addTracksProvider.notifier)
-                                      .addTracksToPlaylist(params)
-                                      .then((_) {
-                                    setState(() {
-                                      _loadingPlaylistId = null;
-                                    });
-                                    Navigator.pop(context); // Close modal
-                                    // Navigator.pop(context); // Navigate back to home screen
-                                  }).catchError((error) {
-                                    setState(() {
-                                      _loadingPlaylistId = null;
-                                    });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content: Text(
-                                              'Failed to add tracks to playlist.')),
-                                    );
-                                  });
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text('No access token found.')),
-                                  );
-                                }
+                                      ref
+                                          .read(addTracksProvider.notifier)
+                                          .addTracksToPlaylist(params)
+                                          .then((_) {
+                                        Navigator.pop(context); // Close modal
+                                      }).catchError((error) {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  'Failed to add tracks to playlist.')),
+                                        );
+                                      });
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                            content:
+                                                Text('No access token found.')),
+                                      );
+                                    }
+                                  },
+                                );
                               },
-                              trailing: isCurrentLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CupertinoActivityIndicator(
-                                          // strokeWidth: 2,
-                                          ),
-                                    )
-                                  : null,
-                            );
-                          },
+                            ),
+                            Positioned(
+                              bottom: 30.0,
+                              right: Get.width / 2 - 16.0,
+                              child: FloatingActionButton(
+                                elevation: 0,
+                                backgroundColor: AppTheme.primaryColor,
+                                // color: AppTheme.textColor,
+                                onPressed: () {
+                                  _showCreatePlaylistForm(context, ref);
+                                },
+                                child: const Icon(Icons.add),
+                              ),
+                            ),
+                          ],
                         );
                       },
                       loading: () => const Center(
@@ -223,6 +219,89 @@ class _RecommendationsResultScreenState
                     );
                   },
                 ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCreatePlaylistForm(BuildContext context, WidgetRef ref) {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(25.0),
+              topRight: Radius.circular(25.0),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Create New Playlist",
+                style: TextStyle(color: AppTheme.textColor, fontSize: 16),
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Playlist Name',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () {
+                  final name = nameController.text.trim();
+                  final description = descriptionController.text.trim();
+                  if (name.isNotEmpty) {
+                    final data = {
+                      'name': name,
+                      'description': description,
+                    };
+                    ref
+                        .read(createPlaylistProvider(data).future)
+                        .then((newPlaylist) {
+                      Navigator.pop(context); // Close the modal
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Playlist created successfully'),
+                        ),
+                      );
+                    }).catchError((error) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to create playlist: $error'),
+                        ),
+                      );
+                    });
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please provide a name for the playlist'),
+                      ),
+                    );
+                  }
+                },
+                child: const Text('Create'),
               ),
             ],
           ),
@@ -250,11 +329,13 @@ class _RecommendationsResultScreenState
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.playlist_play),
+            icon: const Icon(
+              Icons.playlist_play,
+            ),
             onPressed: () {
               recommendationsState.when(
                 data: (recommendations) {
-                  _showPlaylists(context, recommendations);
+                  _showPlaylists(context, ref, recommendations);
                 },
                 loading: () {
                   // Handle loading state if needed

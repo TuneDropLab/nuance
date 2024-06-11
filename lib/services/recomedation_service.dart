@@ -141,4 +141,33 @@ class RecommendationsService {
       rethrow;
     }
   }
+
+  Future<PlaylistModel> createPlaylist(String accessToken, String userId,
+      String name, String description) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/spotify/playlists'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(
+            {'userId': userId, 'name': name, 'description': description}),
+      );
+      log("createPlaylist REQUEST: ${response.request.toString()}");
+      log("createPlaylist RESPONSE: ${response.body}");
+
+      if (response.statusCode == 201) {
+        final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
+        log("created playlist data: $data");
+        return PlaylistModel.fromJson(data);
+      } else {
+        log('Failed to create playlist: ${response.body}');
+        throw Exception('Failed to create playlist');
+      }
+    } catch (e) {
+      log('Exception in createPlaylist: $e');
+      rethrow;
+    }
+  }
 }
