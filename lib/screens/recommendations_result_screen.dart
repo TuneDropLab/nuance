@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/models/song_model.dart';
@@ -11,6 +12,7 @@ import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
+import 'package:nuance/theme.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -100,10 +102,18 @@ class _RecommendationsResultScreenState
             ),
           ),
           child: Column(
+            // mainAxisSize: MainAxisSize.max,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 15),
-                child: Text("Add to Playlist"),
+              Container(
+                width: Get.width,
+                alignment: Alignment.bottomCenter,
+                color: AppTheme.textColor.withOpacity(0.011),
+                padding: const EdgeInsets.only(top: 35, bottom: 30),
+                child: const Text(
+                  "Add to Playlist",
+                  style: TextStyle(color: AppTheme.textColor, fontSize: 14),
+                ),
               ),
               Expanded(
                 child: Consumer(
@@ -234,7 +244,10 @@ class _RecommendationsResultScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(searchTerm ?? ''),
+        centerTitle: false,
+        title: Text(
+          searchTerm ?? '',
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.playlist_play),
