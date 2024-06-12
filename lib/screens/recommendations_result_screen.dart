@@ -129,6 +129,7 @@ class _RecommendationsResultScreenState
                 child: Consumer(
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
+                    final addTracksState = ref.watch(addTracksProvider);
 
                     return playlistsState.when(
                       data: (playlists) {
@@ -139,8 +140,16 @@ class _RecommendationsResultScreenState
                               itemCount: playlists.length,
                               itemBuilder: (context, index) {
                                 final playlist = playlists[index];
+                                final isCurrentLoading =
+                                    _loadingPlaylistId == playlist.id;
 
                                 return ListTile(
+                                  // leading: Image.network(
+                                  //   playlist.imageUrl,
+                                  //   width: 50,
+                                  //   height: 50,
+                                  //   fit: BoxFit.cover,
+                                  // ),
                                   leading: CachedNetworkImage(
                                     height: 40,
                                     width: 40,
@@ -155,6 +164,11 @@ class _RecommendationsResultScreenState
                                   title: Text(playlist.name),
                                   subtitle: Text(
                                       "${playlist.totalTracks} ${playlist.totalTracks >= 2 ? "songs" : "song"} "),
+                                  enabled: !isCurrentLoading &&
+                                      addTracksState.maybeWhen(
+                                        loading: () => false,
+                                        orElse: () => true,
+                                      ),
                                   onTap: () {
                                     if (sessionState?.value?.accessToken !=
                                         null) {
@@ -169,12 +183,23 @@ class _RecommendationsResultScreenState
                                         trackIds: trackIds,
                                       );
 
+                                      setState(() {
+                                        _loadingPlaylistId = playlist.id;
+                                      });
+
                                       ref
                                           .read(addTracksProvider.notifier)
                                           .addTracksToPlaylist(params)
                                           .then((_) {
+                                        setState(() {
+                                          _loadingPlaylistId = null;
+                                        });
                                         Navigator.pop(context); // Close modal
+                                        // Navigator.pop(context); // Navigate back to home screen
                                       }).catchError((error) {
+                                        setState(() {
+                                          _loadingPlaylistId = null;
+                                        });
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
                                           const SnackBar(
@@ -191,12 +216,21 @@ class _RecommendationsResultScreenState
                                       );
                                     }
                                   },
+                                  trailing: isCurrentLoading
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CupertinoActivityIndicator(
+                                              // strokeWidth: 2,
+                                              ),
+                                        )
+                                      : null,
                                 );
                               },
                             ),
                             Positioned(
                               bottom: 30.0,
-                              right: Get.width / 2 - 16.0,
+                              right: Get.width / 2 - 26.0,
                               child: FloatingActionButton(
                                 elevation: 0,
                                 backgroundColor: AppTheme.primaryColor,
