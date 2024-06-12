@@ -236,6 +236,9 @@ class _RecommendationsResultScreenState
                                 backgroundColor: AppTheme.primaryColor,
                                 // color: AppTheme.textColor,
                                 onPressed: () {
+                                  // Get.back();
+                                  // delay 1 second 
+                                  // Get.offAllNamed(Routes.HOME);
                                   _showCreatePlaylistForm(context, ref);
                                 },
                                 child: const Icon(Icons.add),
@@ -266,6 +269,10 @@ class _RecommendationsResultScreenState
     final descriptionController = TextEditingController();
 
     showModalBottomSheet(
+      useSafeArea: true,
+      showDragHandle: true,
+      useRootNavigator: true,
+      routeSettings: const RouteSettings(name: '/add_playlists'),
       context: context,
       isScrollControlled: true,
       builder: (context) {
