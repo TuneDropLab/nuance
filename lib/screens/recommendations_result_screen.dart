@@ -296,6 +296,7 @@ class _RecommendationsResultScreenState
       isScrollControlled: true,
       builder: (context) {
         return Container(
+          height: Get.height * 0.8,
           padding: const EdgeInsets.all(16.0),
           decoration: const BoxDecoration(
             color: Colors.white,
