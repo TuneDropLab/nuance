@@ -77,11 +77,25 @@ class _RecommendationsResultScreenState
           child: Scaffold(
             backgroundColor: Colors.black54,
             body: Center(
-              child: Image.network(
-                artworkUrl,
-                width: MediaQuery.of(context).size.width * 0.5,
-              ),
-            ),
+                // child: Image.network(
+                //   artworkUrl,
+                //   width: MediaQuery.of(context).size.width * 0.5,
+                // ),
+                child: CachedNetworkImage(
+              imageUrl: artworkUrl,
+              errorWidget: (context, url, error) {
+                return Container(
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.error),
+                );
+              },
+              placeholder: (context, url) {
+                return Container(
+                  alignment: Alignment.center,
+                  child: const CupertinoActivityIndicator(),
+                );
+              },
+            )),
           ),
         );
       },
@@ -151,16 +165,21 @@ class _RecommendationsResultScreenState
                                   //   fit: BoxFit.cover,
                                   // ),
                                   leading: CachedNetworkImage(
-                                    height: 40,
-                                    width: 40,
-                                    imageUrl: playlist.imageUrl,
-                                    placeholder: (context, url) {
-                                      return Container(
+                                      height: 40,
+                                      width: 40,
+                                      imageUrl: playlist.imageUrl,
+                                      placeholder: (context, url) {
+                                        return Container(
+                                            alignment: Alignment.center,
+                                            child:
+                                                const CupertinoActivityIndicator());
+                                      },
+                                      errorWidget: (context, url, error) {
+                                        return Container(
                                           alignment: Alignment.center,
-                                          child:
-                                              const CupertinoActivityIndicator());
-                                    },
-                                  ),
+                                          child: const Icon(Icons.error),
+                                        );
+                                      }),
                                   title: Text(playlist.name),
                                   subtitle: Text(
                                       "${playlist.totalTracks} ${playlist.totalTracks >= 2 ? "songs" : "song"} "),
@@ -237,7 +256,7 @@ class _RecommendationsResultScreenState
                                 // color: AppTheme.textColor,
                                 onPressed: () {
                                   // Get.back();
-                                  // delay 1 second 
+                                  // delay 1 second
                                   // Get.offAllNamed(Routes.HOME);
                                   _showCreatePlaylistForm(context, ref);
                                 },
