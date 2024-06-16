@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -105,12 +106,16 @@ class _RecommendationsResultScreenState
   void _showPlaylists(
       BuildContext context, WidgetRef ref, List<SongModel> recommendations) {
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       useSafeArea: true,
       showDragHandle: true,
       useRootNavigator: true,
       routeSettings: const RouteSettings(name: '/playlists'),
       context: context,
       isScrollControlled: true,
+      sheetAnimationStyle: AnimationStyle(
+        duration: const Duration(milliseconds: 400),
+      ),
       builder: (context) {
         return Container(
           // height: MediaQuery.of(context).size.height * 0.93,
@@ -127,7 +132,7 @@ class _RecommendationsResultScreenState
               Container(
                 width: MediaQuery.of(context).size.width,
                 alignment: Alignment.bottomLeft,
-                color: Colors.grey.withOpacity(0.011),
+                color: Colors.white,
                 padding: const EdgeInsets.only(
                   top: 25,
                   bottom: 20,
@@ -144,6 +149,8 @@ class _RecommendationsResultScreenState
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
                     final addTracksState = ref.watch(addTracksProvider);
+                    final trackIds =
+                        recommendations.map((song) => song.trackUri).toList();
 
                     return playlistsState.when(
                       data: (playlists) {
@@ -156,6 +163,11 @@ class _RecommendationsResultScreenState
                                 final playlist = playlists[index];
                                 final isCurrentLoading =
                                     _loadingPlaylistId == playlist.id;
+                                final params = AddTracksParams(
+                                  accessToken: sessionState!.value!.accessToken,
+                                  playlistId: playlist.id ?? "",
+                                  trackIds: trackIds,
+                                );
 
                                 return ListTile(
                                   // leading: Image.network(
@@ -167,7 +179,7 @@ class _RecommendationsResultScreenState
                                   leading: CachedNetworkImage(
                                       height: 40,
                                       width: 40,
-                                      imageUrl: playlist.imageUrl,
+                                      imageUrl: playlist.imageUrl ?? "",
                                       placeholder: (context, url) {
                                         return Container(
                                             alignment: Alignment.center,
@@ -180,28 +192,17 @@ class _RecommendationsResultScreenState
                                           child: const Icon(Icons.error),
                                         );
                                       }),
-                                  title: Text(playlist.name),
+                                  title: Text(playlist.name ?? ""),
                                   subtitle: Text(
-                                      "${playlist.totalTracks} ${playlist.totalTracks >= 2 ? "songs" : "song"} "),
-                                  enabled: !isCurrentLoading &&
-                                      addTracksState.maybeWhen(
-                                        loading: () => false,
-                                        orElse: () => true,
-                                      ),
+                                      "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} "),
+                                  // enabled: !isCurrentLoading &&
+                                  //     addTracksState.maybeWhen(
+                                  //       loading: () => false,
+                                  //       orElse: () => true,
+                                  //     ),
                                   onTap: () {
                                     if (sessionState?.value?.accessToken !=
                                         null) {
-                                      final trackIds = recommendations
-                                          .map((song) => song.trackUri)
-                                          .toList();
-
-                                      final params = AddTracksParams(
-                                        accessToken:
-                                            sessionState!.value!.accessToken,
-                                        playlistId: playlist.id,
-                                        trackIds: trackIds,
-                                      );
-
                                       setState(() {
                                         _loadingPlaylistId = playlist.id;
                                       });
@@ -214,18 +215,28 @@ class _RecommendationsResultScreenState
                                           _loadingPlaylistId = null;
                                         });
                                         Navigator.pop(context); // Close modal
-                                        // Navigator.pop(context); // Navigate back to home screen
-                                      }).catchError((error) {
-                                        setState(() {
-                                          _loadingPlaylistId = null;
-                                        });
                                         ScaffoldMessenger.of(context)
                                             .showSnackBar(
-                                          const SnackBar(
+                                          SnackBar(
                                               content: Text(
-                                                  'Failed to add tracks to playlist.')),
+                                                  'Successfully added tracks to ${playlist.name} playlist.')),
                                         );
-                                      });
+
+                                        // Navigator.pop(context); // Navigate back to home screen
+                                      }).catchError(
+                                        (error) {
+                                          setState(() {
+                                            _loadingPlaylistId = null;
+                                          });
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                  'Failed to add tracks to playlist.'),
+                                            ),
+                                          );
+                                        },
+                                      );
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -258,9 +269,13 @@ class _RecommendationsResultScreenState
                                   // Get.back();
                                   // delay 1 second
                                   // Get.offAllNamed(Routes.HOME);
-                                  _showCreatePlaylistForm(context, ref);
+                                  _showCreatePlaylistForm(
+                                      context, ref, trackIds);
                                 },
-                                child: const Icon(Icons.add),
+                                child: const Icon(
+                                  Icons.add,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ],
@@ -283,11 +298,13 @@ class _RecommendationsResultScreenState
     );
   }
 
-  void _showCreatePlaylistForm(BuildContext context, WidgetRef ref) {
-    final nameController = TextEditingController();
+  void _showCreatePlaylistForm(
+      BuildContext context, WidgetRef ref, List<String> trackIds) {
+    final nameController = TextEditingController(text: "$searchTerm");
     final descriptionController = TextEditingController();
 
     showModalBottomSheet(
+      backgroundColor: Colors.white,
       useSafeArea: true,
       showDragHandle: true,
       useRootNavigator: true,
@@ -296,73 +313,168 @@ class _RecommendationsResultScreenState
       isScrollControlled: true,
       builder: (context) {
         return Container(
-          height: Get.height * 0.8,
-          padding: const EdgeInsets.all(16.0),
+          height: MediaQuery.of(context).size.height * 0.8,
+          padding: const EdgeInsets.symmetric(horizontal: 15.0),
           decoration: const BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(25.0),
               topRight: Radius.circular(25.0),
             ),
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const Text(
-                "Create New Playlist",
-                style: TextStyle(color: AppTheme.textColor, fontSize: 16),
-              ),
-              const SizedBox(height: 16.0),
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Playlist Name',
-                  border: OutlineInputBorder(),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  "Create New Playlist",
+                  style: TextStyle(color: Colors.black, fontSize: 14),
                 ),
               ),
               const SizedBox(height: 16.0),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
+              SizedBox(
+                // width: 200,
+                child: AnimatedTextField(
+                  onTapOutside: (event) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  hintTextStyle: TextStyle(
+                    color: Theme.of(context).hintColor,
+                    fontSize: 14,
+                  ),
+                  hintTexts: const [
+                    'Enter playlist name',
+                  ],
+                  onSubmitted: (value) {
+                    // submit();
+                  },
                 ),
               ),
               const SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  final name = nameController.text.trim();
-                  final description = descriptionController.text.trim();
-                  if (name.isNotEmpty) {
-                    final data = {
-                      'name': name,
-                      'description': description,
-                    };
-                    ref
-                        .read(createPlaylistProvider(data).future)
-                        .then((newPlaylist) {
-                      Navigator.pop(context); // Close the modal
+              SizedBox(
+                // width: 200,
+                child: AnimatedTextField(
+                  onTapOutside: (event) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    contentPadding: EdgeInsets.all(12),
+                  ),
+                  hintTextStyle: TextStyle(
+                    color: Theme.of(context).hintColor,
+                    fontSize: 14,
+                  ),
+                  hintTexts: const [
+                    'Enter playlist description',
+                  ],
+                  onSubmitted: (value) {
+                    // submit();
+                  },
+                ),
+              ),
+              const Spacer(),
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 30.0),
+                child: FloatingActionButton(
+                  elevation: 0,
+                  backgroundColor: AppTheme.primaryColor,
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    final description = descriptionController.text.trim();
+                    if (name.isNotEmpty) {
+                      final Map<String, String> data = {
+                        'name': name,
+                        'description': description,
+                      };
+                      ref
+                          .read(createPlaylistProvider(data).future)
+                          .then((newPlaylist) {
+                        // add to playlist
+                        log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
+                        if (sessionState?.value?.accessToken != null) {
+                          log("LOG PLAYLIST DETAILS: ${newPlaylist.id}");
+                          // setState(() {
+                          //   // _loadingPlaylistId = playlist.id;
+                          // });
+                          log("ABOUT TO ADD TO AN EXISTING PLAYLIST accessToken NOT NULL");
+
+                          final params = AddTracksParams(
+                            accessToken: sessionState!.value!.accessToken,
+                            playlistId: newPlaylist.id ?? "",
+                            trackIds: trackIds,
+                          );
+
+                          ref
+                              .read(addTracksProvider.notifier)
+                              .addTracksToPlaylist(params)
+                              .then((_) {
+                            setState(() {
+                              _loadingPlaylistId = null;
+                            });
+                            Navigator.pop(context); // Close modal
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Successfully added tracks to ${newPlaylist.name} playlist.',
+                                ),
+                              ),
+                            );
+
+                            // Navigator.pop(context); // Navigate back to home screen
+                          }).catchError(
+                            (error) {
+                              setState(() {
+                                _loadingPlaylistId = null;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content:
+                                      Text('Failed to add tracks to playlist.'),
+                                ),
+                              );
+                            },
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('No access token found.')),
+                          );
+                        }
+                        // Navigator.pop(context); // Close the modal
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(
+                        //     content: Text('Playlist created successfully'),
+                        //   ),
+                        // );
+                      }).catchError((error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to create playlist: $error'),
+                          ),
+                        );
+                      });
+                    } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Playlist created successfully'),
+                          content:
+                              Text('Please provide a name for the playlist'),
                         ),
                       );
-                    }).catchError((error) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to create playlist: $error'),
-                        ),
-                      );
-                    });
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please provide a name for the playlist'),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Create'),
+                    }
+                  },
+                  child: const Icon(
+                    Icons.add,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),

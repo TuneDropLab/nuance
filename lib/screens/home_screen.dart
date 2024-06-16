@@ -41,7 +41,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           'search_term': userMessage,
           'sessionState': sessionState,
         },
-      );
+      ).then((value) => setState(() {}));
+
+      // Navigator.push( context, MaterialPageRoute( builder: (context) => const RecommendationsResultScreen()), ).then((value) => setState(() {}));
     }
 
     return Scaffold(

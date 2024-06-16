@@ -125,7 +125,7 @@ class RecommendationsService {
         body: jsonEncode({'trackIds': trackIds}),
       );
 
-      log('ADD TRACKS TO PLAYLIST RESPONSE: ${response.body}');
+      // log('ADD TRACKS TO PLAYLIST RESPONSE: ${response.body}');
       log('ADD TRACKS accessToken RESPONSE: $accessToken');
       log('ADD TRACKS playlistId RESPONSE: $playlistId');
       log('ADD TRACKS trackIds RESPONSE: ${trackIds.first}');
@@ -155,7 +155,7 @@ class RecommendationsService {
             {'userId': userId, 'name': name, 'description': description}),
       );
       log("createPlaylist REQUEST: ${response.request.toString()}");
-      log("createPlaylist RESPONSE: ${response.body}");
+      log("createPlaylist RESPONSE: ${response.statusCode}");
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];

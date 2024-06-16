@@ -1,70 +1,70 @@
 class PlaylistModel {
-  final bool collaborative;
-  final String description;
-  final String externalUrl;
-  final String href;
-  final String id;
-  final String imageUrl;
-  final String name;
-  final String ownerDisplayName;
-  final String ownerExternalUrl;
-  final String ownerHref;
-  final String ownerId;
-  final String ownerType;
-  final String ownerUri;
-  final String primaryColor;
-  final bool public;
-  final String snapshotId;
-  final String tracksHref;
-  final int totalTracks;
-  final String type;
-  final String uri;
+  final bool? collaborative;
+  final String? description;
+  final String? externalUrl;
+  final String? href;
+  final String? id;
+  final String? imageUrl;
+  final String? name;
+  final String? ownerDisplayName;
+  final String? ownerExternalUrl;
+  final String? ownerHref;
+  final String? ownerId;
+  final String? ownerType;
+  final String? ownerUri;
+  final String? primaryColor;
+  final bool? public;
+  final String? snapshotId;
+  final String? tracksHref;
+  final int? totalTracks;
+  final String? type;
+  final String? uri;
 
   PlaylistModel({
-    required this.collaborative,
-    required this.description,
-    required this.externalUrl,
-    required this.href,
-    required this.id,
-    required this.imageUrl,
-    required this.name,
-    required this.ownerDisplayName,
-    required this.ownerExternalUrl,
-    required this.ownerHref,
-    required this.ownerId,
-    required this.ownerType,
-    required this.ownerUri,
-    required this.primaryColor,
-    required this.public,
-    required this.snapshotId,
-    required this.tracksHref,
-    required this.totalTracks,
-    required this.type,
-    required this.uri,
+    this.collaborative,
+    this.description,
+    this.externalUrl,
+    this.href,
+    this.id,
+    this.imageUrl,
+    this.name,
+    this.ownerDisplayName,
+    this.ownerExternalUrl,
+    this.ownerHref,
+    this.ownerId,
+    this.ownerType,
+    this.ownerUri,
+    this.primaryColor,
+    this.public,
+    this.snapshotId,
+    this.tracksHref,
+    this.totalTracks,
+    this.type,
+    this.uri,
   });
 
   factory PlaylistModel.fromJson(Map<String, dynamic> json) {
     return PlaylistModel(
       collaborative: json['collaborative'],
       description: json['description'],
-      externalUrl: json['external_urls']['spotify'],
+      externalUrl: json['external_urls'] != null ? json['external_urls']['spotify'] : null,
       href: json['href'],
       id: json['id'],
       imageUrl: (json['images'] != null && (json['images'] as List).isNotEmpty)
           ? json['images'][0]['url']
-          : '',
+          : null,
       name: json['name'],
-      ownerDisplayName: json['owner']['display_name'],
-      ownerExternalUrl: json['owner']['external_urls']['spotify'],
-      ownerHref: json['owner']['href'],
-      ownerId: json['owner']['id'],
-      ownerType: json['owner']['type'],
-      ownerUri: json['owner']['uri'],
-      primaryColor: json['primary_color'] ?? '',
+      ownerDisplayName: json['owner'] != null ? json['owner']['display_name'] : null,
+      ownerExternalUrl: json['owner'] != null ? json['owner']['external_urls']['spotify'] : null,
+      ownerHref: json['owner'] != null ? json['owner']['href'] : null,
+      ownerId: json['owner'] != null ? json['owner']['id'] : null,
+      ownerType: json['owner'] != null ? json['owner']['type'] : null,
+      ownerUri: json['owner'] != null ? json['owner']['uri'] : null,
+      primaryColor: json['primary_color'],
       public: json['public'],
       snapshotId: json['snapshot_id'],
-      tracksHref: json['tracks']['href'],
-      totalTracks: json['tracks']['total'],
+      tracksHref: json['tracks'] != null ? json['tracks']['href'] : null,
+      totalTracks: json['tracks'] != null ? json['tracks']['total'] : null,
       type: json['type'],
       uri: json['uri'],
     );
