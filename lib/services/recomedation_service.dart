@@ -59,8 +59,7 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body:
-            jsonEncode({'songs': songs.map((song) => song.toJson()).toList()}),
+       
       );
       log("getTrackInfo REQUEST: ${response.request.toString()}");
       log("getTrackInfo RESPONSE: ${response.body}");
