@@ -44,7 +44,7 @@ class _RecommendationsResultScreenState
   }
 
   void _togglePlay(SongModel song) async {
-    if (song.previewUrl.isEmpty) {
+    if (song.previewUrl?.isEmpty ?? true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text('Use spotify Premium to preview this song')),
@@ -61,7 +61,7 @@ class _RecommendationsResultScreenState
       if (_currentSong != null) {
         await _audioPlayer.stop();
       }
-      await _audioPlayer.play(UrlSource(song.previewUrl));
+      await _audioPlayer.play(UrlSource(song.previewUrl ?? ""));
       setState(() {
         _isPlaying = true;
         _currentSong = song;
@@ -162,7 +162,7 @@ class _RecommendationsResultScreenState
                                 final params = AddTracksParams(
                                   accessToken: sessionState!.value!.accessToken,
                                   playlistId: playlist.id ?? "",
-                                  trackIds: trackIds,
+                                  trackIds: trackIds.map((e) => e!).toList(),
                                 );
 
                                 return ListTile(
@@ -265,8 +265,8 @@ class _RecommendationsResultScreenState
                                   // Get.back();
                                   // delay 1 second
                                   // Get.offAllNamed(Routes.HOME);
-                                  _showCreatePlaylistForm(
-                                      context, ref, trackIds);
+                                  _showCreatePlaylistForm(context, ref,
+                                      trackIds.map((e) => e!).toList());
                                 },
                                 child: const Icon(
                                   Icons.add,
@@ -540,17 +540,17 @@ class _RecommendationsResultScreenState
               final recommendation = recommendations[index];
               return ListTile(
                 leading: GestureDetector(
-                  onTap: () =>
-                      _showArtworkOverlay(context, recommendation.artworkUrl),
+                  onTap: () => _showArtworkOverlay(
+                      context, recommendation.artworkUrl ?? ""),
                   // child: Image.network(
                   //   recommendation.artworkUrl,
                   //   width: 50,
                   //   height: 50,
                   // ),
                   child: CachedNetworkImage(
-                    height: 40,
-                    width: 40,
-                    imageUrl: recommendation.artworkUrl,
+                    height: 50,
+                    width: 50,
+                    imageUrl: recommendation.artworkUrl ?? "",
                     placeholder: (context, url) {
                       return Container(
                           alignment: Alignment.center,
@@ -558,10 +558,11 @@ class _RecommendationsResultScreenState
                     },
                   ),
                 ),
-                title: Text(recommendation.name),
-                subtitle: Text(recommendation.artists.join(', ')),
-                trailing:
-                    recommendation.explicit ? const Icon(Icons.explicit) : null,
+                title: Text(recommendation.title ?? ""),
+                subtitle: Text(recommendation.artist ?? ""),
+                trailing: (recommendation.explicit ?? false)
+                    ? const Icon(Icons.explicit)
+                    : null,
                 onTap: () => _togglePlay(recommendation),
               );
             },

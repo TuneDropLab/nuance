@@ -1,98 +1,86 @@
-import 'dart:developer';
-
 class SongModel {
-  final String id;
-  final String name;
-  final List<String> artists;
-  final String albumName;
-  final String albumType;
-  final List<String> availableMarkets;
-  final String albumUrl;
-  final String artworkUrl;
-  final String releaseDate;
-  final int totalTracks;
-  final int discNumber;
-  final int durationMs;
-  final bool explicit;
-  final String isrc;
-  final bool isLocal;
-  final int trackNumber;
-  final int popularity;
-  final String trackUrl;
-  final String previewUrl;
-  final String albumUri;
-  final String artistUri;
-  final String trackUri;
+  final int? id;
+  final String? title;
+  final String? artist;
+  final String? albumName;
+  final String? albumType;
+  final String? albumUrl;
+  final String? artworkUrl;
+  final String? releaseDate;
+  final int? totalTracks;
+  final int? discNumber;
+  final int? durationMs;
+  final bool? explicit;
+  final String? isrc;
+  final int? trackNumber;
+  final int? popularity;
+  final String? trackUrl;
+  final String? previewUrl;
+  final String? albumUri;
+  final String? artistUri;
+  final String? trackUri;
+  final int? promptId;
+  final DateTime? createdAt;
 
   SongModel({
-    required this.id,
-    required this.name,
-    required this.artists,
-    required this.albumName,
-    required this.albumType,
-    required this.availableMarkets,
-    required this.albumUrl,
-    required this.artworkUrl,
-    required this.releaseDate,
-    required this.totalTracks,
-    required this.discNumber,
-    required this.durationMs,
-    required this.explicit,
-    required this.isrc,
-    required this.isLocal,
-    required this.trackNumber,
-    required this.popularity,
-    required this.trackUrl,
-    required this.previewUrl,
-    required this.albumUri,
-    required this.artistUri,
-    required this.trackUri,
+    this.id,
+    this.title,
+    this.artist,
+    this.albumName,
+    this.albumType,
+    this.albumUrl,
+    this.artworkUrl,
+    this.releaseDate,
+    this.totalTracks,
+    this.discNumber,
+    this.durationMs,
+    this.explicit,
+    this.isrc,
+    this.trackNumber,
+    this.popularity,
+    this.trackUrl,
+    this.previewUrl,
+    this.albumUri,
+    this.artistUri,
+    this.trackUri,
+    this.promptId,
+    this.createdAt,
   });
 
   factory SongModel.fromJson(Map<String, dynamic> json) {
     return SongModel(
       id: json['id'],
-      name: json['name'],
-      artists: (json['artists'] as List)
-          .map((artist) => artist['name'] as String)
-          .toList(),
-      albumName: json['album']['name'],
-      albumType: json['album']['album_type'],
-      availableMarkets: (json['available_markets'] as List)
-          .map((market) => market as String)
-          .toList(),
-      albumUrl: json['album']['external_urls']['spotify'],
-      artworkUrl: (json['album']['images'] != null &&
-              (json['album']['images'] as List).isNotEmpty)
-          ? json['album']['images'][0]['url']
-          : '',
-      releaseDate: json['album']['release_date'],
-      totalTracks: json['album']['total_tracks'],
-      discNumber: json['disc_number'],
-      durationMs: json['duration_ms'],
+      title: json['title'],
+      artist: json['artist'],
+      albumName: json['albumName'],
+      albumType: json['albumType'],
+      albumUrl: json['albumUrl'],
+      artworkUrl: json['artworkUrl'],
+      releaseDate: json['releaseDate'],
+      totalTracks: json['totalTracks'],
+      discNumber: json['discNumber'],
+      durationMs: json['durationMs'],
       explicit: json['explicit'],
-      isrc: json['external_ids']['isrc'],
-      isLocal: json['is_local'],
-      trackNumber: json['track_number'],
+      isrc: json['isrc'],
+      trackNumber: json['trackNumber'],
       popularity: json['popularity'],
-      trackUrl: json['external_urls']['spotify'],
-      previewUrl: json['preview_url'] ?? '',
-      albumUri: json['album']['uri'],
-      artistUri: (json['artists'] as List)
-          .map((artist) => artist['uri'] as String)
-          .join(','),
-      trackUri: json['uri'],
+      trackUrl: json['trackUrl'],
+      previewUrl: json['previewUrl'],
+      albumUri: json['albumUri'],
+      artistUri: json['artistUri'],
+      trackUri: json['trackUri'],
+      promptId: json['promptId'],
+      createdAt: DateTime.parse(json['createdAt']),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      'artists': artists,
+      'title': title,
+      'artist': artist,
       'albumName': albumName,
       'albumType': albumType,
-      'availableMarkets': availableMarkets,
       'albumUrl': albumUrl,
       'artworkUrl': artworkUrl,
       'releaseDate': releaseDate,
@@ -101,7 +89,6 @@ class SongModel {
       'durationMs': durationMs,
       'explicit': explicit,
       'isrc': isrc,
-      'isLocal': isLocal,
       'trackNumber': trackNumber,
       'popularity': popularity,
       'trackUrl': trackUrl,
@@ -109,6 +96,8 @@ class SongModel {
       'albumUri': albumUri,
       'artistUri': artistUri,
       'trackUri': trackUri,
+      'promptId': promptId,
+      'createdAt': createdAt?.toIso8601String(),
     };
   }
 }
