@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/models/playlist_model.dart';
@@ -59,7 +60,6 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-       
       );
       log("getTrackInfo REQUEST: ${response.request.toString()}");
       log("getTrackInfo RESPONSE: ${response.body}");
@@ -166,6 +166,80 @@ class RecommendationsService {
       }
     } catch (e) {
       log('Exception in createPlaylist: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<HistoryModel>> getHistory(String accessToken) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/history'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      log("getHistory REQUEST: ${response.request.toString()}");
+      log("getHistory RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> historyData = jsonDecode(response.body);
+        log("History Data: $historyData");
+        return historyData.map((item) => HistoryModel.fromJson(item)).toList();
+      } else {
+        log('Failed to load history: ${response.body}');
+        throw Exception('Failed to load history');
+      }
+    } catch (e) {
+      log('Exception in getHistory: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteHistory(String accessToken, int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseURL/history/$id'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      log("deleteHistory REQUEST: ${response.request.toString()}");
+      log("deleteHistory RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        log('History deleted successfully');
+      } else {
+        log('Failed to delete history: ${response.body}');
+        throw Exception('Failed to delete history');
+      }
+    } catch (e) {
+      log('Exception in deleteHistory: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAllHistory(String accessToken) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseURL/history'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      log("deleteAllHistory REQUEST: ${response.request.toString()}");
+      log("deleteAllHistory RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        log('All history deleted successfully');
+      } else {
+        log('Failed to delete all history: ${response.body}');
+        throw Exception('Failed to delete all history');
+      }
+    } catch (e) {
+      log('Exception in deleteAllHistory: $e');
       rethrow;
     }
   }

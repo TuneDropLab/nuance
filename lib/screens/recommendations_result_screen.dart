@@ -43,6 +43,14 @@ class _RecommendationsResultScreenState
     log("STATE : ${sessionState?.value?.accessToken}");
   }
 
+  bool _isButtonVisible = false;
+
+  void _toggleButtonVisibility() {
+    setState(() {
+      _isButtonVisible = !_isButtonVisible;
+    });
+  }
+
   void _togglePlay(SongModel song) async {
     if (song.previewUrl?.isEmpty ?? true) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -584,84 +592,3 @@ class _RecommendationsResultScreenState
     super.dispose();
   }
 }
-//  onPressed: () {
-  
-//     setState(() {
-//                               isLoading = true;
-//                             });
-//                     final name = nameController.text.trim();
-//                     final description = descriptionController.text.trim();
-//                     if (name.isNotEmpty) {
-//                       final Map<String, String> data = {
-//                         'name': name,
-//                         'description': description,
-//                       };
-//                       ref
-//                           .read(createPlaylistProvider(data).future)
-//                           .then((newPlaylist) {
-//                              final isCurrentLoading =
-//                                     _loadingPlaylistId == newPlaylist.id;
-//                         // add to playlist
-//                         log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
-//                         if (sessionState?.value?.accessToken != null) {
-//                             setState(() {
-//                                         _loadingPlaylistId = newPlaylist.id;
-//                                       });
-//                           log("LOG PLAYLIST DETAILS: ${newPlaylist.id}");
-//                           // setState(() {
-//                           //   // _loadingPlaylistId = playlist.id;
-//                           // });
-//                           log("ABOUT TO ADD TO AN EXISTING PLAYLIST accessToken NOT NULL");
-
-//                           final params = AddTracksParams(
-//                             accessToken: sessionState!.value!.accessToken,
-//                             playlistId: newPlaylist.id ?? "",
-//                             trackIds: trackIds,
-//                           );
-
-//                           ref
-//                               .read(addTracksProvider.notifier)
-//                               .addTracksToPlaylist(params)
-                              
-//                                 setState(() {
-//                                   isLoading = false;
-//                                 });
-
-
-
-
-//                         } else {
-//                           ScaffoldMessenger.of(context).showSnackBar(
-//                             const SnackBar(
-//                                 content: Text('No access token found.')),
-//                           );
-//                         }
-//                         // Navigator.pop(context); // Close the modal
-//                         // ScaffoldMessenger.of(context).showSnackBar(
-//                         //   const SnackBar(
-//                         //     content: Text('Playlist created successfully'),
-//                         //   ),
-//                         // );
-//                       }).catchError((error) {
-//                           setState(() {
-//                                   isLoading = false;
-//                                 });
-
-//                         ScaffoldMessenger.of(context).showSnackBar(
-//                           SnackBar(
-//                             content: Text('Failed to create playlist: $error'),
-//                           ),
-//                         );
-//                       });
-//                     } else {
-//                         setState(() {
-//                                   isLoading = false;
-//                                 });
-//                       ScaffoldMessenger.of(context).showSnackBar(
-//                         const SnackBar(
-//                           content:
-//                               Text('Please provide a name for the playlist'),
-//                         ),
-//                       );
-//                     }
-//                   },
