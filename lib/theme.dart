@@ -1,87 +1,51 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF92A9BD); // Green
+  static const Color primaryColor = Color(0xFF3D9261); // Green
   static const Color secondaryColor = Color(0xFFD3DEDC); // Blue
   static const Color textColor = Color(0xFF333333); // Not fully black
 
-  static ThemeData get lightTheme {
-    return ThemeData(
+  static CupertinoThemeData get lightTheme {
+    return CupertinoThemeData(
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: Colors.white,
-      textTheme: GoogleFonts.anekBanglaTextTheme(
-        ThemeData.light().textTheme.copyWith(
-              displayLarge: const TextStyle(
-                color: textColor,
-                fontSize: 20,
-              ),
-              displayMedium: const TextStyle(
-                color: textColor,
-                fontSize: 18,
-              ),
-            ),
-      ),
-      appBarTheme: AppBarTheme(
-        color: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: textColor),
-        toolbarTextStyle: GoogleFonts.inter(
+      scaffoldBackgroundColor: CupertinoColors.white,
+      textTheme: CupertinoTextThemeData(
+        primaryColor: textColor,
+        //   textStyle: GoogleFonts.anekBanglaTextTheme(
+        //   // ThemeData.light().textTheme.copyWith(
+        //   //       displayLarge: const TextStyle(
+        //   //         color: textColor,
+        //   //         fontSize: 20,
+        //   //       ),
+        //   //       displayMedium: const TextStyle(
+        //   //         color: textColor,
+        //   //         fontSize: 18,
+        //   //       ),
+        //   //     ),
+        // ),
+        navTitleTextStyle: GoogleFonts.anekBangla(
           textStyle: const TextStyle(
             color: textColor,
             fontSize: 20,
           ),
         ),
-        titleTextStyle: GoogleFonts.anekBangla(
+        navLargeTitleTextStyle: GoogleFonts.anekBangla(
           textStyle: const TextStyle(
             color: textColor,
             fontSize: 20,
           ),
         ),
-      ),
-      buttonTheme: ButtonThemeData(
-        buttonColor: primaryColor,
-        textTheme: ButtonTextTheme.primary,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: primaryColor,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.0),
+        actionTextStyle: GoogleFonts.anekBangla(
+          textStyle: const TextStyle(
+            color: primaryColor,
+            fontSize: 18,
           ),
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.grey[200],
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: BorderSide.none,
-        ),
-      ),
-      cardTheme: CardTheme(
-        color: Colors.white,
-        elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-      ),
-      iconTheme: const IconThemeData(
-        color: primaryColor,
-      ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-        },
-      ),
+      barBackgroundColor: CupertinoColors.white,
+      primaryContrastingColor: secondaryColor,
     );
   }
 }
