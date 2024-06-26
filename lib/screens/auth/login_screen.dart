@@ -46,7 +46,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         await Get.to(
           () => const HomeScreen(),
-          transition: Transition.zoom,
+          transition: Transition.fade,
+          curve: Curves.easeInOut,
         );
       }
     } on PlatformException catch (e) {

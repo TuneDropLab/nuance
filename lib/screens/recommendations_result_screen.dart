@@ -10,7 +10,6 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/playlist_provider.dart';
-import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
 import 'package:nuance/theme.dart';
@@ -508,34 +507,127 @@ class _RecommendationsResultScreenState
         body: Center(child: Text('No search term found')),
       );
     }
+    final sessionData = ref.read(sessionProvider.notifier);
 
     final recommendationsState =
         ref.watch(recommendationsProvider(searchTerm!));
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: false,
-        title: Text(
-          searchTerm ?? '',
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.playlist_play,
-            ),
-            onPressed: () {
-              recommendationsState.when(
-                data: (recommendations) {
-                  _showPlaylists(context, ref, recommendations);
-                },
-                loading: () {
-                  // Handle loading state if needed
-                },
-                error: (error, stack) {
-                  // Handle error state if needed
-                },
+        leading: Image.asset("assets/backbtn.png"),
+        // leadingWidth: 30,
+        backgroundColor: Colors.black,
+        title: sessionState!.when(
+          data: (data) {
+            if (data == null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Text(
+                    'Discover Playlists',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
               );
-            },
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome ${data.user["user_metadata"]["full_name"].split(" ")[0]}',
+                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade100,
+                      ),
+                ),
+                Text(
+                  'Discover Playlists',
+                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                ),
+              ],
+            );
+          },
+          loading: () => Text(
+            'Loading...',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          error: (error, stack) => Text(
+            'Error loading user data',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
+        automaticallyImplyLeading: false,
+        centerTitle: false,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: sessionState!.when(
+              data: (data) {
+                if (data == null) {
+                  return CupertinoButton(
+                    child: const CircleAvatar(
+                      radius: 40,
+                    ),
+                    onPressed: () {
+                      sessionData.logout();
+                    },
+                  );
+                }
+
+                return CupertinoButton(
+                  padding: const EdgeInsets.all(0),
+                  onPressed: () {
+                    sessionData.logout();
+                  },
+                  child: CachedNetworkImage(
+                    imageBuilder: (context, imageProvider) => Container(
+                      width: 40.0,
+                      height: 40.0,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        image: DecorationImage(
+                          image: imageProvider,
+                        ),
+                      ),
+                    ),
+                    fit: BoxFit.fill,
+                    height: 150,
+                    imageUrl: data.user["user_metadata"]["avatar_url"] ?? "",
+                    placeholder: (context, url) => const Center(
+                      child: CupertinoActivityIndicator(
+                        color: AppTheme.textColor,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 40.0,
+                      height: 40.0,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black12,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              loading: () => const Center(
+                child: CupertinoActivityIndicator(
+                  color: AppTheme.textColor,
+                ),
+              ),
+              error: (error, stack) => const CircleAvatar(
+                radius: 30,
+              ),
+            ),
           ),
         ],
       ),
