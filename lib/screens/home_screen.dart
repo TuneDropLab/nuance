@@ -12,6 +12,7 @@ import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
+import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/playlist_widget.dart';
 // import 'constants.dart'; // Import the constants file
 
@@ -184,21 +185,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: ListView(
-                  children: [
-                    SpotifyPlaylistCard(
+                child: ListView.separated(
+                  itemCount: 4,
+                  itemBuilder: (context, index) {
+                    return SpotifyPlaylistCard(
                       artistImages: artistImages,
                       playlistName: playlistName,
                       artistNames: artistNames,
                       onClick: () {},
-                    ),
-                    SpotifyPlaylistCard(
-                      artistImages: artistImages,
-                      playlistName: playlistName,
-                      artistNames: artistNames,
+                    ).marginOnly(bottom: 25);
+                  },
+                  separatorBuilder: (context, index) {
+                    return GeneratePlaylistCard(
+                      prompt: "Lo-Fi summer beach vibes",
                       onClick: () {},
-                    ),
-                  ],
+                    ).marginOnly(bottom: 25);
+                  },
+                  padding: const EdgeInsets.only(
+                    bottom: 200,
+                    left: 20,
+                    right: 20,
+                    top: 20,
+                  ),
+                  // children: [
+                  //   SpotifyPlaylistCard(
+                  //     artistImages: artistImages,
+                  //     playlistName: playlistName,
+                  //     artistNames: artistNames,
+                  //     onClick: () {},
+                  //   )
+                  //   SpotifyPlaylistCard(
+                  //     artistImages: artistImages,
+                  //     playlistName: playlistName,
+                  //     artistNames: artistNames,
+                  //     onClick: () {},
+                  //   ),
+                  //   GeneratePlaylistCard(
+                  //     prompt: "Lo-Fi summer beach vibes",
+                  //     onClick: () {},
+                  //   ),
+                  //   // const SizedBox(
+                  //   //   height: 100,
+                  //   // )
+                  // ],
                 ),
               ),
               Align(
