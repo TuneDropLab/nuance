@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nuance/widgets/artist_chip.dart';
 
-
-
 class SpotifyPlaylistCard extends StatelessWidget {
   final List<String> artistImages;
   final String playlistName;
@@ -24,10 +22,10 @@ class SpotifyPlaylistCard extends StatelessWidget {
     return GestureDetector(
       onTap: onClick,
       child: Container(
-        margin: const EdgeInsets.all(16),
+        // margin: const EdgeInsets.symmetric(),
         // padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(25),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
@@ -55,10 +53,13 @@ class SpotifyPlaylistCard extends StatelessWidget {
         ),
         child: Container(
           // margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 28,
+          ),
           decoration: BoxDecoration(
             color: Colors.grey[800],
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(23),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,7 +103,9 @@ class SpotifyPlaylistCard extends StatelessWidget {
                   }),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: 20,
+              ),
               Text(
                 playlistName,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(

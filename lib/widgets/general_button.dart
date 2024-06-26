@@ -6,6 +6,7 @@ class GeneralButton extends StatelessWidget {
   final Widget? icon;
   final Color? backgroundColor;
   final VoidCallback? onPressed;
+  final bool hasPadding;
 
   const GeneralButton({
     Key? key,
@@ -14,19 +15,24 @@ class GeneralButton extends StatelessWidget {
     this.icon,
     this.backgroundColor = Colors.orange,
     required this.onPressed,
+    this.hasPadding = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      ),
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          elevation: 0,
+          padding: hasPadding
+              ? const EdgeInsets.symmetric(
+                  vertical: 15,
+                  horizontal: 10,
+                )
+              : const EdgeInsets.symmetric(horizontal: 10)),
       onPressed: onPressed,
       child: Row(
         mainAxisSize: MainAxisSize.min,

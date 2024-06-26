@@ -25,3 +25,55 @@ const LinearGradient gradient2 = LinearGradient(
     Color.fromRGBO(3, 169, 244, 1), // Light Blue
   ],
 );
+
+
+ final List<LinearGradient> gradients = [
+      const LinearGradient(
+        colors: [
+          Color(0xFF0088FF),
+          Color(0xFF007CE8),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      const LinearGradient(
+        colors: [
+          Color(0xFFFFA726),
+          Color(0xFFFF7043),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+  
+      const LinearGradient(
+        colors: [
+          Color(0xFFFFA726),
+          Color(0xFFFF7043),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      const LinearGradient(
+        colors: [
+          Color(0xFFAB47BC),
+          Color(0xFF8E24AA),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ), const LinearGradient(
+        colors: [
+          Color(0xFFAB47BC),
+          Color(0xFF8E24AA),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      // const LinearGradient(
+      //   colors: [
+      //     Color(0xFF29B6F6),
+      //     Color(0xFF0288D1),
+      //   ],
+      //   begin: Alignment.topLeft,
+      //   end: Alignment.bottomRight,
+      // ),
+    ];
