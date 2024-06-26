@@ -272,7 +272,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 10),
                               label: Text('Artist ${index + 1}'),
-                              backgroundColor: Colors.grey[800],
+                              backgroundColor: Colors.grey[900],
                               labelStyle: const TextStyle(color: Colors.white),
                             );
                           },
