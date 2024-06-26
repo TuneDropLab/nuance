@@ -120,13 +120,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Generate any kind of playlist you can think of in seconds',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white60,
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: Get.width * 0.2,
+                        vertical: 6,
                       ),
-                      textAlign: TextAlign.center,
+                      child: const Text(
+                        'Generate any kind of playlist you can think of in seconds',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white60,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                     const SizedBox(height: 32),
                     Container(
