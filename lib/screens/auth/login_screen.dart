@@ -2,12 +2,13 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/screens/home_screen.dart';
-import 'package:nuance/utils/constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nuance/utils/constants.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   static const routeName = '/';
@@ -48,8 +49,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           transition: Transition.zoom,
         );
       }
-
-      // Navigate to the next screen or update UI state
     } on PlatformException catch (e) {
       setState(() {
         log("ERROR MESSAGE: ${e.message}");
@@ -66,20 +65,99 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // appBar: AppBar(
-      //   title: const Text('Login'),
-      // ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+    return SafeArea(
+      child: CupertinoPageScaffold(
+        backgroundColor: CupertinoColors.black,
+        child: Stack(
           children: [
-            Text('Status: $_status'),
-            const SizedBox(height: 16),
-            CupertinoButton.filled(
-              pressedOpacity: 0.3,
-              onPressed: _authenticate,
-              child: const Text('Login'),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 600, // Adjust the height as needed
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/3dbg.png'),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.7), // Darken the top part
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 20),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/whitelogo.png',
+                      width: 40,
+                      height: 40,
+                    ),
+                  ),
+                ),
+                Column(
+                  children: [
+                    const Text(
+                      'Nuance',
+                      style: TextStyle(
+                        fontSize: 24,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Generate any kind of playlist you can think of in seconds',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white60,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    Container(
+                      width: Get.width,
+                      padding: const EdgeInsets.only(
+                        bottom: 50,
+                        left: 20,
+                        right: 20,
+                      ),
+                      child: SizedBox(
+                        child: CupertinoButton.filled(
+                          pressedOpacity: 0.3,
+                          onPressed: _authenticate,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SvgPicture.asset(
+                                'assets/icon4star.svg',
+                                width: 10,
+                                height: 10,
+                              ),
+                              const SizedBox(width: 8),
+                              const Text('Sign in with Spotify'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),

@@ -1,3 +1,5 @@
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -5,6 +7,7 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/routes.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/home_screen.dart';
+import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/theme.dart';
 
 void main() async {
@@ -31,11 +34,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
+    return GetCupertinoApp(
+      localizationsDelegates: const [
+        DefaultCupertinoLocalizations.delegate,
+
+        DefaultMaterialLocalizations.delegate,
+        DefaultWidgetsLocalizations.delegate,
+      ],
       debugShowCheckedModeBanner: false,
       title: 'Nuance',
-      initialRoute:
-          sessionData == null ? LoginScreen.routeName : HomeScreen.routeName,
+      initialRoute:  sessionData == null ? InitialScreen.routeName : HomeScreen.routeName,
       theme: AppTheme.lightTheme,
       routes: routes,
     );
