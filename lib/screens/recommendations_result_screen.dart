@@ -4,6 +4,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
@@ -56,6 +57,7 @@ class _RecommendationsResultScreenState
         const SnackBar(
             content: Text('Use spotify Premium to preview this song')),
       );
+
       return;
     }
 
@@ -82,9 +84,9 @@ class _RecommendationsResultScreenState
       builder: (context) {
         return GestureDetector(
           onTap: () => Navigator.of(context).pop(),
-          child: Scaffold(
+          child: CupertinoPageScaffold(
             backgroundColor: Colors.black54,
-            body: Center(
+            child: Center(
                 child: CachedNetworkImage(
               imageUrl: artworkUrl,
               errorWidget: (context, url, error) {
@@ -500,6 +502,27 @@ class _RecommendationsResultScreenState
     );
   }
 
+  String formatMilliseconds(int milliseconds) {
+    Duration duration = Duration(milliseconds: milliseconds);
+
+    int days = duration.inDays;
+    int hours = duration.inHours % 24;
+    int minutes = duration.inMinutes % 60;
+
+    if (days > 0) {
+      return '${days}d ${hours}h ${minutes}m';
+    } else if (hours > 0) {
+      return '${hours}h ${minutes}m';
+    } else {
+      return '${minutes}m';
+    }
+  }
+
+  String capitalizeFirst(String s) {
+    if (s.isEmpty) return s;
+    return s[0].toUpperCase() + s.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (searchTerm == null) {
@@ -514,56 +537,76 @@ class _RecommendationsResultScreenState
 
     return Scaffold(
       appBar: AppBar(
-        leading: Image.asset("assets/backbtn.png"),
+        leading: GestureDetector(
+          onTap: () {
+            Get.back();
+          },
+          child: SizedBox(
+            // width: 50,
+            child: CircleAvatar(
+              backgroundColor: Colors.transparent,
+              radius: 10.0,
+              child: Image.asset(
+                "assets/backbtn.png",
+                height: 40.0,
+                width: 40.0,
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+        ),
         // leadingWidth: 30,
         backgroundColor: Colors.black,
-        title: sessionState!.when(
-          data: (data) {
-            if (data == null) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Welcome',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  Text(
-                    'Discover Playlists',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ],
-              );
+        title: recommendationsState.when(
+          data: (recommendations) {
+            log("Log screen result: $recommendations");
+
+            // Calculate total duration, number of songs, and unique artists
+            int totalDuration = 0;
+            int numberOfSongs = recommendations.length;
+            Set<String> uniqueArtists = {};
+
+            for (var song in recommendations) {
+              if (song.durationMs != null) {
+                totalDuration += song.durationMs!;
+              }
+              if (song.artist != null) {
+                uniqueArtists.addAll(
+                    song.artist!.split(',').map((artist) => artist.trim()));
+              }
             }
+
+            // String formattedDuration = _formatDuration(totalDuration);
+            int numberOfArtists = uniqueArtists.length;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome ${data.user["user_metadata"]["full_name"].split(" ")[0]}',
+                  capitalizeFirst(searchTerm ?? ""),
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        fontSize: 14,
+                        fontSize: 20,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey.shade100,
+                        color: Colors.white,
                       ),
                 ),
                 Text(
-                  'Discover Playlists',
+                  '$numberOfArtists artists • $numberOfSongs songs • ${formatMilliseconds(totalDuration)}',
                   style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: -0.8,
+                        color: Colors.grey.shade500,
                       ),
                 ),
               ],
             );
           },
-          loading: () => Text(
-            'Loading...',
-            style: Theme.of(context).textTheme.titleMedium,
+          loading: () => const Center(
+            child: CupertinoActivityIndicator(),
           ),
-          error: (error, stack) => Text(
-            'Error loading user data',
-            style: Theme.of(context).textTheme.titleMedium,
+          error: (error, stack) => Center(
+            child: Text('Error: $error'),
           ),
         ),
         automaticallyImplyLeading: false,
@@ -605,8 +648,8 @@ class _RecommendationsResultScreenState
                     imageUrl: data.user["user_metadata"]["avatar_url"] ?? "",
                     placeholder: (context, url) => const Center(
                       child: CupertinoActivityIndicator(
-                        color: AppTheme.textColor,
-                      ),
+                          // color: AppTheme.textColor,
+                          ),
                     ),
                     errorWidget: (context, url, error) => Container(
                       width: 40.0,
@@ -631,48 +674,51 @@ class _RecommendationsResultScreenState
           ),
         ],
       ),
-      body: recommendationsState.when(
-        data: (recommendations) {
-          log("Log screen result: $recommendations");
-          return ListView.builder(
-            itemCount: recommendations.length,
-            itemBuilder: (context, index) {
-              final recommendation = recommendations[index];
-              return ListTile(
-                leading: GestureDetector(
-                  onTap: () => _showArtworkOverlay(
-                      context, recommendation.artworkUrl ?? ""),
-                  // child: Image.network(
-                  //   recommendation.artworkUrl,
-                  //   width: 50,
-                  //   height: 50,
-                  // ),
-                  child: CachedNetworkImage(
-                    height: 50,
-                    width: 50,
-                    imageUrl: recommendation.artworkUrl ?? "",
-                    placeholder: (context, url) {
-                      return Container(
-                          alignment: Alignment.center,
-                          child: const CupertinoActivityIndicator());
-                    },
+      body: Container(
+        color: Colors.black,
+        child: recommendationsState.when(
+          data: (recommendations) {
+            log("Log screen result: $recommendations");
+            return ListView.builder(
+              itemCount: recommendations.length,
+              itemBuilder: (context, index) {
+                final recommendation = recommendations[index];
+                return ListTile(
+                  leading: GestureDetector(
+                    onTap: () => _showArtworkOverlay(
+                        context, recommendation.artworkUrl ?? ""),
+                    // child: Image.network(
+                    //   recommendation.artworkUrl,
+                    //   width: 50,
+                    //   height: 50,
+                    // ),
+                    child: CachedNetworkImage(
+                      height: 50,
+                      width: 50,
+                      imageUrl: recommendation.artworkUrl ?? "",
+                      placeholder: (context, url) {
+                        return Container(
+                            alignment: Alignment.center,
+                            child: const CupertinoActivityIndicator());
+                      },
+                    ),
                   ),
-                ),
-                title: Text(recommendation.title ?? ""),
-                subtitle: Text(recommendation.artist ?? ""),
-                trailing: (recommendation.explicit ?? false)
-                    ? const Icon(Icons.explicit)
-                    : null,
-                onTap: () => _togglePlay(recommendation),
-              );
-            },
-          );
-        },
-        loading: () => const Center(
-          child: CupertinoActivityIndicator(),
-        ),
-        error: (error, stack) => Center(
-          child: Text('Error: $error'),
+                  title: Text(recommendation.title ?? ""),
+                  subtitle: Text(recommendation.artist ?? ""),
+                  trailing: (recommendation.explicit ?? false)
+                      ? const Icon(Icons.explicit)
+                      : null,
+                  onTap: () => _togglePlay(recommendation),
+                );
+              },
+            );
+          },
+          loading: () => const Center(
+            child: CupertinoActivityIndicator(),
+          ),
+          error: (error, stack) => Center(
+            child: Text('Error: $error'),
+          ),
         ),
       ),
     );
