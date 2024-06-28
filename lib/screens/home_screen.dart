@@ -92,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: Theme.of(context).textTheme.titleMedium!.copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade100,
+                            color: Colors.grey.shade500,
                           ),
                     ),
                     Text(
@@ -271,7 +271,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 10, vertical: 10),
-                              label: Text('Artist ${index + 1}'),
+                              label: Text('Suggestion ${index + 1}'),
                               backgroundColor: Colors.grey[900],
                               labelStyle: const TextStyle(color: Colors.white),
                             );
