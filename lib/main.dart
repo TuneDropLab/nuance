@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,18 +33,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetCupertinoApp(
-      localizationsDelegates: const [
-        DefaultCupertinoLocalizations.delegate,
-
-        DefaultMaterialLocalizations.delegate,
-        DefaultWidgetsLocalizations.delegate,
-      ],
-      debugShowCheckedModeBanner: false,
-      title: 'Nuance',
-      initialRoute:  sessionData == null ? InitialScreen.routeName : HomeScreen.routeName,
-      theme: AppTheme.lightTheme,
-      routes: routes,
+    return ScaffoldMessenger(
+      child: GetCupertinoApp(
+        localizationsDelegates: const [
+          DefaultCupertinoLocalizations.delegate,
+          DefaultMaterialLocalizations.delegate,
+          DefaultWidgetsLocalizations.delegate,
+        ],
+        debugShowCheckedModeBanner: false,
+        title: 'Nuance',
+        initialRoute: sessionData == null
+            ? InitialScreen.routeName
+            : HomeScreen.routeName,
+        theme: AppTheme.lightTheme,
+        routes: routes,
+      ),
     );
   }
 }
