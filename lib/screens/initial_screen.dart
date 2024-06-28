@@ -75,15 +75,15 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
                     duration: 1.seconds,
                     curve: Curves.easeInOutCubic,
                     begin: 0,
-                    end: -7.3,
+                    end: -9.3,
                   )
                   .scaleX(
                     begin: 1.0,
-                    end: 0.5,
+                    end: 0.4,
                   )
                   .scaleY(
                     begin: 1.0,
-                    end: 0.5,
+                    end: 0.4,
                   )
                   .fadeOut(
                     duration: 2000.ms,
