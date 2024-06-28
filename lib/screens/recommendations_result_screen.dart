@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/recommendation_provider.dart';
@@ -14,6 +15,10 @@ import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_divider.dart';
+import 'package:nuance/widgets/general_button.dart';
+import 'package:nuance/widgets/music_listtile.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -591,14 +596,8 @@ class _RecommendationsResultScreenState
                       ),
                 ),
                 Text(
-                  '$numberOfArtists artists • $numberOfSongs songs • ${formatMilliseconds(totalDuration)}',
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: -0.8,
-                        color: Colors.grey.shade500,
-                      ),
-                ),
+                    '$numberOfArtists artists • $numberOfSongs songs • ${formatMilliseconds(totalDuration)}',
+                    style: subtitleTextStyle),
               ],
             );
           },
@@ -674,51 +673,142 @@ class _RecommendationsResultScreenState
           ),
         ],
       ),
-      body: Container(
-        color: Colors.black,
-        child: recommendationsState.when(
-          data: (recommendations) {
-            log("Log screen result: $recommendations");
-            return ListView.builder(
-              itemCount: recommendations.length,
-              itemBuilder: (context, index) {
-                final recommendation = recommendations[index];
-                return ListTile(
-                  leading: GestureDetector(
-                    onTap: () => _showArtworkOverlay(
-                        context, recommendation.artworkUrl ?? ""),
-                    // child: Image.network(
-                    //   recommendation.artworkUrl,
-                    //   width: 50,
-                    //   height: 50,
+      body: Center(
+        child: Stack(
+          children: [
+            Container(
+              color: Colors.black,
+              child: recommendationsState.when(
+                data: (recommendations) {
+                  log("Log screen result: $recommendations");
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    itemCount: recommendations.length,
+                    itemBuilder: (context, index) {
+                      final recommendation = recommendations[index];
+                      return MusicListTile(
+                        leadingOnTap: () => _showArtworkOverlay(
+                            context, recommendation.artworkUrl ?? ""),
+                        trailingOnTap: () => _togglePlay(recommendation),
+                        recommendation: recommendation,
+                      );
+                    },
+                  );
+                },
+                loading: () => const Center(
+                  child: CupertinoActivityIndicator(),
+                ),
+                error: (error, stack) => Center(
+                  child: Text('Error: $error'),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                color: Colors.black,
+                height: 150,
+                // padding: const EdgeInsets.all(16),
+                // decoration: BoxDecoration(
+                //   // color: Colors.grey[900],
+                //   borderRadius: const BorderRadius.vertical(
+                //     top: Radius.circular(16),
+                //   ),
+                // ),
+                child: Column(
+                  children: [
+                    // Expanded(
+                    //   // height: 300,
+                    //   // height: 300,
+                    //   child: ListView.separated(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 16),
+                    //     shrinkWrap: true,
+                    //     scrollDirection: Axis.horizontal,
+                    //     itemBuilder: (context, index) {
+                    //       // final List<Color> colors = [
+                    //       //   const Color(0xffFFBB00),
+                    //       //   const Color(0xffFF4500),
+                    //       //   const Color(0xffFF006D),
+                    //       //   const Color(0xff8E33F5),
+                    //       //   const Color(0xff0088FF),
+                    //       // ];
+                    //       // final Color randomColor =
+                    //       //     colors[Random().nextInt(colors.length)];
+
+                    //       return Center(
+                    //         child: GeneralButton(
+
+                    //           onPressed: () {},
+                    //         ),
+                    //       );
+                    //     },
+                    //     separatorBuilder: (context, index) {
+                    //       return const SizedBox(width: 5);
+                    //     },
+                    //     itemCount: 2,
+                    //   ),
                     // ),
-                    child: CachedNetworkImage(
-                      height: 50,
-                      width: 50,
-                      imageUrl: recommendation.artworkUrl ?? "",
-                      placeholder: (context, url) {
-                        return Container(
-                            alignment: Alignment.center,
-                            child: const CupertinoActivityIndicator());
-                      },
+
+                    Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {},
+                          icon: SvgPicture.asset(
+                            "assets/x.svg",
+                          ),
+                        ),
+                        GeneralButton(
+                          text: searchTerm ?? "",
+                          backgroundColor: Colors.white,
+                          icon: SvgPicture.asset(
+                            "assets/icon4star.svg",
+                            color: const Color(0xffFFBB00),
+                          ),
+                          onPressed: () {},
+                        )
+                      ],
                     ),
-                  ),
-                  title: Text(recommendation.title ?? ""),
-                  subtitle: Text(recommendation.artist ?? ""),
-                  trailing: (recommendation.explicit ?? false)
-                      ? const Icon(Icons.explicit)
-                      : null,
-                  onTap: () => _togglePlay(recommendation),
-                );
-              },
-            );
-          },
-          loading: () => const Center(
-            child: CupertinoActivityIndicator(),
-          ),
-          error: (error, stack) => Center(
-            child: Text('Error: $error'),
-          ),
+
+                    const SizedBox(height: 10),
+                    const CustomDivider(),
+                    const SizedBox(height: 10),
+                    // const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GeneralButton(
+                              hasPadding: true,
+                              text: "Share",
+                              icon: SvgPicture.asset("assets/sendto.svg"),
+                              backgroundColor: const Color(0xffD9D9D9),
+                              onPressed: () {},
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          Expanded(
+                            child: GeneralButton(
+                              backgroundColor: const Color(0xffFDAD3C),
+                              hasPadding: true,
+                              icon: SvgPicture.asset("assets/bookmark.svg"),
+                              onPressed: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // const SizedBox(
+                    //   height: 5,
+                    // ),
+                    // const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

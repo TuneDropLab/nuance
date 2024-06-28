@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
@@ -282,10 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           itemCount: artistImages.length,
                         ),
                       ),
-                      const Divider(
-                        height: 0.3,
-                        color: Color.fromARGB(30, 255, 255, 255),
-                      ),
+                      const CustomDivider(),
                       const SizedBox(
                         height: 5,
                       ),
