@@ -23,8 +23,16 @@ import 'package:nuance/widgets/music_listtile.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
+  final String? tagQuery;
+  final String? searchQuery;
+  final AsyncValue<SessionData?>? sessionState;
 
-  const RecommendationsResultScreen({super.key});
+  const RecommendationsResultScreen({
+    super.key,
+    this.searchQuery,
+     this.sessionState,
+    this.tagQuery,
+  });
 
   @override
   ConsumerState<RecommendationsResultScreen> createState() =>
@@ -36,8 +44,8 @@ class _RecommendationsResultScreenState
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   SongModel? _currentSong;
-  String? searchTerm;
-  AsyncValue<SessionData?>? sessionState;
+  // String? searchQuery;
+  // AsyncValue<SessionData?>? sessionState;
   String? _loadingPlaylistId;
 
   bool isLoading = true;
@@ -47,10 +55,10 @@ class _RecommendationsResultScreenState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arguments = ModalRoute.of(context)!.settings.arguments as Map;
-    searchTerm = arguments['search_term'] as String?;
-    sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
-    log("STATE : ${sessionState?.value?.accessToken}");
+    // final arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    // searchQuery = arguments['search_term'] as String?;
+    // sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
+    log("STATE : ${widget.sessionState?.value?.accessToken}");
 
     _fetchRecommendations();
   }
@@ -65,7 +73,7 @@ class _RecommendationsResultScreenState
       // final sessionData = ref.read(authProvider.notifier).state;
       final service = RecommendationsService();
       final result = await service.getRecommendations(
-          sessionState?.value?.accessToken ?? "", searchTerm!);
+          widget.sessionState?.value?.accessToken ?? "", widget.searchQuery ?? widget.tagQuery ?? "");
       setState(() {
         recommendations = result;
         isLoading = false;
@@ -81,13 +89,13 @@ class _RecommendationsResultScreenState
   final recommendationsService = RecommendationsService();
 // final recommendations = await recommendationsService.getRecommendations(accessToken, userMessage);
 
-  bool _isButtonVisible = false;
+  // bool _isButtonVisible = false;
 
-  void _toggleButtonVisibility() {
-    setState(() {
-      _isButtonVisible = !_isButtonVisible;
-    });
-  }
+  // void _toggleButtonVisibility() {
+  //   setState(() {
+  //     _isButtonVisible = !_isButtonVisible;
+  //   });
+  // }
 
   void _togglePlay(SongModel song) async {
     if (song.previewUrl?.isEmpty ?? true) {
@@ -204,7 +212,7 @@ class _RecommendationsResultScreenState
                                 final isCurrentLoading =
                                     _loadingPlaylistId == playlist.id;
                                 final params = AddTracksParams(
-                                  accessToken: sessionState!.value!.accessToken,
+                                  accessToken: widget.sessionState!.value!.accessToken,
                                   playlistId: playlist.id ?? "",
                                   trackIds: trackIds.map((e) => e!).toList(),
                                 );
@@ -241,7 +249,7 @@ class _RecommendationsResultScreenState
                                   //       orElse: () => true,
                                   //     ),
                                   onTap: () {
-                                    if (sessionState?.value?.accessToken !=
+                                    if (widget.sessionState?.value?.accessToken !=
                                         null) {
                                       setState(() {
                                         _loadingPlaylistId = playlist.id;
@@ -340,7 +348,7 @@ class _RecommendationsResultScreenState
 
   void _showCreatePlaylistForm(
       BuildContext context, WidgetRef ref, List<String> trackIds) {
-    final nameController = TextEditingController(text: "$searchTerm");
+    final nameController = TextEditingController(text: "${widget.searchQuery}");
     final descriptionController = TextEditingController();
     bool isLoading = false;
 
@@ -445,7 +453,7 @@ class _RecommendationsResultScreenState
                                     _loadingPlaylistId == newPlaylist.id;
                                 // add to playlist
                                 log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
-                                if (sessionState?.value?.accessToken != null) {
+                                if (widget.sessionState?.value?.accessToken != null) {
                                   setState(() {
                                     _loadingPlaylistId = newPlaylist.id;
                                   });
@@ -457,7 +465,7 @@ class _RecommendationsResultScreenState
 
                                   final params = AddTracksParams(
                                     accessToken:
-                                        sessionState!.value!.accessToken,
+                                        widget.sessionState!.value!.accessToken,
                                     playlistId: newPlaylist.id ?? "",
                                     trackIds: trackIds,
                                   );
@@ -558,19 +566,69 @@ class _RecommendationsResultScreenState
     return s[0].toUpperCase() + s.substring(1);
   }
 
+  // calculateArtists(List<String> artists) {
+  //   Set<String> uniqueArtists = {};
+  //   for (var song in recommendations) {
+  //     if (song.durationMs != null) {
+  //       totalDuration += song.durationMs!;
+  //     }
+  //     if (song.artist != null) {
+  //       uniqueArtists
+  //           .addAll(song.artist!.split(',').map((artist) => artist.trim()));
+  //     }
+  //   }
+  //   // String formattedDuration = _formatDuration(totalDuration);
+  //   int numberOfArtists = uniqueArtists.length;
+  // }
+
   int? currentlyPlayingSongId;
+
+  // // log("Log screen result: $recommendations");
+
+  // // Calculate total duration, number of songs, and unique artists
+  // int totalDuration = 0;
+  // int numberOfSongs = recommendations.length;
+  // Set<String> uniqueArtists = {};
+
+  // for (var song in recommendations) {
+  //   if (song.durationMs != null) {
+  //     totalDuration += song.durationMs!;
+  //   }
+  //   if (song.artist != null) {
+  //     uniqueArtists.addAll(
+  //         song.artist!.split(',').map((artist) => artist.trim()));
+  //   }
+  // }
+
+  // // String formattedDuration = _formatDuration(totalDuration);
+  // int numberOfArtists = uniqueArtists.length;
+  int getTotalDuration(List<SongModel> songs) {
+    return songs.fold(0, (sum, song) => sum + (song.durationMs ?? 0));
+  }
+
+  int getUniqueArtistsCount(List<SongModel> songs) {
+    Set<String> uniqueArtists = {};
+    for (var song in songs) {
+      if (song.artist != null) {
+        uniqueArtists
+            .addAll(song.artist!.split(',').map((artist) => artist.trim()));
+      }
+    }
+    return uniqueArtists.length;
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (searchTerm == null) {
+    if (widget.sessionState == null) {
       return const Scaffold(
         body: Center(child: Text('No search term found')),
       );
     }
     final sessionData = ref.read(sessionProvider.notifier);
-
+    int totalDuration = getTotalDuration(recommendations);
+    int uniqueArtistsCount = getUniqueArtistsCount(recommendations);
     // final recommendationsState =
-    //     ref.watch(recommendationsProvider(searchTerm!));
+    //     ref.watch(recommendationsProvider(searchQuery!));
 
     return Scaffold(
       appBar: AppBar(
@@ -594,20 +652,29 @@ class _RecommendationsResultScreenState
         ),
         // leadingWidth: 30,
         backgroundColor: Colors.black,
-        title: const Column(
+        title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Text(
-            //   capitalizeFirst(searchTerm ?? ""),
-            //   style: Theme.of(context).textTheme.titleMedium!.copyWith(
-            //         fontSize: 20,
-            //         fontWeight: FontWeight.w500,
-            //         color: Colors.white,
-            //       ),
-            // ),
-            // Text(
-            //     '$numberOfArtists artists • $numberOfSongs songs • ${formatMilliseconds(totalDuration)}',
-            //     style: subtitleTextStyle),
+            Text(
+              capitalizeFirst(widget.searchQuery ?? widget.tagQuery ?? ""),
+              style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                  ),
+            ),
+            isLoading
+                ? const Center(
+                    // child: CupertinoActivityIndicator(
+                    // color: Colors.white,
+                  // )
+                  )
+                : errorList.isNotEmpty
+                    ? Center(child: Text('Error: ${errorList.join(', ')}'))
+                    : Text(
+                        '$uniqueArtistsCount artists • ${recommendations.length} songs • ${formatMilliseconds(totalDuration)}',
+                        style: subtitleTextStyle,
+                      ),
           ],
         ),
         automaticallyImplyLeading: false,
@@ -615,7 +682,7 @@ class _RecommendationsResultScreenState
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: sessionState!.when(
+            child: widget.sessionState!.when(
               data: (data) {
                 if (data == null) {
                   return CupertinoButton(
@@ -693,7 +760,8 @@ class _RecommendationsResultScreenState
                           itemBuilder: (context, index) {
                             final song = recommendations[index];
                             return MusicListTile(
-                             isPlaying: _isPlaying && _currentSong?.id == song.id,
+                              isPlaying:
+                                  _isPlaying && _currentSong?.id == song.id,
                               trailingOnTap: () => _togglePlay(song),
                               recommendation: song,
                             );
@@ -705,57 +773,22 @@ class _RecommendationsResultScreenState
               child: Container(
                 color: Colors.black,
                 height: 150,
-                // padding: const EdgeInsets.all(16),
-                // decoration: BoxDecoration(
-                //   // color: Colors.grey[900],
-                //   borderRadius: const BorderRadius.vertical(
-                //     top: Radius.circular(16),
-                //   ),
-                // ),
                 child: Column(
                   children: [
-                    // Expanded(
-                    //   // height: 300,
-                    //   // height: 300,
-                    //   child: ListView.separated(
-                    //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    //     shrinkWrap: true,
-                    //     scrollDirection: Axis.horizontal,
-                    //     itemBuilder: (context, index) {
-                    //       // final List<Color> colors = [
-                    //       //   const Color(0xffFFBB00),
-                    //       //   const Color(0xffFF4500),
-                    //       //   const Color(0xffFF006D),
-                    //       //   const Color(0xff8E33F5),
-                    //       //   const Color(0xff0088FF),
-                    //       // ];
-                    //       // final Color randomColor =
-                    //       //     colors[Random().nextInt(colors.length)];
 
-                    //       return Center(
-                    //         child: GeneralButton(
-
-                    //           onPressed: () {},
-                    //         ),
-                    //       );
-                    //     },
-                    //     separatorBuilder: (context, index) {
-                    //       return const SizedBox(width: 5);
-                    //     },
-                    //     itemCount: 2,
-                    //   ),
-                    // ),
-
+                    if (widget.searchQuery == null)
                     Row(
                       children: [
-                        IconButton(
-                          onPressed: () {},
+                          IconButton(
+                          onPressed: () {
+                            Get.back();
+                          },
                           icon: SvgPicture.asset(
                             "assets/x.svg",
                           ),
                         ),
                         GeneralButton(
-                          text: searchTerm ?? "",
+                          text: widget.searchQuery ?? widget.tagQuery ?? "",
                           backgroundColor: Colors.white,
                           icon: SvgPicture.asset(
                             "assets/icon4star.svg",

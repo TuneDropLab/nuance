@@ -13,6 +13,8 @@ class AuthService {
     await secureStorage.write(
         key: 'refresh_token', value: sessionJson['refresh_token']);
     await secureStorage.write(
+        key: 'provider_token', value: sessionJson['provider_token']);
+    await secureStorage.write(
         key: 'expires_at', value: sessionJson['expires_at'].toString());
     // Assuming user details are also stored
     await secureStorage.write(
@@ -22,6 +24,7 @@ class AuthService {
   Future<Map<String, dynamic>?> getSessionData() async {
     final accessToken = await secureStorage.read(key: 'access_token');
     final refreshToken = await secureStorage.read(key: 'refresh_token');
+    final providerToken = await secureStorage.read(key: 'provider_token');
     final expiresAt = await secureStorage.read(key: 'expires_at');
     final user = await secureStorage.read(key: 'user');
 
@@ -32,6 +35,7 @@ class AuthService {
       return {
         'access_token': accessToken,
         'refresh_token': refreshToken,
+        'provider_token': providerToken,
         'expires_at': int.parse(expiresAt),
         'user': jsonDecode(user),
       };

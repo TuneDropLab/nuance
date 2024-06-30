@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -29,7 +28,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(
-    text: 'drake songs',
+    text: '',
   );
   final _tagQuery = TextEditingController();
 
@@ -45,20 +44,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     void submit() {
       focusNode.unfocus();
       final userMessage = _controller.text;
-      final tagQuery = _tagQuery.text;
+      // final tagQuery = _tagQuery.text;
       if (userMessage.isEmpty) {
         return;
       }
 
-      Navigator.pushNamed(
-        context,
-        RecommendationsResultScreen.routeName,
-        arguments: {
-          'search_term': userMessage.trim(),
-          'tag_query': tagQuery,
-          'sessionState': sessionState,
-        },
-      ).then((value) => setState(() {}));
+      // Navigator.pushNamed(
+      //   context,
+      //   RecommendationsResultScreen.routeName,
+      //   arguments: {
+      //     'search_term': userMessage.trim(),
+      //     'tag_query': tagQuery,
+      //     'sessionState': sessionState,
+      //   },
+      // ).then((value) => setState(() {}));
+
+      Get.to(() => RecommendationsResultScreen(
+            searchQuery: userMessage.trim(),
+            tagQuery: null,
+            sessionState: sessionState,
+          ));
+    }
+
+    void submitTagQuery() {
+      focusNode.unfocus();
+      // final userMessage = _controller.text;
+      final tagQuery = _tagQuery.text;
+      if (tagQuery.isEmpty) {
+        return;
+      }
+
+      // Navigator.pushNamed(
+      //   context,
+      //   RecommendationsResultScreen.routeName,
+      //   arguments: {
+      //     'search_term': userMessage.trim(),
+      //     'tag_query': tagQuery,
+      //     'sessionState': sessionState,
+      //   },
+      // ).then((value) => setState(() {}));
+
+      Get.to(() => RecommendationsResultScreen(
+            searchQuery: null,
+            tagQuery: tagQuery,
+            sessionState: sessionState,
+          ));
     }
 
     return WillPopScope(
@@ -167,13 +197,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             color: AppTheme.textColor,
                           ),
                         ),
-                        errorWidget: (context, url, error) => Container(
-                          width: 40.0,
-                          height: 40.0,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.black12,
+                        errorWidget: (context, url, error) => CupertinoButton(
+                          child: const CircleAvatar(
+                            radius: 40,
                           ),
+                          onPressed: () {
+                            sessionData.logout();
+                          },
                         ),
                       ),
                     );
@@ -199,12 +229,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     return ListView.builder(
                       itemCount: recommendations.length,
                       itemBuilder: (context, index) {
+                        // log("message");
+                        print("RECOMMENDS: ${recommendations.first}");
                         final recommendation = recommendations[index];
 
                         if (recommendation['type'] == 'playlist') {
                           // Spotify Playlist Card
                           return SpotifyPlaylistCard(
-                            artistImages: artistImages,
+                            trackListHref: recommendation['tracks']['href'],
                             playlistName: recommendation['name'],
                             artistNames: recommendation['description'],
                             onClick: () {
@@ -219,7 +251,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onClick: () {
                               // Handle click
                               _tagQuery.text = recommendation['text'];
-                              submit();
+                              submitTagQuery();
                             },
                           ).marginOnly(bottom: 25);
                         }
@@ -365,3 +397,7 @@ const List<String> artistImages = [
 const String playlistName = 'Best of the decade';
 const String artistNames =
     'Drake, J. Cole, Kanye West, Travis Scott, ASAP Rocky, Future';
+
+
+  // int numberOfSongs = recommendations.length;
+  // 
