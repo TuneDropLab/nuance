@@ -249,7 +249,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       sessionData.logout();
                     },
                     child: const CircleAvatar(
-                      radius: 30,
+                      radius: 40,
                     ),
                   ),
                 ),
