@@ -213,3 +213,130 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
     );
   }
 }
+
+class SpotifyPlaylistShadow extends StatelessWidget {
+  const SpotifyPlaylistShadow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+
+@override
+Widget build(BuildContext context) {
+  return Container(
+    height: 210,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(25),
+      // boxShadow: [
+      //   BoxShadow(
+      //     color: Colors.black.withOpacity(0.2),
+      //     spreadRadius: 2,
+      //     blurRadius: 5,
+      //     offset: const Offset(0, 3),
+      //   ),
+      // ],
+      border: Border.all(
+        width: 2,
+        style: BorderStyle.solid,
+        color: Colors.transparent,
+      ),
+      // gradient: LinearGradient(
+      //   colors: [
+      //     const Color.fromARGB(38, 255, 255, 255).withOpacity(0.2),
+      //     const Color.fromARGB(50, 255, 255, 255),
+      //     const Color.fromARGB(255, 95, 95, 95).withOpacity(0.4),
+      //     const Color.fromARGB(255, 76, 76, 76).withOpacity(0.6),
+      //   ],
+      //   begin: Alignment.topLeft,
+      //   end: Alignment.bottomRight,
+      // ),
+    ),
+    // child: Container(
+    //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+    //   decoration: BoxDecoration(
+    //     color: const Color(0xff292929),
+    //     borderRadius: BorderRadius.circular(23),
+    //   ),
+    //   child: Column(
+    //     crossAxisAlignment: CrossAxisAlignment.start,
+    //     children: [
+    //       // Container(
+    //       //   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+    //       //   decoration: BoxDecoration(
+    //       //     color: Colors.grey[800],
+    //       //     borderRadius: BorderRadius.circular(10),
+    //       //     boxShadow: [
+    //       //       BoxShadow(
+    //       //         color: Colors.black.withOpacity(0.9),
+    //       //         spreadRadius: 6,
+    //       //         blurRadius: 15,
+    //       //         offset: const Offset(0, 9),
+    //       //       ),
+    //       //     ],
+    //       //     gradient: const LinearGradient(
+    //       //       colors: [
+    //       //         Color.fromARGB(255, 255, 204, 184),
+    //       //         Color.fromARGB(255, 255, 237, 184),
+    //       //         Color.fromARGB(255, 184, 255, 242),
+    //       //       ],
+    //       //       begin: Alignment.topLeft,
+    //       //       end: Alignment.bottomRight,
+    //       //     ),
+    //       //   ),
+    //       //   height: 90,
+    //       //   child: Stack(
+    //       //     alignment: Alignment.center,
+    //       //     children: List.generate(7, (index) {
+    //       //       return Positioned(
+    //       //         left: index * 34.0, // Adjust the overlap distance here
+    //       //         child: CircleAvatar(
+    //       //           radius: 30,
+    //       //           backgroundColor: Colors.white.withOpacity(0.3),
+    //       //           child: const CircleAvatar(
+    //       //             radius: 30,
+    //       //             // backgroundImage: CachedNetworkImageProvider(imageUrl),
+    //       //             backgroundColor: Colors.transparent,
+    //       //           ),
+    //       //         ),
+    //       //       );
+    //       //     }),
+    //       //   ),
+    //       // ),
+    //       const SizedBox(height: 20),
+    //       // Text(
+    //       //   // widget.playlistName,
+    //       //   style: Theme.of(context).textTheme.titleLarge?.copyWith(
+    //       //         color: Colors.white,
+    //       //         fontWeight: FontWeight.w600,
+    //       //         overflow: TextOverflow.ellipsis,
+    //       //         fontSize: 18,
+    //       //       ),
+    //       // ),
+    //       Row(
+    //         children: [
+    //           SvgPicture.asset(
+    //             'assets/icon3users.svg',
+    //             height: 14,
+    //             color: Colors.white.withOpacity(0.7),
+    //           ),
+    //           const SizedBox(width: 10),
+    //           // Expanded(
+    //           //   // child: Text(
+    //           //   //   widget.artistNames,
+    //           //   //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+    //           //   //         color: Colors.white.withOpacity(0.7),
+    //           //   //         fontWeight: FontWeight.w500,
+    //           //   //         overflow: TextOverflow.ellipsis,
+    //           //   //         fontSize: 14,
+    //           //   //       ),
+    //           //   // ),
+    //           // ),
+    //         ],
+    //       ),
+    //     ],
+    //   ),
+    // ),
+  );
+}

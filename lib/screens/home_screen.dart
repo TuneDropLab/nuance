@@ -16,6 +16,8 @@ import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 // import 'constants.dart'; // Import the constants file
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -250,8 +252,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           body: Stack(
             children: [
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
+              Container(
+                // padding: const EdgeInsets.only(bottom: 10),
                 child: homeRecommendations.when(
                   data: (recommendations) {
                     return ListView.builder(
@@ -292,8 +294,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     );
                   },
-                  loading: () =>
-                      const Center(child: CupertinoActivityIndicator()),
+                  loading: () => ListView.builder(
+                    padding: const EdgeInsets.only(top: 24),
+                    itemCount: 30,
+                    itemBuilder: (context, index) {
+                      return SizedBox(
+                        // width: 200.0,
+                        // height: 100.0,
+                        child: Shimmer.fromColors(
+                            baseColor: const Color.fromARGB(51, 255, 255, 255),
+                            highlightColor:
+                                const Color.fromARGB(65, 255, 255, 255),
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              height: 190,
+                              // width: 200,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ).marginOnly(bottom: 25)
+                            // child: const Text(
+                            //   // 'Shimmer',
+                            //   textAlign: TextAlign.center,
+                            //   style: TextStyle(
+                            //     fontSize: 40.0,
+                            //     fontWeight: FontWeight.bold,
+                            //   ),
+                            // ),
+                            ),
+                      );
+                    },
+                  ),
                   error: (error, stackTrace) =>
                       Center(child: Text('Error: $error')),
                 ),
@@ -381,7 +414,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           return Text("error: $error");
                         },
                         loading: () {
-                          return const CircularProgressIndicator();
+                          return ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 9,
+                            itemBuilder: (context, index) {
+                              return Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromARGB(51, 255, 255, 255),
+                                highlightColor:
+                                    const Color.fromARGB(65, 255, 255, 255),
+                                child: Chip(
+                                  side: BorderSide.none,
+                                  // avatar: SvgPicture.asset(
+                                  //   "assets/icon4star.svg",
+                                  //   // color: randomColor,
+                                  // ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  label: const Text("             "),
+                                  backgroundColor: Colors.grey[900],
+                                  labelStyle:
+                                      const TextStyle(color: Colors.white),
+                                ),
+                              );
+                            },
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(width: 5);
+                            },
+                          );
                         },
                       )),
                       const CustomDivider(),
