@@ -55,7 +55,7 @@ class _RecommendationsResultScreenState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // final arguments = ModalRoute.of(context)!.settings.arguments as Map;
     // searchQuery = arguments['search_term'] as String?;
     // sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
@@ -112,7 +112,7 @@ class _RecommendationsResultScreenState
         _currentSong = null;
       });
     } else {
-      await _audioPlayer.play(UrlSource(song.previewUrl!));
+      await _audioPlayer.play(UrlSource(song.previewUrl ?? ""));
       setState(() {
         _isPlaying = true;
         _currentSong = song;

@@ -16,6 +16,7 @@ import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
+import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
 
 // import 'constants.dart'; // Import the constants file
@@ -38,6 +39,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
 
+  final RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
@@ -45,6 +49,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
     final focusNode = FocusNode();
+
+    void onRefresh() async {
+      // monitor network fetch
+      // await Future.delayed(const Duration(milliseconds: 1000));
+      // if failed,use refreshFailed()
+      _refreshController.refreshCompleted();
+    }
+
+    void onLoading() async {
+      // monitor network fetch
+      ref.invalidate(spotifyHomeRecommendationsProvider);
+      // ref.invalidate(recommendationTagsProvider);
+
+      // await Future.delayed(const Duration(milliseconds: 1000));
+      // if (homeRecommendations.value) {
+      //   _refreshController.loadNoData();
+      //   return;
+      // }
+
+      if (mounted) {
+        setState(() {});
+      }
+      _refreshController.loadComplete();
+    }
 
     void submit() {
       focusNode.unfocus();
@@ -260,81 +288,91 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Container(
                 // padding: const EdgeInsets.only(bottom: 10),
-                child: homeRecommendations.when(
-                  data: (recommendations) {
-                    return ListView.builder(
-                      itemCount: recommendations.length,
-                      itemBuilder: (context, index) {
-                        // log("message");
-                        print("RECOMMENDS: ${recommendations.first}");
-                        final recommendation = recommendations[index];
+                child: SmartRefresher(
+                  enablePullDown: true,
+                  enablePullUp: true,
+                  onRefresh: onRefresh,
+                  onLoading: onLoading,
+                  header: const ClassicHeader(),
+                  controller: _refreshController,
+                  child: homeRecommendations.when(
+                    data: (recommendations) {
+                      return ListView.builder(
+                        itemCount: recommendations.length,
+                        itemBuilder: (context, index) {
+                          // log("message");
+                          print("RECOMMENDS: ${recommendations.first}");
+                          final recommendation = recommendations[index];
 
-                        if (recommendation['type'] == 'playlist') {
-                          // Spotify Playlist Card
-                          return SpotifyPlaylistCard(
-                            trackListHref: recommendation['tracks']['href'],
-                            playlistName: recommendation['name'],
-                            artistNames: recommendation['description'],
-                            onClick: () {
-                              // Handle click
-                            },
-                          ).marginOnly(bottom: 25);
-                        } else {
-                          // Generate Playlist Card
-                          return GeneratePlaylistCard(
-                            prompt: recommendation['text'],
-                            image: recommendation['image'],
-                            onClick: () {
-                              // Handle click
-                              _generatedRecQuery.text = recommendation['text'];
-                              submitGeneratedQuery();
-                            },
-                          ).marginOnly(bottom: 25);
-                        }
-                      },
-                      padding: const EdgeInsets.only(
-                        bottom: 200,
-                        left: 20,
-                        right: 20,
-                        top: 20,
-                      ),
-                    );
-                  },
-                  loading: () => ListView.builder(
-                    padding: const EdgeInsets.only(top: 24),
-                    itemCount: 30,
-                    itemBuilder: (context, index) {
-                      return SizedBox(
-                        // width: 200.0,
-                        // height: 100.0,
-                        child: Shimmer.fromColors(
-                            baseColor: const Color.fromARGB(51, 255, 255, 255),
-                            highlightColor:
-                                const Color.fromARGB(65, 255, 255, 255),
-                            child: Container(
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              height: 180,
-                              // width: 200,
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ).marginOnly(bottom: 25)
-                            // child: const Text(
-                            //   // 'Shimmer',
-                            //   textAlign: TextAlign.center,
-                            //   style: TextStyle(
-                            //     fontSize: 40.0,
-                            //     fontWeight: FontWeight.bold,
-                            //   ),
-                            // ),
-                            ),
+                          if (recommendation['type'] == 'playlist') {
+                            // Spotify Playlist Card
+                            return SpotifyPlaylistCard(
+                              trackListHref: recommendation['tracks']['href'],
+                              playlistName: recommendation['name'],
+                              artistNames: recommendation['description'],
+                              onClick: () {
+                                // Handle click
+                              },
+                            ).marginOnly(bottom: 25);
+                          } else {
+                            // Generate Playlist Card
+                            return GeneratePlaylistCard(
+                              prompt: recommendation['text'],
+                              image: recommendation['image'],
+                              onClick: () {
+                                // Handle click
+                                _generatedRecQuery.text =
+                                    recommendation['text'];
+                                submitGeneratedQuery();
+                              },
+                            ).marginOnly(bottom: 25);
+                          }
+                        },
+                        padding: const EdgeInsets.only(
+                          bottom: 200,
+                          left: 20,
+                          right: 20,
+                          top: 20,
+                        ),
                       );
                     },
+                    loading: () => ListView.builder(
+                      padding: const EdgeInsets.only(top: 24),
+                      itemCount: 30,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          // width: 200.0,
+                          // height: 100.0,
+                          child: Shimmer.fromColors(
+                              baseColor:
+                                  const Color.fromARGB(51, 255, 255, 255),
+                              highlightColor:
+                                  const Color.fromARGB(65, 255, 255, 255),
+                              child: Container(
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                height: 190,
+                                // width: 200,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey,
+                                  borderRadius: BorderRadius.circular(25),
+                                ),
+                              ).marginOnly(bottom: 25)
+                              // child: const Text(
+                              //   // 'Shimmer',
+                              //   textAlign: TextAlign.center,
+                              //   style: TextStyle(
+                              //     fontSize: 40.0,
+                              //     fontWeight: FontWeight.bold,
+                              //   ),
+                              // ),
+                              ),
+                        );
+                      },
+                    ),
+                    error: (error, stackTrace) =>
+                        Center(child: Text('Error: $error')),
                   ),
-                  error: (error, stackTrace) =>
-                      Center(child: Text('Error: $error')),
                 ),
               ),
               Align(
