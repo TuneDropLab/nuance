@@ -22,6 +22,7 @@ class SpotifyPlaylistCard extends StatelessWidget {
     return GestureDetector(
       onTap: onClick,
       child: Container(
+        height: 210,
         // margin: const EdgeInsets.symmetric(),
         // padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -41,11 +42,11 @@ class SpotifyPlaylistCard extends StatelessWidget {
           ),
           gradient: LinearGradient(
             colors: [
-              Colors.white.withOpacity(0.2),
-              Colors.grey.shade600,
-              Colors.grey.shade200.withOpacity(0.4),
-              Colors.grey.shade400.withOpacity(0.5),
-              Colors.white.withOpacity(0.6)
+              const Color.fromARGB(38, 255, 255, 255).withOpacity(0.2),
+              const Color.fromARGB(50, 255, 255, 255),
+              const Color.fromARGB(255, 95, 95, 95).withOpacity(0.4),
+              // Color.fromARGB(255, 255, 255, 255).withOpacity(0.5),
+              const Color.fromARGB(255, 76, 76, 76).withOpacity(0.6)
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -55,10 +56,10 @@ class SpotifyPlaylistCard extends StatelessWidget {
           // margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.symmetric(
             horizontal: 20,
-            vertical: 28,
+            vertical: 24,
           ),
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: const Color(0xff292929),
             borderRadius: BorderRadius.circular(23),
           ),
           child: Column(
@@ -74,7 +75,7 @@ class SpotifyPlaylistCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withOpacity(0.9),
                       spreadRadius: 6,
                       blurRadius: 15,
                       offset: const Offset(0, 9),

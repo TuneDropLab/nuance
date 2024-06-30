@@ -14,6 +14,7 @@ import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
@@ -39,6 +40,10 @@ class _RecommendationsResultScreenState
   AsyncValue<SessionData?>? sessionState;
   String? _loadingPlaylistId;
 
+  bool isLoading = true;
+  List<String> errorList = [];
+  List<SongModel> recommendations = [];
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -46,7 +51,35 @@ class _RecommendationsResultScreenState
     searchTerm = arguments['search_term'] as String?;
     sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
     log("STATE : ${sessionState?.value?.accessToken}");
+
+    _fetchRecommendations();
   }
+
+  Future<void> _fetchRecommendations() async {
+    setState(() {
+      isLoading = true;
+      errorList = [];
+    });
+
+    try {
+      // final sessionData = ref.read(authProvider.notifier).state;
+      final service = RecommendationsService();
+      final result = await service.getRecommendations(
+          sessionState?.value?.accessToken ?? "", searchTerm!);
+      setState(() {
+        recommendations = result;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        errorList.add(e.toString());
+        isLoading = false;
+      });
+    }
+  }
+
+  final recommendationsService = RecommendationsService();
+// final recommendations = await recommendationsService.getRecommendations(accessToken, userMessage);
 
   bool _isButtonVisible = false;
 
@@ -60,9 +93,8 @@ class _RecommendationsResultScreenState
     if (song.previewUrl?.isEmpty ?? true) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Use spotify Premium to preview this song')),
+            content: Text('Use Spotify Premium to preview this song')),
       );
-
       return;
     }
 
@@ -70,12 +102,10 @@ class _RecommendationsResultScreenState
       await _audioPlayer.pause();
       setState(() {
         _isPlaying = false;
+        _currentSong = null;
       });
     } else {
-      if (_currentSong != null) {
-        await _audioPlayer.stop();
-      }
-      await _audioPlayer.play(UrlSource(song.previewUrl ?? ""));
+      await _audioPlayer.play(UrlSource(song.previewUrl!));
       setState(() {
         _isPlaying = true;
         _currentSong = song;
@@ -528,6 +558,8 @@ class _RecommendationsResultScreenState
     return s[0].toUpperCase() + s.substring(1);
   }
 
+  int? currentlyPlayingSongId;
+
   @override
   Widget build(BuildContext context) {
     if (searchTerm == null) {
@@ -537,8 +569,8 @@ class _RecommendationsResultScreenState
     }
     final sessionData = ref.read(sessionProvider.notifier);
 
-    final recommendationsState =
-        ref.watch(recommendationsProvider(searchTerm!));
+    // final recommendationsState =
+    //     ref.watch(recommendationsProvider(searchTerm!));
 
     return Scaffold(
       appBar: AppBar(
@@ -562,51 +594,21 @@ class _RecommendationsResultScreenState
         ),
         // leadingWidth: 30,
         backgroundColor: Colors.black,
-        title: recommendationsState.when(
-          data: (recommendations) {
-            log("Log screen result: $recommendations");
-
-            // Calculate total duration, number of songs, and unique artists
-            int totalDuration = 0;
-            int numberOfSongs = recommendations.length;
-            Set<String> uniqueArtists = {};
-
-            for (var song in recommendations) {
-              if (song.durationMs != null) {
-                totalDuration += song.durationMs!;
-              }
-              if (song.artist != null) {
-                uniqueArtists.addAll(
-                    song.artist!.split(',').map((artist) => artist.trim()));
-              }
-            }
-
-            // String formattedDuration = _formatDuration(totalDuration);
-            int numberOfArtists = uniqueArtists.length;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  capitalizeFirst(searchTerm ?? ""),
-                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                      ),
-                ),
-                Text(
-                    '$numberOfArtists artists • $numberOfSongs songs • ${formatMilliseconds(totalDuration)}',
-                    style: subtitleTextStyle),
-              ],
-            );
-          },
-          loading: () => const Center(
-            child: CupertinoActivityIndicator(),
-          ),
-          error: (error, stack) => Center(
-            child: Text('Error: $error'),
-          ),
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Text(
+            //   capitalizeFirst(searchTerm ?? ""),
+            //   style: Theme.of(context).textTheme.titleMedium!.copyWith(
+            //         fontSize: 20,
+            //         fontWeight: FontWeight.w500,
+            //         color: Colors.white,
+            //       ),
+            // ),
+            // Text(
+            //     '$numberOfArtists artists • $numberOfSongs songs • ${formatMilliseconds(totalDuration)}',
+            //     style: subtitleTextStyle),
+          ],
         ),
         automaticallyImplyLeading: false,
         centerTitle: false,
@@ -678,30 +680,25 @@ class _RecommendationsResultScreenState
           children: [
             Container(
               color: Colors.black,
-              child: recommendationsState.when(
-                data: (recommendations) {
-                  log("Log screen result: $recommendations");
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(vertical: 24),
-                    itemCount: recommendations.length,
-                    itemBuilder: (context, index) {
-                      final recommendation = recommendations[index];
-                      return MusicListTile(
-                        leadingOnTap: () => _showArtworkOverlay(
-                            context, recommendation.artworkUrl ?? ""),
-                        trailingOnTap: () => _togglePlay(recommendation),
-                        recommendation: recommendation,
-                      );
-                    },
-                  );
-                },
-                loading: () => const Center(
-                  child: CupertinoActivityIndicator(),
-                ),
-                error: (error, stack) => Center(
-                  child: Text('Error: $error'),
-                ),
-              ),
+              child: isLoading
+                  ? const Center(
+                      child: CupertinoActivityIndicator(
+                      color: Colors.white,
+                    ))
+                  : errorList.isNotEmpty
+                      ? Center(child: Text('Error: ${errorList.join(', ')}'))
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(top: 24, bottom: 200),
+                          itemCount: recommendations.length,
+                          itemBuilder: (context, index) {
+                            final song = recommendations[index];
+                            return MusicListTile(
+                             isPlaying: _isPlaying && _currentSong?.id == song.id,
+                              trailingOnTap: () => _togglePlay(song),
+                              recommendation: song,
+                            );
+                          },
+                        ),
             ),
             Align(
               alignment: Alignment.bottomCenter,

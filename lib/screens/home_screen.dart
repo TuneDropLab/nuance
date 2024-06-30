@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
@@ -14,7 +15,7 @@ import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
-import 'package:nuance/widgets/playlist_widget.dart';
+import 'package:nuance/widgets/spotify_playlist_card.dart';
 // import 'constants.dart'; // Import the constants file
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -30,6 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(
     text: 'drake songs',
   );
+  final _tagQuery = TextEditingController();
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
 
@@ -37,17 +39,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
     final sessionData = ref.read(sessionProvider.notifier);
+    final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final focusNode = FocusNode();
 
     void submit() {
       focusNode.unfocus();
       final userMessage = _controller.text;
+      final tagQuery = _tagQuery.text;
+      if (userMessage.isEmpty) {
+        return;
+      }
 
       Navigator.pushNamed(
         context,
         RecommendationsResultScreen.routeName,
         arguments: {
-          'search_term': userMessage,
+          'search_term': userMessage.trim(),
+          'tag_query': tagQuery,
           'sessionState': sessionState,
         },
       ).then((value) => setState(() {}));
@@ -186,49 +194,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: ListView.separated(
-                  itemCount: 4,
-                  itemBuilder: (context, index) {
-                    return SpotifyPlaylistCard(
-                      artistImages: artistImages,
-                      playlistName: playlistName,
-                      artistNames: artistNames,
-                      onClick: () {},
-                    ).marginOnly(bottom: 25);
+                child: homeRecommendations.when(
+                  data: (recommendations) {
+                    return ListView.builder(
+                      itemCount: recommendations.length,
+                      itemBuilder: (context, index) {
+                        final recommendation = recommendations[index];
+
+                        if (recommendation['type'] == 'playlist') {
+                          // Spotify Playlist Card
+                          return SpotifyPlaylistCard(
+                            artistImages: artistImages,
+                            playlistName: recommendation['name'],
+                            artistNames: recommendation['description'],
+                            onClick: () {
+                              // Handle click
+                            },
+                          ).marginOnly(bottom: 25);
+                        } else {
+                          // Generate Playlist Card
+                          return GeneratePlaylistCard(
+                            prompt: recommendation['text'],
+                            image: recommendation['image'],
+                            onClick: () {
+                              // Handle click
+                              _tagQuery.text = recommendation['text'];
+                              submit();
+                            },
+                          ).marginOnly(bottom: 25);
+                        }
+                      },
+                      padding: const EdgeInsets.only(
+                        bottom: 200,
+                        left: 20,
+                        right: 20,
+                        top: 20,
+                      ),
+                    );
                   },
-                  separatorBuilder: (context, index) {
-                    return GeneratePlaylistCard(
-                      prompt: "Lo-Fi summer beach vibes",
-                      onClick: () {},
-                    ).marginOnly(bottom: 25);
-                  },
-                  padding: const EdgeInsets.only(
-                    bottom: 200,
-                    left: 20,
-                    right: 20,
-                    top: 20,
-                  ),
-                  // children: [
-                  //   SpotifyPlaylistCard(
-                  //     artistImages: artistImages,
-                  //     playlistName: playlistName,
-                  //     artistNames: artistNames,
-                  //     onClick: () {},
-                  //   )
-                  //   SpotifyPlaylistCard(
-                  //     artistImages: artistImages,
-                  //     playlistName: playlistName,
-                  //     artistNames: artistNames,
-                  //     onClick: () {},
-                  //   ),
-                  //   GeneratePlaylistCard(
-                  //     prompt: "Lo-Fi summer beach vibes",
-                  //     onClick: () {},
-                  //   ),
-                  //   // const SizedBox(
-                  //   //   height: 100,
-                  //   // )
-                  // ],
+                  loading: () =>
+                      const Center(child: CupertinoActivityIndicator()),
+                  error: (error, stackTrace) =>
+                      Center(child: Text('Error: $error')),
                 ),
               ),
               Align(
