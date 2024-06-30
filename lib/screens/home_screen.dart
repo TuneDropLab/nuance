@@ -308,7 +308,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Container(
                               margin:
                                   const EdgeInsets.symmetric(horizontal: 20),
-                              height: 190,
+                              height: 180,
                               // width: 200,
                               decoration: BoxDecoration(
                                 color: Colors.grey,
