@@ -129,7 +129,7 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
           // isSecondIcon: widget.isPlaying,
         ),
       ),
-      onTap: () => widget.trailingOnTap?.call(),
+      // onTap: () => widget.trailingOnTap?.call(),
     );
   }
 }
