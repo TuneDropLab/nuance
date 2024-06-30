@@ -17,7 +17,7 @@ final recommendationTagsProvider = FutureProvider<List<String>>((ref) async {
 
     final accessToken = sessionData['access_token'];
     final tags =
-        await RecommendationsService().generateRecommendationTags(accessToken);
+        await RecommendationsService().getTags(accessToken);
     log("RECOMMENDATION TAGS RETURNED: $tags");
     return tags;
   } catch (e) {

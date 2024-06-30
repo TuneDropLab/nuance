@@ -30,7 +30,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   const RecommendationsResultScreen({
     super.key,
     this.searchQuery,
-     this.sessionState,
+    this.sessionState,
     this.tagQuery,
   });
 
@@ -55,6 +55,7 @@ class _RecommendationsResultScreenState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    
     // final arguments = ModalRoute.of(context)!.settings.arguments as Map;
     // searchQuery = arguments['search_term'] as String?;
     // sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
@@ -73,7 +74,8 @@ class _RecommendationsResultScreenState
       // final sessionData = ref.read(authProvider.notifier).state;
       final service = RecommendationsService();
       final result = await service.getRecommendations(
-          widget.sessionState?.value?.accessToken ?? "", widget.searchQuery ?? widget.tagQuery ?? "");
+          widget.sessionState?.value?.accessToken ?? "",
+          widget.searchQuery ?? widget.tagQuery ?? "");
       setState(() {
         recommendations = result;
         isLoading = false;
@@ -85,9 +87,6 @@ class _RecommendationsResultScreenState
       });
     }
   }
-
-  final recommendationsService = RecommendationsService();
-// final recommendations = await recommendationsService.getRecommendations(accessToken, userMessage);
 
   // bool _isButtonVisible = false;
 
@@ -212,7 +211,8 @@ class _RecommendationsResultScreenState
                                 final isCurrentLoading =
                                     _loadingPlaylistId == playlist.id;
                                 final params = AddTracksParams(
-                                  accessToken: widget.sessionState!.value!.accessToken,
+                                  accessToken:
+                                      widget.sessionState!.value!.accessToken,
                                   playlistId: playlist.id ?? "",
                                   trackIds: trackIds.map((e) => e!).toList(),
                                 );
@@ -249,7 +249,8 @@ class _RecommendationsResultScreenState
                                   //       orElse: () => true,
                                   //     ),
                                   onTap: () {
-                                    if (widget.sessionState?.value?.accessToken !=
+                                    if (widget
+                                            .sessionState?.value?.accessToken !=
                                         null) {
                                       setState(() {
                                         _loadingPlaylistId = playlist.id;
@@ -453,7 +454,8 @@ class _RecommendationsResultScreenState
                                     _loadingPlaylistId == newPlaylist.id;
                                 // add to playlist
                                 log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
-                                if (widget.sessionState?.value?.accessToken != null) {
+                                if (widget.sessionState?.value?.accessToken !=
+                                    null) {
                                   setState(() {
                                     _loadingPlaylistId = newPlaylist.id;
                                   });
@@ -667,8 +669,8 @@ class _RecommendationsResultScreenState
                 ? const Center(
                     // child: CupertinoActivityIndicator(
                     // color: Colors.white,
-                  // )
-                  )
+                    // )
+                    )
                 : errorList.isNotEmpty
                     ? Center(child: Text('Error: ${errorList.join(', ')}'))
                     : Text(
@@ -775,29 +777,28 @@ class _RecommendationsResultScreenState
                 height: 150,
                 child: Column(
                   children: [
-
                     if (widget.searchQuery == null)
-                    Row(
-                      children: [
+                      Row(
+                        children: [
                           IconButton(
-                          onPressed: () {
-                            Get.back();
-                          },
-                          icon: SvgPicture.asset(
-                            "assets/x.svg",
+                            onPressed: () {
+                              Get.back();
+                            },
+                            icon: SvgPicture.asset(
+                              "assets/x.svg",
+                            ),
                           ),
-                        ),
-                        GeneralButton(
-                          text: widget.searchQuery ?? widget.tagQuery ?? "",
-                          backgroundColor: Colors.white,
-                          icon: SvgPicture.asset(
-                            "assets/icon4star.svg",
-                            color: const Color(0xffFFBB00),
-                          ),
-                          onPressed: () {},
-                        )
-                      ],
-                    ),
+                          GeneralButton(
+                            text: widget.searchQuery ?? widget.tagQuery ?? "",
+                            backgroundColor: Colors.white,
+                            icon: SvgPicture.asset(
+                              "assets/icon4star.svg",
+                              color: const Color(0xffFFBB00),
+                            ),
+                            onPressed: () {},
+                          )
+                        ],
+                      ),
 
                     const SizedBox(height: 10),
                     const CustomDivider(),
