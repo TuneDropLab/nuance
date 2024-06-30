@@ -1,0 +1,60 @@
+{
+    "access_token": "eyJhbGciOiJIUzI1NiIsImtpZCI6Ild4NEZtUnY1MXFiQXJpekoiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzE5Nzc3MTY4LCJpYXQiOjE3MTk3NzM1NjgsImlzcyI6Imh0dHBzOi8vZWdxcXR0Z2R6cXRjand5cHV3dmouc3VwYWJhc2UuY28vYXV0aC92MSIsInN1YiI6IjY4ZmMzYzg0LWQ1NjAtNDBmNy04ZWE0LWY4NzhhOWRiMGM1OCIsImVtYWlsIjoiZWRlbS5hZ2Jha3BlQG91dGxvb2suY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJzcG90aWZ5IiwicHJvdmlkZXJzIjpbInNwb3RpZnkiXX0sInVzZXJfbWV0YWRhdGEiOnsiYXZhdGFyX3VybCI6Imh0dHBzOi8vaS5zY2RuLmNvL2ltYWdlL2FiNjc3NTcwMDAwMDNiODIyZTk2OTM4MTM2MGVjMzNlYTE1ZWY3NjkiLCJlbWFpbCI6ImVkZW0uYWdiYWtwZUBvdXRsb29rLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwiZnVsbF9uYW1lIjoiRWRlbSBBZ2Jha3BlIiwiaXNzIjoiaHR0cHM6Ly9hcGkuc3BvdGlmeS5jb20vdjEiLCJuYW1lIjoiRWRlbSBBZ2Jha3BlIiwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJwaWN0dXJlIjoiaHR0cHM6Ly9pLnNjZG4uY28vaW1hZ2UvYWI2Nzc1NzAwMDAwM2I4MjJlOTY5MzgxMzYwZWMzM2VhMTVlZjc2OSIsInByb3ZpZGVyX2lkIjoiZWRlbWFnYmFrcGUiLCJzdWIiOiJlZGVtYWdiYWtwZSJ9LCJyb2xlIjoiYXV0aGVudGljYXRlZCIsImFhbCI6ImFhbDEiLCJhbXIiOlt7Im1ldGhvZCI6Im9hdXRoIiwidGltZXN0YW1wIjoxNzE5NzczNTY4fV0sInNlc3Npb25faWQiOiI3ZDRjNjVmZC01ZDZmLTRkNzMtOTA2OC01ZmY1YmU5NzZmMWMiLCJpc19hbm9ueW1vdXMiOmZhbHNlfQ.EGF-ZQ8fjfm4fcFxJ0OVMmpVz6wtASbQskt7fc3fi2s",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "expires_at": 1719777168,
+    "refresh_token": "I0iBu17rPTulO-oFVD0lYA",
+    "user": {
+        "id": "68fc3c84-d560-40f7-8ea4-f878a9db0c58",
+        "aud": "authenticated",
+        "role": "authenticated",
+        "email": "edem.agbakpe@outlook.com",
+        "email_confirmed_at": "2024-06-04T11:41:56.770489Z",
+        "phone": "",
+        "confirmation_sent_at": "2024-06-04T11:41:11.164843Z",
+        "confirmed_at": "2024-06-04T11:41:56.770489Z",
+        "last_sign_in_at": "2024-06-30T18:52:48.383582961Z",
+        "app_metadata": { "provider": "spotify", "providers": ["spotify"] },
+        "user_metadata": {
+            "avatar_url": "https://i.scdn.co/image/ab67757000003b822e969381360ec33ea15ef769",
+            "email": "edem.agbakpe@outlook.com",
+            "email_verified": false,
+            "full_name": "Edem Agbakpe",
+            "iss": "https://api.spotify.com/v1",
+            "name": "Edem Agbakpe",
+            "phone_verified": false,
+            "picture": "https://i.scdn.co/image/ab67757000003b822e969381360ec33ea15ef769",
+            "provider_id": "edemagbakpe",
+            "sub": "edemagbakpe"
+        },
+        "identities": [
+            {
+                "identity_id": "5dedc5d9-2b4b-46ef-b4b4-76f8f146f1a5",
+                "id": "edemagbakpe",
+                "user_id": "68fc3c84-d560-40f7-8ea4-f878a9db0c58",
+                "identity_data": {
+                    "avatar_url": "https://i.scdn.co/image/ab67757000003b822e969381360ec33ea15ef769",
+                    "email": "edem.agbakpe@outlook.com",
+                    "email_verified": false,
+                    "full_name": "Edem Agbakpe",
+                    "iss": "https://api.spotify.com/v1",
+                    "name": "Edem Agbakpe",
+                    "phone_verified": false,
+                    "picture": "https://i.scdn.co/image/ab67757000003b822e969381360ec33ea15ef769",
+                    "provider_id": "edemagbakpe",
+                    "sub": "edemagbakpe"
+                },
+                "provider": "spotify",
+                "last_sign_in_at": "2024-06-04T11:36:21.176585Z",
+                "created_at": "2024-06-04T11:36:21.176642Z",
+                "updated_at": "2024-06-30T18:52:47.831154Z",
+                "email": "edem.agbakpe@outlook.com"
+            }
+        ],
+        "created_at": "2024-06-04T11:36:21.169186Z",
+        "updated_at": "2024-06-30T18:52:48.393535Z",
+        "is_anonymous": false
+    },
+    "provider_token": "BQCtymgNKGJUqVBFe0UslScXmCsgp8eB2axi4YdjIgPMwW5tk0uK56d0Dwegqu4cF2XuSsJqa8slQidDTRUoBnThqgsAX5h-wWaqCcs8PmaWqSAVUfXV7GzRSAcllTI5M68GQdA2vVZ-lAf5TXZf2wz95B-hyo9DqxBXNFyfWkdYgmL9oE3mWFaBWSssja7czrfh3RsOAwU_0gkWthCXfqtRoNq4QTwErTulZpZZ38gtEht-F1_lOUQOw3Q1ymOqJISd07TJImBF5X4Wzj2WipQPWCEuvA",
+    "provider_refresh_token": "AQCFwpIHdZcy__IbH0vK37nlhRX4TN5DACLdUXhDOT0VegfRZfSbDHnZi1Ur8dhVD-IC1-uhbnvw9gHDaA3Fi1Xx7puU496m-XLchLsSvl0V_i03L2CDrxU1FuCmTnQQwAU"
+}

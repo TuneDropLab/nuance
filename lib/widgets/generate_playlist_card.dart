@@ -21,6 +21,7 @@ class GeneratePlaylistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     final LinearGradient selectedGradient =
         gradients[Random().nextInt(gradients.length)];
 

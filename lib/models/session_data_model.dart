@@ -8,18 +8,21 @@ class SessionData {
   final String refreshToken;
   final String expiresAt;
   final Map<String, dynamic> user;
+  final String providerToken;
 
   const SessionData({
     required this.accessToken,
     required this.refreshToken,
     required this.expiresAt,
     required this.user,
+    required this.providerToken,
   });
 
   SessionData copyWith({
     String? accessToken,
     String? refreshToken,
     String? expiresAt,
+    String? providerToken,
     Map<String, dynamic>? user,
   }) {
     return SessionData(
@@ -27,19 +30,18 @@ class SessionData {
       refreshToken: refreshToken ?? this.refreshToken,
       expiresAt: expiresAt ?? this.expiresAt,
       user: user ?? this.user,
+      providerToken: providerToken ?? this.providerToken,
     );
   }
 
   factory SessionData.fromJson(Map<String, dynamic> json) {
     log("SESSION DATA FROM JSON: $json");
-    if (json == null) {
-      throw Exception('Session data is null');
-    }
     return SessionData(
       accessToken: json['access_token'],
       refreshToken: json['refresh_token'],
       expiresAt: json['expires_at'].toString(),
       user: json['user'],
+      providerToken: json['provider_token'],
     );
   }
 
@@ -49,6 +51,7 @@ class SessionData {
       'refreshToken': refreshToken,
       'expiresAt': expiresAt,
       'user': user,
+      'providerToken': providerToken,
     };
   }
 }
