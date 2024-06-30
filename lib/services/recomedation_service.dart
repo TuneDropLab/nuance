@@ -243,4 +243,57 @@ class RecommendationsService {
       rethrow;
     }
   }
+
+  Future<List<dynamic>> getSpotifyHomeRecommendations(
+      String accessToken) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/spotify/home'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      log("getSpotifyHomeRecommendations REQUEST: ${response.request.toString()}");
+      log("getSpotifyHomeRecommendations RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        log("Spotify Home Recommendations Data: $data");
+        return data;
+      } else {
+        log('Failed to load Spotify home recommendations: ${response.body}');
+        throw Exception('Failed to load Spotify home recommendations');
+      }
+    } catch (e) {
+      log('Exception in getSpotifyHomeRecommendations: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<String>> generateRecommendationTags(String accessToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/gemini/tags'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+      log("generateRecommendationTags REQUEST: ${response.request.toString()}");
+      log("generateRecommendationTags RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final List<dynamic> tags = jsonDecode(response.body)['tags'];
+        log("Generated Tags Data: $tags");
+        return tags.map((tag) => tag.toString()).toList();
+      } else {
+        log('Failed to generate recommendation tags: ${response.body}');
+        throw Exception('Failed to generate recommendation tags');
+      }
+    } catch (e) {
+      log('Exception in generateRecommendationTags: $e');
+      rethrow;
+    }
+  }
 }

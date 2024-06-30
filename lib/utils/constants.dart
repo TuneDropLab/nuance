@@ -43,15 +43,6 @@ final List<LinearGradient> gradients = [
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   ),
-
-  const LinearGradient(
-    colors: [
-      Color(0xFFFFA726),
-      Color(0xFFFF7043),
-    ],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  ),
   const LinearGradient(
     colors: [
       Color(0xFFAB47BC),
@@ -62,20 +53,20 @@ final List<LinearGradient> gradients = [
   ),
   const LinearGradient(
     colors: [
-      Color(0xFFAB47BC),
-      Color(0xFF8E24AA),
+      Color.fromARGB(255, 188, 71, 71),
+      Color.fromARGB(255, 170, 36, 36),
     ],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   ),
-  // const LinearGradient(
-  //   colors: [
-  //     Color(0xFF29B6F6),
-  //     Color(0xFF0288D1),
-  //   ],
-  //   begin: Alignment.topLeft,
-  //   end: Alignment.bottomRight,
-  // ),
+  const LinearGradient(
+    colors: [
+      Color.fromARGB(255, 71, 188, 108),
+      Color.fromARGB(255, 31, 141, 58),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  ),
 ];
 
 final subtitleTextStyle = TextStyle(
