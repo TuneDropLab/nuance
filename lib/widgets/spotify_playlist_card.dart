@@ -31,17 +31,23 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
   List<String> artistImages = [];
 
   @override
-  void initState() {
-    super.initState();
+  // void initState() {
+  //   super.initState();
+  //   _fetchTrackList();
+  // }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // final arguments = ModalRoute.of(context)!.settings.arguments as Map;
+    // searchQuery = arguments['search_term'] as String?;
     _fetchTrackList();
   }
 
   Future<void> _fetchTrackList() async {
     try {
-      // final sessionState = ref.watch(sessionProvider.notifier);
       final sessionState = ref.watch(sessionProvider);
-
-      final accessToken = sessionState.value!.accessToken;
+      final accessToken = sessionState.value!.providerToken;
 
       final response = await http.get(
         Uri.parse(widget.trackListHref),
@@ -50,18 +56,37 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
           'Content-Type': 'application/json',
         },
       );
-      print(response);
+
+      log("RESPONSE: $response");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("NO WOAHHHH $data");
         final tracks = data['items'] as List<dynamic>;
 
+        final List<String> images = [];
+
+        for (var i = 0; i < tracks.length && i < 7; i++) {
+          final track = tracks[i];
+          final artistHref = track['track']['artists'][0]['href'];
+          final artistResponse = await http.get(
+            Uri.parse(artistHref),
+            headers: {
+              'Authorization': 'Bearer $accessToken',
+              'Content-Type': 'application/json',
+            },
+          );
+
+          if (artistResponse.statusCode == 200) {
+            final artistData = jsonDecode(artistResponse.body);
+            final artistImage = artistData['images'][0]['url'] as String;
+            images.add(artistImage);
+          } else {
+            log('Failed to load artist data: ${artistResponse.body}');
+          }
+        }
+
         setState(() {
-          artistImages = tracks.map((track) {
-            final artist = track['track']['artists'][0];
-            return artist['images'][0]['url'] as String;
-          }).toList();
+          artistImages = images;
         });
       } else {
         log('Failed to load tracks: ${response.body}');

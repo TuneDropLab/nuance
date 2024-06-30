@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
+import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
@@ -31,6 +32,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     text: '',
   );
   final _tagQuery = TextEditingController();
+  final _generatedRecQuery = TextEditingController();
 
   final GlobalKey<ScaffoldState> _key = GlobalKey();
 
@@ -39,6 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sessionState = ref.watch(sessionProvider);
     final sessionData = ref.read(sessionProvider.notifier);
     final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
+    final tagsRecommendations = ref.watch(recommendationTagsProvider);
     final focusNode = FocusNode();
 
     void submit() {
@@ -87,6 +90,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       Get.to(() => RecommendationsResultScreen(
             searchQuery: null,
             tagQuery: tagQuery,
+            sessionState: sessionState,
+          ));
+    }
+
+    void submitGeneratedQuery() {
+      focusNode.unfocus();
+      // final userMessage = _controller.text;
+      final generatedRecQuery = _generatedRecQuery.text;
+      if (generatedRecQuery.isEmpty) {
+        return;
+      }
+
+      // Navigator.pushNamed(
+      //   context,
+      //   RecommendationsResultScreen.routeName,
+      //   arguments: {
+      //     'search_term': userMessage.trim(),
+      //     'tag_query': tagQuery,
+      //     'sessionState': sessionState,
+      //   },
+      // ).then((value) => setState(() {}));
+
+      Get.to(() => RecommendationsResultScreen(
+            searchQuery: generatedRecQuery,
+            tagQuery: null,
             sessionState: sessionState,
           ));
     }
@@ -250,8 +278,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             image: recommendation['image'],
                             onClick: () {
                               // Handle click
-                              _tagQuery.text = recommendation['text'];
-                              submitTagQuery();
+                              _generatedRecQuery.text = recommendation['text'];
+                              submitGeneratedQuery();
                             },
                           ).marginOnly(bottom: 25);
                         }
@@ -286,42 +314,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Expanded(
-                        // height: 300,
-                        // height: 300,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            final List<Color> colors = [
-                              const Color(0xffFFBB00),
-                              const Color(0xffFF4500),
-                              const Color(0xffFF006D),
-                              const Color(0xff8E33F5),
-                              const Color(0xff0088FF),
-                            ];
-                            final Color randomColor =
-                                colors[Random().nextInt(colors.length)];
+                          // height: 300,
+                          // height: 300,
+                          child: tagsRecommendations.when(
+                        data: (data) {
+                          return ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (context, index) {
+                              final List<Color> colors = [
+                                const Color(0xffFFBB00),
+                                const Color(0xffFF4500),
+                                const Color(0xffFF006D),
+                                const Color(0xff8E33F5),
+                                const Color(0xff0088FF),
+                              ];
+                              final Color randomColor =
+                                  colors[Random().nextInt(colors.length)];
 
-                            return Chip(
-                              side: BorderSide.none,
-                              avatar: SvgPicture.asset(
-                                "assets/icon4star.svg",
-                                color: randomColor,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 10),
-                              label: Text('Suggestion ${index + 1}'),
-                              backgroundColor: Colors.grey[900],
-                              labelStyle: const TextStyle(color: Colors.white),
-                            );
-                          },
-                          separatorBuilder: (context, index) {
-                            return const SizedBox(width: 5);
-                          },
-                          itemCount: artistImages.length,
-                        ),
-                      ),
+                              return InkWell(
+                                onTap: () {
+                                  _tagQuery.text = data[index];
+                                  submitTagQuery();
+                                },
+                                child: Chip(
+                                  side: BorderSide.none,
+                                  avatar: SvgPicture.asset(
+                                    "assets/icon4star.svg",
+                                    color: randomColor,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  label: Text(data[index]),
+                                  backgroundColor: Colors.grey[900],
+                                  labelStyle:
+                                      const TextStyle(color: Colors.white),
+                                ),
+                              );
+                              // return ElevatedButton(
+                              //   onPressed: () {},
+                              //   style: ElevatedButton.styleFrom(
+                              //     backgroundColor: Colors.grey[900],
+                              //   ),
+                              //   child: Row(
+                              //     children: [
+                              //       SvgPicture.asset(
+                              //         "assets/icon4star.svg",
+                              //         color: randomColor,
+                              //       ),
+                              //       Text(
+                              //         data[index],
+                              //         style:   const TextStyle(color: Colors.white),
+                              //       ),
+                              //     ],
+                              //   ),
+                              // );
+                            },
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(width: 5);
+                            },
+                            itemCount: 7,
+                          );
+                        },
+                        error: (error, stackTrace) {
+                          return Text("error: $error");
+                        },
+                        loading: () {
+                          return const CircularProgressIndicator();
+                        },
+                      )),
                       const CustomDivider(),
                       const SizedBox(
                         height: 5,
@@ -382,22 +444,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
-
-// constants.dart
-const List<String> artistImages = [
-  'https://i.redd.it/s3jlsf41eqh81.jpg',
-  'https://i.redd.it/s3jlsf41eqh81.jpg',
-  'https://i.redd.it/s3jlsf41eqh81.jpg',
-  'https://i.redd.it/s3jlsf41eqh81.jpg',
-  'https://i.pinimg.com/564x/68/28/0b/68280b6753541cb03a89f7cdaa63a44a.jpg',
-  'https://i.pinimg.com/564x/68/28/0b/68280b6753541cb03a89f7cdaa63a44a.jpg',
-  'https://i.redd.it/s3jlsf41eqh81.jpg',
-];
-
-const String playlistName = 'Best of the decade';
-const String artistNames =
-    'Drake, J. Cole, Kanye West, Travis Scott, ASAP Rocky, Future';
-
-
-  // int numberOfSongs = recommendations.length;
-  // 

@@ -271,9 +271,9 @@ class RecommendationsService {
     }
   }
 
-  Future<List<String>> generateRecommendationTags(String accessToken) async {
+  Future<List<String>> getTags(String accessToken) async {
     try {
-      final response = await http.post(
+      final response = await http.get(
         Uri.parse('$baseURL/gemini/tags'),
         headers: {
           'Authorization': 'Bearer $accessToken',

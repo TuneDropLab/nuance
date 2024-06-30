@@ -21,7 +21,6 @@ class GeneratePlaylistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     final LinearGradient selectedGradient =
         gradients[Random().nextInt(gradients.length)];
 
@@ -51,9 +50,11 @@ class GeneratePlaylistCard extends StatelessWidget {
         children: [
           Text(
             prompt ?? "",
+            maxLines: 2,
             style: const TextStyle(
               height: 1.2,
-              fontSize: 28,
+              overflow: TextOverflow.ellipsis,
+              fontSize: 26,
               color: Colors.white,
               fontWeight: FontWeight.w600,
             ),
@@ -61,7 +62,7 @@ class GeneratePlaylistCard extends StatelessWidget {
           // const SizedBox(
           //   height: 16,
           // ),
-          Spacer(),
+          const Spacer(),
           SizedBox(
             width: Get.width,
             child: GeneralButton(
