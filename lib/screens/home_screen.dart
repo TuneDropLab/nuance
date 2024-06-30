@@ -243,8 +243,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: AppTheme.textColor,
                     ),
                   ),
-                  error: (error, stack) => const CircleAvatar(
-                    radius: 30,
+                  error: (error, stack) => CupertinoButton(
+                    padding: const EdgeInsets.all(0),
+                    onPressed: () {
+                      sessionData.logout();
+                    },
+                    child: const CircleAvatar(
+                      radius: 30,
+                    ),
                   ),
                 ),
               ),
