@@ -17,7 +17,7 @@ import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:skeletonizer/skeletonizer.dart';
+
 // import 'constants.dart'; // Import the constants file
 
 class HomeScreen extends ConsumerStatefulWidget {
