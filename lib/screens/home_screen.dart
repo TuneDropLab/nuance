@@ -237,14 +237,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: sessionState.when(
                   data: (data) {
                     if (data == null) {
-                      return CupertinoButton(
-                        child: const CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.lime,
+                      return GestureDetector(
+                        child: Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.orange,
+                                Color.fromARGB(255, 255, 222, 59),
+                                Color.fromARGB(255, 225, 153, 47),
+                                Colors.red,
+                              ],
+                            ),
+                            color: Colors.orange,
+                            // image: DecorationImage(
+                            //   // image: imageProvider,
+                            // ),
+                          ),
                         ),
-                        onPressed: () {
-                          sessionData.logout();
-                        },
                       );
                     }
 
