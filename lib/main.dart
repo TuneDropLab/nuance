@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
             const ClassicHeader(), // Configure the default header indicator. If you have the same header indicator for each page, you need to set this
         footerBuilder: () =>
             const ClassicFooter(), // Configure default bottom indicator
-        headerTriggerDistance: 80.0, // header trigger refresh trigger distance
+        headerTriggerDistance: 160.0, // header trigger refresh trigger distance
         springDescription: const SpringDescription(
             stiffness: 170,
             damping: 16,
