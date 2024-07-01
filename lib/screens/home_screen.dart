@@ -41,6 +41,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,26 +52,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final focusNode = FocusNode();
 
     void onRefresh() async {
-      // monitor network fetch
-      // await Future.delayed(const Duration(milliseconds: 1000));
-      // if failed,use refreshFailed()
-      _refreshController.refreshCompleted();
+      setState(() {
+        isLoading = true; // Set loading state to true
+      });
+
+      ref.invalidate(spotifyHomeRecommendationsProvider);
+
+      // Simulate network fetch delay
+      // await Future.delayed(const Duration(milliseconds: 500));
+
+      setState(() {
+        isLoading = false; // Set loading state to false
+      });
+
+      print("onREFRESH");
+
+
+      _refreshController.resetNoData();
     }
 
     void onLoading() async {
-      // monitor network fetch
+      setState(() {
+        isLoading = true; // Set loading state to true
+      });
+      print("onLoading1");
+
       ref.invalidate(spotifyHomeRecommendationsProvider);
-      // ref.invalidate(recommendationTagsProvider);
 
-      // await Future.delayed(const Duration(milliseconds: 1000));
-      // if (homeRecommendations.value) {
-      //   _refreshController.loadNoData();
-      //   return;
-      // }
+      // Simulate network fetch delay
+      // await Future.delayed(const Duration(milliseconds: 500));
+      print("onLoading2");
 
-      if (mounted) {
-        setState(() {});
-      }
+      setState(() {
+        isLoading = false; // Set loading state to false
+      });
+
+      print("onLoading");
+
       _refreshController.loadComplete();
     }
 
