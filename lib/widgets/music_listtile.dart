@@ -111,22 +111,14 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
       ),
       trailing: CircleAvatar(
         backgroundColor: const Color(0xff191919),
-        child: AnimateChangeIcon(
-          onTap: widget.recommendation.previewUrl != null
+        child: IconButton(
+          icon: Icon(
+            widget.isPlaying ? Icons.pause : Icons.play_arrow_rounded,
+            color: Colors.white,
+          ),
+          onPressed: widget.recommendation.previewUrl != null
               ? () => widget.trailingOnTap?.call()
               : null,
-          animateDuration: 100.ms,
-          rotateAnimationCurve: Curves.easeInOut,
-          scaleAnimationCurve: Curves.easeInOut,
-          firstIcon: const Icon(
-            Icons.play_arrow_rounded,
-            color: Colors.white,
-          ),
-          secondIcon: const Icon(
-            Icons.pause,
-            color: Colors.white,
-          ),
-          // isSecondIcon: widget.isPlaying,
         ),
       ),
       // onTap: () => widget.trailingOnTap?.call(),
