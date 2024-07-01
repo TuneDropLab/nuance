@@ -674,7 +674,7 @@ class _RecommendationsResultScreenState
                 : errorList.isNotEmpty
                     ? Center(child: Text('Error: ${errorList.join(', ')}'))
                     : Text(
-                        '$uniqueArtistsCount artists • ${recommendations.length} songs • ${formatMilliseconds(totalDuration)}',
+                        '$uniqueArtistsCount  artists • ${recommendations.length}  songs • ${formatMilliseconds(totalDuration)}',
                         style: subtitleTextStyle,
                       ),
           ],
