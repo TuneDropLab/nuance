@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/artist_chip.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
@@ -12,12 +13,14 @@ import 'package:nuance/providers/session_notifier.dart';
 class SpotifyPlaylistCard extends ConsumerStatefulWidget {
   final String trackListHref;
   final String playlistName;
+  final String playlistId;
   final String artistNames;
   final VoidCallback onClick;
 
   const SpotifyPlaylistCard({
     required this.trackListHref,
     required this.playlistName,
+    required this.playlistId,
     required this.artistNames,
     required this.onClick,
     Key? key,
@@ -30,10 +33,10 @@ class SpotifyPlaylistCard extends ConsumerStatefulWidget {
 class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
   List<String> artistImages = [];
 
-  @override
+  // @override
   // void initState() {
   //   super.initState();
-  //   _fetchTrackList();
+  //   _fetchTrackList(playlistId: widget.playlistId);
   // }
 
   @override
@@ -41,57 +44,42 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
     super.didChangeDependencies();
     // final arguments = ModalRoute.of(context)!.settings.arguments as Map;
     // searchQuery = arguments['search_term'] as String?;
-    _fetchTrackList();
+    _fetchTrackList(playlistId: widget.playlistId);
   }
 
-  Future<void> _fetchTrackList() async {
+  Future<void> _fetchTrackList({required String playlistId}) async {
     try {
       final sessionState = ref.watch(sessionProvider);
-      final accessToken = sessionState.value!.providerToken;
+      final accessToken = sessionState.value!.accessToken;
 
-      final response = await http.get(
-        Uri.parse(widget.trackListHref),
+      
+
+      final List<String> images = [];
+
+
+      final artistResponse = await http.post(
+        Uri.parse('$baseURL/spotify/artists-images'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
+        body: jsonEncode({'playlistId': playlistId}),
       );
 
-      log("RESPONSE: $response");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final tracks = data['items'] as List<dynamic>;
-
-        final List<String> images = [];
-
-        for (var i = 0; i < tracks.length && i < 7; i++) {
-          final track = tracks[i];
-          final artistHref = track['track']['artists'][0]['href'];
-          final artistResponse = await http.get(
-            Uri.parse(artistHref),
-            headers: {
-              'Authorization': 'Bearer $accessToken',
-              'Content-Type': 'application/json',
-            },
-          );
-
-          if (artistResponse.statusCode == 200) {
-            final artistData = jsonDecode(artistResponse.body);
-            final artistImage = artistData['images'][0]['url'] as String;
-            images.add(artistImage);
-          } else {
-            log('Failed to load artist data: ${artistResponse.body}');
-          }
+      if (artistResponse.statusCode == 200) {
+        final artistData = jsonDecode(artistResponse.body) as Map<String, dynamic>;
+        final List<dynamic> artistImagesData = artistData['artistImages'];
+        for (final artistImage in artistImagesData) {
+          images.add(artistImage);
         }
-
-        setState(() {
-          artistImages = images;
-        });
       } else {
-        log('Failed to load tracks: ${response.body}');
-        throw Exception('Failed to load tracks');
+        log('Failed to load artist images: ${artistResponse.body}');
+        throw Exception('Failed to load artist images');
       }
+
+      setState(() {
+        artistImages = images;
+      });
     } catch (e) {
       log('Exception in _fetchTrackList: $e');
     }
@@ -187,12 +175,13 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
               ),
               Row(
                 children: [
-                  SvgPicture.asset(
-                    'assets/icon3users.svg',
-                    height: 14,
-                    color: Colors.white.withOpacity(0.7),
-                  ),
-                  const SizedBox(width: 10),
+                  // SvgPicture.asset(
+                  //   'assets/icon3users.svg',
+                  //   height: 14,
+                  //   color: Colors.white.withOpacity(0.7),
+                  // ),
+                  // Icon(Icons.bubble_chart_rounded, color: Colors.white.withOpacity(0.7)),
+                  // const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       widget.artistNames,

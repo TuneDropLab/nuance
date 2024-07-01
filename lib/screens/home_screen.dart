@@ -67,7 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       print("onREFRESH");
 
-
       _refreshController.resetNoData();
     }
 
@@ -241,6 +240,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       return CupertinoButton(
                         child: const CircleAvatar(
                           radius: 40,
+                          backgroundColor: Colors.lime,
                         ),
                         onPressed: () {
                           sessionData.logout();
@@ -273,11 +273,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             color: AppTheme.textColor,
                           ),
                         ),
-                        errorWidget: (context, url, error) => CupertinoButton(
-                          child: const CircleAvatar(
-                            radius: 40,
+                        errorWidget: (context, url, error) => GestureDetector(
+                          child: Container(
+                            width: 40.0,
+                            height: 40.0,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.orange,
+                                  Color.fromARGB(255, 255, 222, 59),
+                                  Color.fromARGB(255, 225, 153, 47),
+                                  Colors.red,
+                                ],
+                              ),
+                              color: Colors.orange,
+                              // image: DecorationImage(
+                              //   // image: imageProvider,
+                              // ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                data.user["user_metadata"]["full_name"]
+                                    .toString()
+                                    .substring(0, 1)
+                                    .toUpperCase(),
+                                style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
                           ),
-                          onPressed: () {
+                          onTap: () {
                             sessionData.logout();
                           },
                         ),
@@ -289,14 +319,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: AppTheme.textColor,
                     ),
                   ),
-                  error: (error, stack) => CupertinoButton(
-                    padding: const EdgeInsets.all(0),
-                    onPressed: () {
+                  error: (error, stack) => GestureDetector(
+                    child: Container(
+                      width: 40.0,
+                      height: 40.0,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.orange,
+                        // image: DecorationImage(
+                        //   // image: imageProvider,
+                        // ),
+                      ),
+                    ),
+                    onTap: () {
                       sessionData.logout();
                     },
-                    child: const CircleAvatar(
-                      radius: 40,
-                    ),
                   ),
                 ),
               ),
@@ -326,6 +363,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             // Spotify Playlist Card
                             return SpotifyPlaylistCard(
                               trackListHref: recommendation['tracks']['href'],
+                              playlistId: recommendation['id'],
                               playlistName: recommendation['name'],
                               artistNames: recommendation['description'],
                               onClick: () {
