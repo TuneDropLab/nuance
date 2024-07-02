@@ -160,16 +160,16 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                             return Positioned(
                                 left: index *
                                     34.0, // Adjust the overlap distance here
-                                child: CircleAvatar(
+                                child: const CircleAvatar(
                                   radius: 30,
-                                  backgroundColor:
-                                      Colors.white.withOpacity(0.3),
-                                  child: const CircleAvatar(
+                                  // backgroundColor:
+                                  //     Colors.white.withOpacity(0.3),
+                                  child: CircleAvatar(
                                     radius: 30 - 2.0,
-                                    backgroundColor: Color.fromARGB(255, 95, 94, 94),
+                                    backgroundColor:
+                                        Color.fromARGB(255, 95, 94, 94),
                                   ),
-                                )
-                                );
+                                ));
                           }),
                         ),
                       )

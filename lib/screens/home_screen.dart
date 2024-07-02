@@ -531,7 +531,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             separatorBuilder: (context, index) {
                               return const SizedBox(width: 5);
                             },
-                            itemCount: 7,
+                            itemCount: data.length,
                           );
                         },
                         error: (error, stackTrace) {
