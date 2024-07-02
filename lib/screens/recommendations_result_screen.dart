@@ -25,14 +25,18 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
   final String? tagQuery;
   final String? searchQuery;
+  final String? searchTitle;
+  final String? playlistId;
   final AsyncValue<SessionData?>? sessionState;
   final List<SongModel>? songs;
 
   const RecommendationsResultScreen({
     super.key,
     this.searchQuery,
-    this.sessionState,
     this.tagQuery,
+    this.searchTitle,
+    this.playlistId,
+    this.sessionState,
     this.songs,
   });
 
@@ -63,21 +67,29 @@ class _RecommendationsResultScreenState
     // sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
     log("STATE : ${widget.sessionState?.value?.accessToken}");
 
-    _fetchRecommendations();
+    ();
+    _fetchRecommendationsOrPlaylistTracks();
   }
 
-  Future<void> _fetchRecommendations() async {
+  Future<void> _fetchRecommendationsOrPlaylistTracks() async {
     setState(() {
       isLoading = true;
       errorList = [];
     });
 
     try {
-      // final sessionData = ref.read(authProvider.notifier).state;
       final service = RecommendationsService();
-      final result = await service.getRecommendations(
-          widget.sessionState?.value?.accessToken ?? "",
-          widget.searchQuery ?? widget.tagQuery ?? "");
+      final accessToken = widget.sessionState?.value?.accessToken ?? "";
+      final providerToken = widget.sessionState?.value?.providerToken ?? "";
+
+      final result = widget.searchTitle == null || widget.playlistId == null
+          ? await service.getRecommendations(
+              accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+          : widget.playlistId != null && widget.searchTitle == null
+              ? await service.fetchPlaylistTracks(
+                  accessToken, providerToken, widget.playlistId ?? "")
+              : null;
+
       setState(() {
         recommendations = result;
         isLoading = false;
@@ -220,12 +232,6 @@ class _RecommendationsResultScreenState
                                 );
 
                                 return ListTile(
-                                  // leading: Image.network(
-                                  //   playlist.imageUrl,
-                                  //   width: 50,
-                                  //   height: 50,
-                                  //   fit: BoxFit.cover,
-                                  // ),
                                   leading: CachedNetworkImage(
                                       height: 40,
                                       width: 40,
@@ -570,42 +576,7 @@ class _RecommendationsResultScreenState
     return s[0].toUpperCase() + s.substring(1);
   }
 
-  // calculateArtists(List<String> artists) {
-  //   Set<String> uniqueArtists = {};
-  //   for (var song in recommendations) {
-  //     if (song.durationMs != null) {
-  //       totalDuration += song.durationMs!;
-  //     }
-  //     if (song.artist != null) {
-  //       uniqueArtists
-  //           .addAll(song.artist!.split(',').map((artist) => artist.trim()));
-  //     }
-  //   }
-  //   // String formattedDuration = _formatDuration(totalDuration);
-  //   int numberOfArtists = uniqueArtists.length;
-  // }
-
   int? currentlyPlayingSongId;
-
-  // // log("Log screen result: $recommendations");
-
-  // // Calculate total duration, number of songs, and unique artists
-  // int totalDuration = 0;
-  // int numberOfSongs = recommendations.length;
-  // Set<String> uniqueArtists = {};
-
-  // for (var song in recommendations) {
-  //   if (song.durationMs != null) {
-  //     totalDuration += song.durationMs!;
-  //   }
-  //   if (song.artist != null) {
-  //     uniqueArtists.addAll(
-  //         song.artist!.split(',').map((artist) => artist.trim()));
-  //   }
-  // }
-
-  // // String formattedDuration = _formatDuration(totalDuration);
-  // int numberOfArtists = uniqueArtists.length;
   int getTotalDuration(List<SongModel> songs) {
     return songs.fold(0, (sum, song) => sum + (song.durationMs ?? 0));
   }
@@ -661,9 +632,15 @@ class _RecommendationsResultScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Tooltip(
-              message: widget.searchQuery ?? widget.tagQuery ?? "",
+              message: widget.searchQuery ??
+                  widget.tagQuery ??
+                  widget.searchTitle ??
+                  "",
               child: Text(
-                capitalizeFirst(widget.searchQuery ?? widget.tagQuery ?? ""),
+                capitalizeFirst(widget.searchQuery ??
+                    widget.tagQuery ??
+                    widget.searchTitle ??
+                    ""),
                 style: Theme.of(context).textTheme.titleMedium!.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
@@ -786,7 +763,7 @@ class _RecommendationsResultScreenState
                 height: 150,
                 child: Column(
                   children: [
-                    if (widget.searchQuery == null)
+                    if (widget.tagQuery != null)
                       Row(
                         children: [
                           IconButton(

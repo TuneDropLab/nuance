@@ -182,7 +182,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                 //   // Trigger the change of artwork
                                 // });
                                 Get.to(RecommendationsResultScreen(
-                                  searchQuery: historyItem.searchQuery,
+                                  searchTitle: historyItem.searchQuery,
                                   sessionState: widget.sessionState,
                                   songs: historyItem.recommendations!,
                                 ));
