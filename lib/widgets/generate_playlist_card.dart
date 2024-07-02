@@ -48,15 +48,18 @@ class GeneratePlaylistCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            prompt ?? "",
-            maxLines: 2,
-            style: const TextStyle(
-              height: 1.2,
-              overflow: TextOverflow.ellipsis,
-              fontSize: 26,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+          Tooltip(
+            message: prompt ?? "",
+            child: Text(
+              prompt ?? "",
+              maxLines: 2,
+              style: const TextStyle(
+                height: 1.2,
+                overflow: TextOverflow.ellipsis,
+                fontSize: 26,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           // const SizedBox(

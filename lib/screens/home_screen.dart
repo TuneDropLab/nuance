@@ -286,7 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         fit: BoxFit.fill,
                         height: 150,
                         imageUrl:
-                            data.user["user_metadata"]["avatar_url"] ?? "",
+                            data?.user["user_metadata"]["avatar_url"] ?? "",
                         placeholder: (context, url) => const Center(
                           child: CupertinoActivityIndicator(
                             color: AppTheme.textColor,
@@ -315,10 +315,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                data.user["user_metadata"]["full_name"]
+                                data?.user["user_metadata"]["full_name"]
                                     .toString()
                                     .substring(0, 1)
-                                    .toUpperCase(),
+                                    .toUpperCase() ?? "",
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 20,
