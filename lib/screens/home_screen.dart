@@ -177,7 +177,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           drawerEnableOpenDragGesture: true,
-          drawer: const MyCustomDrawer(),
+          drawer: MyCustomDrawer(
+            sessionState: sessionState,
+          ),
           appBar: AppBar(
             backgroundColor: Colors.black,
             title: sessionState.when(
@@ -258,9 +260,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             //   // image: imageProvider,
                             // ),
                           ),
-                          
                         ),
-                        
                         onTap: () {
                           sessionData.logout();
                         },
@@ -286,7 +286,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         fit: BoxFit.fill,
                         height: 150,
                         imageUrl:
-                            data?.user["user_metadata"]["avatar_url"] ?? "",
+                            data.user["user_metadata"]["avatar_url"] ?? "",
                         placeholder: (context, url) => const Center(
                           child: CupertinoActivityIndicator(
                             color: AppTheme.textColor,
@@ -315,10 +315,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             child: Center(
                               child: Text(
-                                data?.user["user_metadata"]["full_name"]
-                                    .toString()
-                                    .substring(0, 1)
-                                    .toUpperCase() ?? "",
+                                data.user["user_metadata"]["full_name"]
+                                        .toString()
+                                        .substring(0, 1)
+                                        .toUpperCase() ??
+                                    "",
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 20,
@@ -386,7 +387,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               playlistName: recommendation['name'],
                               artistNames: recommendation['description'],
                               onClick: () {
-                                // Handle click
+                                Get.to(RecommendationsResultScreen(
+                                  sessionState: sessionState,
+                                  searchQuery: recommendation['name'],
+                                  songs: recommendation['tracks']['items'],
+                                ));
                               },
                             ).marginOnly(bottom: 25);
                           } else {

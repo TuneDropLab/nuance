@@ -208,6 +208,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                   Expanded(
                     child: Text(
                       widget.artistNames,
+                      maxLines: 1,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white.withOpacity(0.7),
                             fontWeight: FontWeight.w500,
