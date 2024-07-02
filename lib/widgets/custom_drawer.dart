@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/history_model.dart';
+import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
+import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
 
 class MyCustomDrawer extends ConsumerStatefulWidget {
+  // sessionState
+  final AsyncValue<SessionData?> sessionState;
   const MyCustomDrawer({
+    required this.sessionState,
     super.key,
   });
 
@@ -173,9 +178,14 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           color: Colors.white,
                                         ),
                               onTap: () {
-                                setState(() {
-                                  // Trigger the change of artwork
-                                });
+                                // setState(() {
+                                //   // Trigger the change of artwork
+                                // });
+                                Get.to(RecommendationsResultScreen(
+                                  searchQuery: historyItem.searchQuery,
+                                  sessionState: widget.sessionState,
+                                  songs: historyItem.recommendations!,
+                                ));
                               },
                             );
                           },
