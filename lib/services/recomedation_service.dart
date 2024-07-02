@@ -296,4 +296,32 @@ class RecommendationsService {
       rethrow;
     }
   }
+
+  Future<List<SongModel>> fetchPlaylistTracks(
+      String accessToken, String providerId, String playlistId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/spotify/playlist-tracks'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'playlistId': playlistId,
+          'userId': providerId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return (data['playlistTracks'] as List)
+            .map((e) => SongModel.fromJson(e))
+            .toList();
+      } else {
+        throw Exception('Failed to load playlist tracks');
+      }
+    } catch (e) {
+      print('Error fetching playlist tracks: $e');
+      throw Exception('Failed to fetch playlist tracks');
+    }
+  }
 }

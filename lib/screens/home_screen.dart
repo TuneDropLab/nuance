@@ -389,7 +389,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               onClick: () {
                                 Get.to(RecommendationsResultScreen(
                                   sessionState: sessionState,
-                                  searchQuery: recommendation['name'],
+                                  searchTitle: recommendation['name'],
                                   songs: recommendation['tracks']['items'],
                                 ));
                               },
