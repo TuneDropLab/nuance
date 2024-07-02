@@ -9,6 +9,7 @@ import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/artist_chip.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:shimmer/shimmer.dart';
 
 class SpotifyPlaylistCard extends ConsumerStatefulWidget {
   final String trackListHref;
@@ -52,10 +53,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
       final sessionState = ref.watch(sessionProvider);
       final accessToken = sessionState.value!.accessToken;
 
-      
-
       final List<String> images = [];
-
 
       final artistResponse = await http.post(
         Uri.parse('$baseURL/spotify/artists-images'),
@@ -67,7 +65,8 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
       );
 
       if (artistResponse.statusCode == 200) {
-        final artistData = jsonDecode(artistResponse.body) as Map<String, dynamic>;
+        final artistData =
+            jsonDecode(artistResponse.body) as Map<String, dynamic>;
         final List<dynamic> artistImagesData = artistData['artistImages'];
         for (final artistImage in artistImagesData) {
           images.add(artistImage);
@@ -151,17 +150,41 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                   ),
                 ),
                 height: 90,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: List.generate(artistImages.length, (index) {
-                    return Positioned(
-                      left: index * 34.0, // Adjust the overlap distance here
-                      child: ArtistChip(
-                        imageUrl: artistImages[index],
+                child: artistImages.isEmpty
+                    ? Shimmer.fromColors(
+                        baseColor: Colors.grey[700]!,
+                        highlightColor: Colors.grey[500]!,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: List.generate(7, (index) {
+                            return Positioned(
+                                left: index *
+                                    34.0, // Adjust the overlap distance here
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.3),
+                                  child: const CircleAvatar(
+                                    radius: 30 - 2.0,
+                                    backgroundColor: Color.fromARGB(255, 95, 94, 94),
+                                  ),
+                                )
+                                );
+                          }),
+                        ),
+                      )
+                    : Stack(
+                        alignment: Alignment.center,
+                        children: List.generate(artistImages.length, (index) {
+                          return Positioned(
+                            left: index *
+                                34.0, // Adjust the overlap distance here
+                            child: ArtistChip(
+                              imageUrl: artistImages[index],
+                            ),
+                          );
+                        }),
                       ),
-                    );
-                  }),
-                ),
               ),
               const SizedBox(height: 20),
               Text(
