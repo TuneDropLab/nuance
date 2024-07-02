@@ -258,7 +258,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             //   // image: imageProvider,
                             // ),
                           ),
+                          
                         ),
+                        
+                        onTap: () {
+                          sessionData.logout();
+                        },
                       );
                     }
 
