@@ -85,7 +85,7 @@ class _RecommendationsResultScreenState
       final result = widget.searchTitle == null || widget.playlistId == null
           ? await service.getRecommendations(
               accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
-          : widget.playlistId != null && widget.searchTitle == null
+          : widget.playlistId != null 
               ? await service.fetchPlaylistTracks(
                   accessToken, providerToken, widget.playlistId ?? "")
               : null;
