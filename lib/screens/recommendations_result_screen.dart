@@ -26,12 +26,14 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   final String? tagQuery;
   final String? searchQuery;
   final AsyncValue<SessionData?>? sessionState;
+  final List<SongModel>? songs;
 
   const RecommendationsResultScreen({
     super.key,
     this.searchQuery,
     this.sessionState,
     this.tagQuery,
+    this.songs,
   });
 
   @override
@@ -50,7 +52,7 @@ class _RecommendationsResultScreenState
 
   bool isLoading = true;
   List<String> errorList = [];
-  List<SongModel> recommendations = [];
+  List<SongModel>? recommendations = [];
 
   @override
   void didChangeDependencies() {
@@ -627,8 +629,9 @@ class _RecommendationsResultScreenState
       );
     }
     final sessionData = ref.read(sessionProvider.notifier);
-    int totalDuration = getTotalDuration(recommendations);
-    int uniqueArtistsCount = getUniqueArtistsCount(recommendations);
+    int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
+    int uniqueArtistsCount =
+        getUniqueArtistsCount(recommendations ?? widget.songs ?? []);
     // final recommendationsState =
     //     ref.watch(recommendationsProvider(searchQuery!));
 
@@ -674,7 +677,7 @@ class _RecommendationsResultScreenState
                 : errorList.isNotEmpty
                     ? Center(child: Text('Error: ${errorList.join(', ')}'))
                     : Text(
-                        '$uniqueArtistsCount  artists • ${recommendations.length}  songs • ${formatMilliseconds(totalDuration)}',
+                        '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
                         style: subtitleTextStyle,
                       ),
           ],
@@ -758,14 +761,17 @@ class _RecommendationsResultScreenState
                       ? Center(child: Text('Error: ${errorList.join(', ')}'))
                       : ListView.builder(
                           padding: const EdgeInsets.only(top: 24, bottom: 200),
-                          itemCount: recommendations.length,
+                          itemCount: recommendations?.length ??
+                              widget.songs?.length ??
+                              0,
                           itemBuilder: (context, index) {
-                            final song = recommendations[index];
+                            final song =
+                                recommendations?[index] ?? widget.songs?[index];
                             return MusicListTile(
                               isPlaying:
-                                  _isPlaying && _currentSong?.id == song.id,
+                                  _isPlaying && _currentSong?.id == song?.id,
                               trailingOnTap: () => _togglePlay(song),
-                              recommendation: song,
+                              recommendation: song!,
                             );
                           },
                         ),
