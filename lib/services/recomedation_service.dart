@@ -303,6 +303,7 @@ class RecommendationsService {
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlist-tracks'),
         headers: {
+          'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -311,8 +312,9 @@ class RecommendationsService {
         }),
       );
 
+      final data = jsonDecode(response.body);
+      log("Playlist Tracks Data: $data");
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
         return (data['playlistTracks'] as List)
             .map((e) => SongModel.fromJson(e))
             .toList();

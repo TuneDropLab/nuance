@@ -82,23 +82,31 @@ class _RecommendationsResultScreenState
       final accessToken = widget.sessionState?.value?.accessToken ?? "";
       final providerToken = widget.sessionState?.value?.providerToken ?? "";
 
-      final result = widget.searchTitle == null || widget.playlistId == null
-          ? await service.getRecommendations(
-              accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
-          : widget.playlistId != null 
-              ? await service.fetchPlaylistTracks(
-                  accessToken, providerToken, widget.playlistId ?? "")
-              : null;
+      final result =
+          // widget.searchTitle == null || widget.playlistId == null
+          //     ? await service.getRecommendations(
+          //         accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+          //     :
+          widget.searchQuery != null || widget.tagQuery != null
+              ? await service.getRecommendations(
+                  accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+              : widget.playlistId != null
+                  ? await service.fetchPlaylistTracks(
+                      accessToken, providerToken, widget.playlistId ?? "")
+                  : null;
+      print("HIIIIIIIII: ${result?.first}");
 
       setState(() {
         recommendations = result;
         isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        errorList.add(e.toString());
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          errorList.add(e.toString());
+          isLoading = false;
+        });
+      }
     }
   }
 

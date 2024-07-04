@@ -380,6 +380,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           final recommendation = recommendations[index];
 
                           if (recommendation['type'] == 'playlist') {
+                            print(recommendation?['tracks']?['items'] ?? 0);
+
                             // Spotify Playlist Card
                             return SpotifyPlaylistCard(
                               trackListHref: recommendation['tracks']['href'],
@@ -390,7 +392,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 Get.to(RecommendationsResultScreen(
                                   sessionState: sessionState,
                                   searchTitle: recommendation['name'],
-                                  songs: recommendation['tracks']['items'],
+                                  playlistId: recommendation['id'],
                                 ));
                               },
                             ).marginOnly(bottom: 25);
