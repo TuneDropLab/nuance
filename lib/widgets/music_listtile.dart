@@ -68,7 +68,7 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
         ),
       ),
       title: Text(
-        widget.recommendation.title!.length >= 17
+        (widget.recommendation.title?.length ?? 0) >= 17
             ? "${widget.recommendation.title?.substring(0, 17)}..."
             : widget.recommendation.title ?? "",
         maxLines: 1,
@@ -84,14 +84,16 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: widget.recommendation.artist!.length >= 24
+                  text: (widget.recommendation.artist?.length ?? 0) >= 24
                       ? "${widget.recommendation.artist!.substring(0, 24)}..."
                       : widget.recommendation.artist ?? "",
                   style: subtitleTextStyle,
                 ),
                 // if (widget.recommendation.popularity! >= 70)
                 TextSpan(
-                  text: widget.recommendation.popularity! >= 70 ? " 🔥" : "",
+                  text: (widget.recommendation.popularity ?? 0) >= 70
+                      ? " 🔥"
+                      : "",
                   style: const TextStyle(
                     color: Color(0xffFF581A),
                   ),

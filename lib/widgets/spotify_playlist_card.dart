@@ -37,7 +37,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
   // @override
   // void initState() {
   //   super.initState();
-  //   _fetchTrackList(playlistId: widget.playlistId);
+  //   _fetchArtistsImages(playlistId: widget.playlistId);
   // }
 
   @override
@@ -45,10 +45,10 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
     super.didChangeDependencies();
     // final arguments = ModalRoute.of(context)!.settings.arguments as Map;
     // searchQuery = arguments['search_term'] as String?;
-    _fetchTrackList(playlistId: widget.playlistId);
+    _fetchArtistsImages(playlistId: widget.playlistId);
   }
 
-  Future<void> _fetchTrackList({required String playlistId}) async {
+  Future<void> _fetchArtistsImages({required String playlistId}) async {
     try {
       final sessionState = ref.watch(sessionProvider);
       final accessToken = sessionState.value!.accessToken;
@@ -80,7 +80,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
         artistImages = images;
       });
     } catch (e) {
-      log('Exception in _fetchTrackList: $e');
+      log('Exception in _fetchArtistsImages: $e');
     }
   }
 
