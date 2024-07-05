@@ -1,3 +1,4 @@
+import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/loader.dart';
 
 class MyCustomDrawer extends ConsumerStatefulWidget {
   // sessionState
@@ -23,7 +26,7 @@ class MyCustomDrawer extends ConsumerStatefulWidget {
 
 class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   String? _selectedArtist;
-  Map<String, int> _artists = {};
+  final Map<String, int> _artists = {};
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +35,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
       child: SafeArea(
         child: Container(
           height: Get.height,
-          width: Get.width * 0.9,
+          width: Get.width,
           color: Colors.transparent,
           child: Column(
             children: [
@@ -42,100 +45,123 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
+                    Text(
                       'History',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                    ),
+                    const SizedBox(
+                      width: 20,
                     ),
                     // Search bar
-                    SizedBox(
-                      width: 200,
-                      height: 40,
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search',
-                          hintStyle: const TextStyle(color: Colors.white70),
-                          filled: true,
-                          fillColor: Colors.white10,
+                    Expanded(
+                      // width: 200,
+                      // height: 40,
+                      child: AnimatedTextField(
+                        // textAlign: TextAlign.center,
+                        // hintTextAlign: TextAlign.center,
+                        maxLines: 1,
+                        animationDuration: const Duration(seconds: 8),
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        // controller: nameController,
+                        decoration: const InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(25),
+                            ),
                             borderSide: BorderSide.none,
                           ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Colors.white70,
-                          ),
+                          fillColor: Color.fromARGB(98, 34, 34, 34),
+                          filled: true,
+                          contentPadding: EdgeInsets.all(12),
                         ),
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        hintTextStyle:
+                            Theme.of(context).textTheme.titleMedium!.copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white,
+                                ),
+                        hintTexts: const [
+                          'Search',
+                        ],
+                        onSubmitted: (value) {
+                          // submit();
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
               // Dynamic Artist Chips
-              Container(
-                height: 50,
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Consumer(
-                  builder: (context, watch, child) {
-                    final historyAsyncValue = ref.watch(historyProvider);
-                    return historyAsyncValue.when(
-                      data: (history) {
-                        // Generate artists
-                        _artists = _generateArtists(history);
-                        return ListView(
-                          scrollDirection: Axis.horizontal,
-                          children: _artists.keys.map((artist) {
-                            return AnimatedOpacity(
-                              opacity: _selectedArtist == null ||
-                                      _selectedArtist == artist
-                                  ? 1.0
-                                  : 0.2,
-                              duration: const Duration(milliseconds: 500),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4.0),
-                                child: ChoiceChip(
-                                  label: Text('$artist (${_artists[artist]})'),
-                                  selected: _selectedArtist == artist,
-                                  onSelected: (bool selected) {
-                                    setState(() {
-                                      _selectedArtist =
-                                          selected ? artist : null;
-                                    });
-                                  },
-                                  selectedColor: Colors.blue,
-                                  backgroundColor: Colors.white10,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20.0),
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: _selectedArtist == artist
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                      loading: () => const Center(
-                        child: CupertinoActivityIndicator(),
-                      ),
-                      error: (error, stackTrace) => Center(
-                        child: Text(
-                          'Error: $error',
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+              // Container(
+              //   height: 50,
+              //   padding: const EdgeInsets.symmetric(vertical: 8.0),
+              //   child: Consumer(
+              //     builder: (context, watch, child) {
+              //       final historyAsyncValue = ref.watch(historyProvider);
+              //       return historyAsyncValue.when(
+              //         data: (history) {
+              //           // Generate artists
+              //           _artists = _generateArtists(history);
+              //           return ListView(
+              //             scrollDirection: Axis.horizontal,
+              //             children: _artists.keys.map((artist) {
+              //               return AnimatedOpacity(
+              //                 opacity: _selectedArtist == null ||
+              //                         _selectedArtist == artist
+              //                     ? 1.0
+              //                     : 0.2,
+              //                 duration: const Duration(milliseconds: 500),
+              //                 child: Padding(
+              //                   padding:
+              //                       const EdgeInsets.symmetric(horizontal: 4.0),
+              //                   child: ChoiceChip(
+              //                     label: Text('$artist (${_artists[artist]})'),
+              //                     selected: _selectedArtist == artist,
+              //                     onSelected: (bool selected) {
+              //                       setState(() {
+              //                         _selectedArtist =
+              //                             selected ? artist : null;
+              //                       });
+              //                     },
+              //                     selectedColor: Colors.blue,
+              //                     backgroundColor: Colors.white10,
+              //                     shape: RoundedRectangleBorder(
+              //                       borderRadius: BorderRadius.circular(20.0),
+              //                     ),
+              //                     labelStyle: TextStyle(
+              //                       color: _selectedArtist == artist
+              //                           ? Colors.white
+              //                           : Colors.black,
+              //                     ),
+              //                   ),
+              //                 ),
+              //               );
+              //             }).toList(),
+              //           );
+              //         },
+              //         loading: () => const Center(
+              //           child: CupertinoActivityIndicator(),
+              //         ),
+              //         error: (error, stackTrace) => Center(
+              //           child: Text(
+              //             'Error: $error',
+              //             style: const TextStyle(color: Colors.red),
+              //           ),
+              //         ),
+              //       );
+              //     },
+              //   ),
+              // ),
               // History List
               Expanded(
                 child: Consumer(
@@ -163,7 +189,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                               subtitle: Text(
                                 _formatRelativeTime(
                                     historyItem.createdAt ?? DateTime.now()),
-                                style: const TextStyle(color: Colors.white70),
+                                style: subtitleTextStyle,
                               ),
                               leading:
                                   historyItem.recommendations?.isNotEmpty ??
@@ -191,13 +217,26 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           },
                         );
                       },
-                      loading: () => const Center(
-                        child: CupertinoActivityIndicator(),
+                      loading: () => Center(
+                        child: SpinningSvg(
+                          svgWidget:
+                              // SvgPicture.asset('assets/images/your_svg.svg'),
+                              Image.asset(
+                            'assets/hdlogo.png',
+                            height: 40,
+                          ),
+                          // size: 10.0,
+                          textList: const [
+                            'Just a moment ...',
+                            'Loading your history ...',
+                            'Almost done ...',
+                          ],
+                        ),
                       ),
-                      error: (error, stackTrace) => Center(
+                      error: (error, stackTrace) => const Center(
                         child: Text(
-                          'Error: $error',
-                          style: const TextStyle(color: Colors.red),
+                          'Error loading history',
+                          style: TextStyle(color: Colors.red),
                         ),
                       ),
                     );
