@@ -13,7 +13,6 @@ import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/loader.dart';
 
 class MyCustomDrawer extends ConsumerStatefulWidget {
-  // sessionState
   final AsyncValue<SessionData?> sessionState;
   const MyCustomDrawer({
     required this.sessionState,
@@ -26,7 +25,15 @@ class MyCustomDrawer extends ConsumerStatefulWidget {
 
 class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   String? _selectedArtist;
-  final Map<String, int> _artists = {};
+
+  // Dynamic artists
+  // final Map<String, int> _artists = {};
+  @override
+  void initState() {
+    super.initState();
+    // TODO: implement initState
+    // ref.invalidate(historyProvider);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,11 +65,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                     ),
                     // Search bar
                     Expanded(
-                      // width: 200,
-                      // height: 40,
                       child: AnimatedTextField(
-                        // textAlign: TextAlign.center,
-                        // hintTextAlign: TextAlign.center,
                         maxLines: 1,
                         animationDuration: const Duration(seconds: 8),
                         onTapOutside: (event) {
@@ -196,7 +199,9 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           false
                                       ? ArtworkSwitcher(
                                           artworks: historyItem.recommendations!
-                                              .map((song) => song.artworkUrl)
+                                              .map(
+                                                (song) => song.artworkUrl,
+                                              )
                                               .toList(),
                                         )
                                       : const Icon(

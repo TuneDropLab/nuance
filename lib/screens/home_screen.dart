@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:nuance/models/history_model.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
@@ -18,6 +20,7 @@ import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:nuance/providers/history_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   static const routeName = '/home';
@@ -35,7 +38,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey<ScaffoldState> _key = GlobalKey();
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-    // final focusNode = FocusNode();
+  // final focusNode = FocusNode();
 
   final ScrollController _scrollController = ScrollController();
 
@@ -43,12 +46,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool isLoading = false; // Track loading state
   bool isMoreLoading = false; // Track loading state for pagination
   List<dynamic> recommendations = []; // List to store recommendations
-    // final sessionState = ref.watch(sessionProvider);
+  // final sessionState = ref.watch(sessionProvider);
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    // ref.invalidate(historyProvider);
     _fetchRecommendations();
   }
 
@@ -114,8 +118,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _fetchRecommendations();
   }
 
- 
-
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
@@ -124,80 +126,136 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
     final focusNode = FocusNode();
 
-     void submit() {
-    focusNode.unfocus();
-    final userMessage = _controller.text;
-    // final tagQuery = _tagQuery.text;
-    if (userMessage.isEmpty) {
-      return;
+    void submit() {
+      focusNode.unfocus();
+      final userMessage = _controller.text;
+      // final tagQuery = _tagQuery.text;
+      if (userMessage.isEmpty) {
+        return;
+      }
+
+      // Navigator.pushNamed(
+      //   context,
+      //   RecommendationsResultScreen.routeName,
+      //   arguments: {
+      //     'search_term': userMessage.trim(),
+      //     'tag_query': tagQuery,
+      //     'sessionState': sessionState,
+      //   },
+      // ).then((value) => setState(() {}));
+
+      Get.to(() => RecommendationsResultScreen(
+            searchQuery: userMessage.trim(),
+            tagQuery: null,
+            sessionState: sessionState,
+          ));
     }
 
-    // Navigator.pushNamed(
-    //   context,
-    //   RecommendationsResultScreen.routeName,
-    //   arguments: {
-    //     'search_term': userMessage.trim(),
-    //     'tag_query': tagQuery,
-    //     'sessionState': sessionState,
-    //   },
-    // ).then((value) => setState(() {}));
+    void submitTagQuery() {
+      focusNode.unfocus();
+      // final userMessage = _controller.text;
+      final tagQuery = _tagQuery.text;
+      if (tagQuery.isEmpty) {
+        return;
+      }
 
-    Get.to(() => RecommendationsResultScreen(
-          searchQuery: userMessage.trim(),
-          tagQuery: null,
-          sessionState: sessionState,
-        ));
-  }
+      // Navigator.pushNamed(
+      //   context,
+      //   RecommendationsResultScreen.routeName,
+      //   arguments: {
+      //     'search_term': userMessage.trim(),
+      //     'tag_query': tagQuery,
+      //     'sessionState': sessionState,
+      //   },
+      // ).then((value) => setState(() {}));
 
-  void submitTagQuery() {
-    focusNode.unfocus();
-    // final userMessage = _controller.text;
-    final tagQuery = _tagQuery.text;
-    if (tagQuery.isEmpty) {
-      return;
+      Get.to(() => RecommendationsResultScreen(
+            searchQuery: null,
+            tagQuery: tagQuery,
+            sessionState: sessionState,
+          ));
     }
 
-    // Navigator.pushNamed(
-    //   context,
-    //   RecommendationsResultScreen.routeName,
-    //   arguments: {
-    //     'search_term': userMessage.trim(),
-    //     'tag_query': tagQuery,
-    //     'sessionState': sessionState,
-    //   },
-    // ).then((value) => setState(() {}));
+    void submitGeneratedQuery() {
+      focusNode.unfocus();
+      // final userMessage = _controller.text;
+      final generatedRecQuery = _generatedRecQuery.text;
+      if (generatedRecQuery.isEmpty) {
+        return;
+      }
 
-    Get.to(() => RecommendationsResultScreen(
-          searchQuery: null,
-          tagQuery: tagQuery,
-          sessionState: sessionState,
-        ));
-  }
+      // Navigator.pushNamed(
+      //   context,
+      //   RecommendationsResultScreen.routeName,
+      //   arguments: {
+      //     'search_term': userMessage.trim(),
+      //     'tag_query': tagQuery,
+      //     'sessionState': sessionState,
+      //   },
+      // ).then((value) => setState(() {}));
 
-  void submitGeneratedQuery() {
-    focusNode.unfocus();
-    // final userMessage = _controller.text;
-    final generatedRecQuery = _generatedRecQuery.text;
-    if (generatedRecQuery.isEmpty) {
-      return;
+      Get.to(() => RecommendationsResultScreen(
+            searchQuery: generatedRecQuery,
+            tagQuery: null,
+            sessionState: sessionState,
+          ));
     }
 
-    // Navigator.pushNamed(
-    //   context,
-    //   RecommendationsResultScreen.routeName,
-    //   arguments: {
-    //     'search_term': userMessage.trim(),
-    //     'tag_query': tagQuery,
-    //     'sessionState': sessionState,
-    //   },
-    // ).then((value) => setState(() {}));
+    // final historyAsyncValue = ref.watch(historyProvider);
 
-    Get.to(() => RecommendationsResultScreen(
-          searchQuery: generatedRecQuery,
-          tagQuery: null,
-          sessionState: sessionState,
-        ));
-  }
+    final historyProviderRef = ref.watch(historyProvider);
+    final List<HistoryModel>? historyList = historyProviderRef.value;
+    String? lastGeneratedQuery = historyList != null && historyList.isNotEmpty
+        ? historyList.first.searchQuery
+        : '';
+
+    // Sort the history list in ascending order based on searchQuery
+    // historyList?.sort((a, b) => a.searchQuery!.compareTo(b.searchQuery!));
+    print("LAST GEENRATED HERW!!!!!: $lastGeneratedQuery");
+
+    // Add a method to compare the last generated query with the new input query
+    void compareAndConfirmQuery(
+        String lastQuery, String newQuery, void Function() submit) {
+      print("LAST QUERY: $lastQuery");
+      print("NEW QUERY: $newQuery");
+      if (lastQuery == newQuery) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[900],
+              title: const Text(
+                'You just generated a similar playlist',
+                style: TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+              content: Text(
+                'Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists',
+                style: subtitleTextStyle,
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    submit(); // Correctly call the submit function
+                  },
+                  child: const Text('Regenerate'),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        submit(); // Correctly call the submit function
+      }
+    }
 
     return WillPopScope(
       onWillPop: () async {
@@ -248,8 +306,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 );
               },
-              loading: () => Text('Loading...',
-                  style: Theme.of(context).textTheme.titleMedium),
+              loading: () => Center(
+                child: Text('Loading...',
+                    style: Theme.of(context).textTheme.titleMedium),
+              ),
               error: (error, stack) => Text('Error loading user data',
                   style: Theme.of(context).textTheme.titleMedium),
             ),
@@ -404,7 +464,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 onClick: () {
                                   _generatedRecQuery.text =
                                       recommendation['text'];
-                                  submitGeneratedQuery();
+                                  compareAndConfirmQuery(
+                                    lastGeneratedQuery ?? "",
+                                    _generatedRecQuery.text,
+                                    submitGeneratedQuery,
+                                  );
+
+                                  // submitGeneratedQuery();
                                 },
                               ).marginOnly(bottom: 25);
                             }
@@ -446,8 +512,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         );
                       },
                     ),
-                    error: (error, stackTrace) =>
-                        Center(child: Text('Error: $error')),
+                    error: (error, stackTrace) => Center(
+                        child: Text(
+                      'Error loading playlists',
+                      style: subtitleTextStyle.copyWith(
+                        color: Colors.white,
+                      ),
+                    )),
                   ),
                 ),
               ),
@@ -504,7 +575,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             );
                           },
                           error: (error, stackTrace) {
-                            return Text("error: $error");
+                            return Text(
+                              "Error loading tags",
+                              style: subtitleTextStyle.copyWith(
+                                color: Colors.white,
+                              ),
+                            );
                           },
                           loading: () {
                             return ListView.separated(
@@ -558,7 +634,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               text: "Generate",
                               backgroundColor: Colors.white,
                               onPressed: () {
-                                submit();
+                                compareAndConfirmQuery(
+                                  lastGeneratedQuery ?? "",
+                                  _controller.text,
+                                  submit, // Pass the submit function reference
+                                );
                               },
                             ),
                           ),
@@ -579,7 +659,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           'Songs to Help Me Sleep',
                         ],
                         onSubmitted: (value) {
-                          submit();
+                          compareAndConfirmQuery(
+                            lastGeneratedQuery ?? "",
+                            _controller.text,
+                            submit, // Pass the submit function reference
+                          );
                         },
                       ),
                     ],
