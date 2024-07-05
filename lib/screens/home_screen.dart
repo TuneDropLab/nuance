@@ -19,8 +19,6 @@ import 'package:nuance/widgets/spotify_playlist_card.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
 
-// import 'constants.dart'; // Import the constants file
-
 class HomeScreen extends ConsumerStatefulWidget {
   static const routeName = '/home';
 
@@ -31,17 +29,92 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final TextEditingController _controller = TextEditingController(
-    text: '',
-  );
+  final TextEditingController _controller = TextEditingController(text: '');
   final _tagQuery = TextEditingController();
   final _generatedRecQuery = TextEditingController();
-
   final GlobalKey<ScaffoldState> _key = GlobalKey();
-
   final RefreshController _refreshController =
       RefreshController(initialRefresh: false);
-  bool isLoading = false;
+    // final focusNode = FocusNode();
+
+  final ScrollController _scrollController = ScrollController();
+
+  int currentPage = 1; // Track current page number
+  bool isLoading = false; // Track loading state
+  bool isMoreLoading = false; // Track loading state for pagination
+  List<dynamic> recommendations = []; // List to store recommendations
+    // final sessionState = ref.watch(sessionProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _fetchRecommendations();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // Dispose the scroll controller
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !isLoading &&
+        !isMoreLoading) {
+      _fetchMoreRecommendations();
+    }
+  }
+
+  Future<void> _fetchRecommendations() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      final newRecommendations =
+          await ref.read(spotifyHomeRecommendationsProvider.future);
+      setState(() {
+        recommendations = newRecommendations;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading recommendations: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchMoreRecommendations() async {
+    setState(() {
+      isMoreLoading = true;
+    });
+    try {
+      final newRecommendations =
+          await ref.read(spotifyHomeRecommendationsProvider.future);
+      setState(() {
+        recommendations = List.from(recommendations)
+          ..addAll(newRecommendations);
+        currentPage++;
+        isMoreLoading = false;
+      });
+    } catch (e) {
+      print('Error loading more recommendations: $e');
+      setState(() {
+        isMoreLoading = false;
+      });
+    }
+  }
+
+  void onRefresh() async {
+    ref.invalidate(spotifyHomeRecommendationsProvider);
+    await Future.delayed(const Duration(seconds: 4));
+    _refreshController.refreshCompleted();
+    _fetchRecommendations();
+  }
+
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -51,120 +124,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
     final focusNode = FocusNode();
 
-    void onRefresh() async {
-      setState(() {
-        isLoading = true; // Set loading state to true
-      });
-
-      ref.invalidate(spotifyHomeRecommendationsProvider);
-
-      // Simulate network fetch delay
-      // await Future.delayed(const Duration(milliseconds: 500));
-
-      setState(() {
-        isLoading = false; // Set loading state to false
-      });
-
-      print("onREFRESH");
-
-      _refreshController.resetNoData();
+     void submit() {
+    focusNode.unfocus();
+    final userMessage = _controller.text;
+    // final tagQuery = _tagQuery.text;
+    if (userMessage.isEmpty) {
+      return;
     }
 
-    void onLoading() async {
-      setState(() {
-        isLoading = true; // Set loading state to true
-      });
-      print("onLoading1");
+    // Navigator.pushNamed(
+    //   context,
+    //   RecommendationsResultScreen.routeName,
+    //   arguments: {
+    //     'search_term': userMessage.trim(),
+    //     'tag_query': tagQuery,
+    //     'sessionState': sessionState,
+    //   },
+    // ).then((value) => setState(() {}));
 
-      ref.invalidate(spotifyHomeRecommendationsProvider);
+    Get.to(() => RecommendationsResultScreen(
+          searchQuery: userMessage.trim(),
+          tagQuery: null,
+          sessionState: sessionState,
+        ));
+  }
 
-      // Simulate network fetch delay
-      // await Future.delayed(const Duration(milliseconds: 500));
-      print("onLoading2");
-
-      setState(() {
-        isLoading = false; // Set loading state to false
-      });
-
-      print("onLoading");
-
-      _refreshController.loadComplete();
+  void submitTagQuery() {
+    focusNode.unfocus();
+    // final userMessage = _controller.text;
+    final tagQuery = _tagQuery.text;
+    if (tagQuery.isEmpty) {
+      return;
     }
 
-    void submit() {
-      focusNode.unfocus();
-      final userMessage = _controller.text;
-      // final tagQuery = _tagQuery.text;
-      if (userMessage.isEmpty) {
-        return;
-      }
+    // Navigator.pushNamed(
+    //   context,
+    //   RecommendationsResultScreen.routeName,
+    //   arguments: {
+    //     'search_term': userMessage.trim(),
+    //     'tag_query': tagQuery,
+    //     'sessionState': sessionState,
+    //   },
+    // ).then((value) => setState(() {}));
 
-      // Navigator.pushNamed(
-      //   context,
-      //   RecommendationsResultScreen.routeName,
-      //   arguments: {
-      //     'search_term': userMessage.trim(),
-      //     'tag_query': tagQuery,
-      //     'sessionState': sessionState,
-      //   },
-      // ).then((value) => setState(() {}));
+    Get.to(() => RecommendationsResultScreen(
+          searchQuery: null,
+          tagQuery: tagQuery,
+          sessionState: sessionState,
+        ));
+  }
 
-      Get.to(() => RecommendationsResultScreen(
-            searchQuery: userMessage.trim(),
-            tagQuery: null,
-            sessionState: sessionState,
-          ));
+  void submitGeneratedQuery() {
+    focusNode.unfocus();
+    // final userMessage = _controller.text;
+    final generatedRecQuery = _generatedRecQuery.text;
+    if (generatedRecQuery.isEmpty) {
+      return;
     }
 
-    void submitTagQuery() {
-      focusNode.unfocus();
-      // final userMessage = _controller.text;
-      final tagQuery = _tagQuery.text;
-      if (tagQuery.isEmpty) {
-        return;
-      }
+    // Navigator.pushNamed(
+    //   context,
+    //   RecommendationsResultScreen.routeName,
+    //   arguments: {
+    //     'search_term': userMessage.trim(),
+    //     'tag_query': tagQuery,
+    //     'sessionState': sessionState,
+    //   },
+    // ).then((value) => setState(() {}));
 
-      // Navigator.pushNamed(
-      //   context,
-      //   RecommendationsResultScreen.routeName,
-      //   arguments: {
-      //     'search_term': userMessage.trim(),
-      //     'tag_query': tagQuery,
-      //     'sessionState': sessionState,
-      //   },
-      // ).then((value) => setState(() {}));
-
-      Get.to(() => RecommendationsResultScreen(
-            searchQuery: null,
-            tagQuery: tagQuery,
-            sessionState: sessionState,
-          ));
-    }
-
-    void submitGeneratedQuery() {
-      focusNode.unfocus();
-      // final userMessage = _controller.text;
-      final generatedRecQuery = _generatedRecQuery.text;
-      if (generatedRecQuery.isEmpty) {
-        return;
-      }
-
-      // Navigator.pushNamed(
-      //   context,
-      //   RecommendationsResultScreen.routeName,
-      //   arguments: {
-      //     'search_term': userMessage.trim(),
-      //     'tag_query': tagQuery,
-      //     'sessionState': sessionState,
-      //   },
-      // ).then((value) => setState(() {}));
-
-      Get.to(() => RecommendationsResultScreen(
-            searchQuery: generatedRecQuery,
-            tagQuery: null,
-            sessionState: sessionState,
-          ));
-    }
+    Get.to(() => RecommendationsResultScreen(
+          searchQuery: generatedRecQuery,
+          tagQuery: null,
+          sessionState: sessionState,
+        ));
+  }
 
     return WillPopScope(
       onWillPop: () async {
@@ -177,9 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           drawerEnableOpenDragGesture: true,
-          drawer: MyCustomDrawer(
-            sessionState: sessionState,
-          ),
+          drawer: MyCustomDrawer(sessionState: sessionState),
           appBar: AppBar(
             backgroundColor: Colors.black,
             title: sessionState.when(
@@ -188,18 +219,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Welcome',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        'Discover Playlists',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      Text('Welcome',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      Text('Discover Playlists',
+                          style: Theme.of(context).textTheme.titleMedium),
                     ],
                   );
                 }
-
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -222,14 +248,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 );
               },
-              loading: () => Text(
-                'Loading...',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              error: (error, stack) => Text(
-                'Error loading user data',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              loading: () => Text('Loading...',
+                  style: Theme.of(context).textTheme.titleMedium),
+              error: (error, stack) => Text('Error loading user data',
+                  style: Theme.of(context).textTheme.titleMedium),
             ),
             automaticallyImplyLeading: false,
             centerTitle: false,
@@ -256,9 +278,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ],
                             ),
                             color: Colors.orange,
-                            // image: DecorationImage(
-                            //   // image: imageProvider,
-                            // ),
                           ),
                         ),
                         onTap: () {
@@ -266,7 +285,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                       );
                     }
-
                     return CupertinoButton(
                       padding: const EdgeInsets.all(0),
                       onPressed: () {
@@ -289,8 +307,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             data.user["user_metadata"]["avatar_url"] ?? "",
                         placeholder: (context, url) => const Center(
                           child: CupertinoActivityIndicator(
-                            color: AppTheme.textColor,
-                          ),
+                              color: AppTheme.textColor),
                         ),
                         errorWidget: (context, url, error) => GestureDetector(
                           child: Container(
@@ -309,17 +326,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ],
                               ),
                               color: Colors.orange,
-                              // image: DecorationImage(
-                              //   // image: imageProvider,
-                              // ),
                             ),
                             child: Center(
                               child: Text(
                                 data.user["user_metadata"]["full_name"]
-                                        .toString()
-                                        .substring(0, 1)
-                                        .toUpperCase() ??
-                                    "",
+                                    .toString()
+                                    .substring(0, 1)
+                                    .toUpperCase(),
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontSize: 20,
@@ -335,9 +348,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     );
                   },
                   loading: () => const Center(
-                    child: CupertinoActivityIndicator(
-                      color: AppTheme.textColor,
-                    ),
+                    child:
+                        CupertinoActivityIndicator(color: AppTheme.textColor),
                   ),
                   error: (error, stack) => GestureDetector(
                     child: Container(
@@ -346,9 +358,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.orange,
-                        // image: DecorationImage(
-                        //   // image: imageProvider,
-                        // ),
                       ),
                     ),
                     onTap: () {
@@ -362,60 +371,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           body: Stack(
             children: [
               Container(
-                // padding: const EdgeInsets.only(bottom: 10),
                 child: SmartRefresher(
                   enablePullDown: true,
-                  enablePullUp: true,
                   onRefresh: onRefresh,
-                  onLoading: onLoading,
-                  header: const ClassicHeader(),
                   controller: _refreshController,
                   child: homeRecommendations.when(
                     data: (recommendations) {
                       return ListView.builder(
-                        itemCount: recommendations.length,
+                        itemCount: recommendations.length +
+                            1, // Add 1 for the loading indicator
                         itemBuilder: (context, index) {
-                          // log("message");
-                          print("RECOMMENDS: ${recommendations.first}");
-                          final recommendation = recommendations[index];
-
-                          if (recommendation['type'] == 'playlist') {
-                            print(recommendation?['tracks']?['items'] ?? 0);
-
-                            // Spotify Playlist Card
-                            return SpotifyPlaylistCard(
-                              trackListHref: recommendation['tracks']['href'],
-                              playlistId: recommendation['id'],
-                              playlistName: recommendation['name'],
-                              artistNames: recommendation['description'],
-                              onClick: () {
-                                Get.to(RecommendationsResultScreen(
-                                  sessionState: sessionState,
-                                  searchTitle: recommendation['name'],
-                                  playlistId: recommendation['id'],
-                                ));
-                              },
-                            ).marginOnly(bottom: 25);
+                          if (index < recommendations.length) {
+                            final recommendation = recommendations[index];
+                            if (recommendation['type'] == 'playlist') {
+                              return SpotifyPlaylistCard(
+                                trackListHref: recommendation['tracks']['href'],
+                                playlistId: recommendation['id'],
+                                playlistName: recommendation['name'],
+                                artistNames: recommendation['description'],
+                                onClick: () {
+                                  Get.to(RecommendationsResultScreen(
+                                    sessionState: sessionState,
+                                    searchTitle: recommendation['name'],
+                                    playlistId: recommendation['id'],
+                                  ));
+                                },
+                              ).marginOnly(bottom: 25);
+                            } else {
+                              return GeneratePlaylistCard(
+                                prompt: recommendation['text'],
+                                image: recommendation['image'],
+                                onClick: () {
+                                  _generatedRecQuery.text =
+                                      recommendation['text'];
+                                  submitGeneratedQuery();
+                                },
+                              ).marginOnly(bottom: 25);
+                            }
+                          } else if (isMoreLoading) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
                           } else {
-                            // Generate Playlist Card
-                            return GeneratePlaylistCard(
-                              prompt: recommendation['text'],
-                              image: recommendation['image'],
-                              onClick: () {
-                                // Handle click
-                                _generatedRecQuery.text =
-                                    recommendation['text'];
-                                submitGeneratedQuery();
-                              },
-                            ).marginOnly(bottom: 25);
+                            return Container();
                           }
                         },
                         padding: const EdgeInsets.only(
-                          bottom: 200,
-                          left: 20,
-                          right: 20,
-                          top: 20,
-                        ),
+                            bottom: 200, left: 20, right: 20, top: 20),
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        scrollDirection: Axis.vertical,
+                        shrinkWrap: true,
                       );
                     },
                     loading: () => ListView.builder(
@@ -423,32 +429,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       itemCount: 30,
                       itemBuilder: (context, index) {
                         return SizedBox(
-                          // width: 200.0,
-                          // height: 100.0,
                           child: Shimmer.fromColors(
-                              baseColor:
-                                  const Color.fromARGB(51, 255, 255, 255),
-                              highlightColor:
-                                  const Color.fromARGB(65, 255, 255, 255),
-                              child: Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                height: 190,
-                                // width: 200,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey,
-                                  borderRadius: BorderRadius.circular(25),
-                                ),
-                              ).marginOnly(bottom: 25)
-                              // child: const Text(
-                              //   // 'Shimmer',
-                              //   textAlign: TextAlign.center,
-                              //   style: TextStyle(
-                              //     fontSize: 40.0,
-                              //     fontWeight: FontWeight.bold,
-                              //   ),
-                              // ),
+                            baseColor: const Color.fromARGB(51, 255, 255, 255),
+                            highlightColor:
+                                const Color.fromARGB(65, 255, 255, 255),
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              height: 190,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(25),
                               ),
+                            ).marginOnly(bottom: 25),
+                          ),
                         );
                       },
                     ),
@@ -462,120 +456,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Container(
                   color: Colors.black,
                   height: 150,
-                  // padding: const EdgeInsets.all(16),
-                  // decoration: BoxDecoration(
-                  //   // color: Colors.grey[900],
-                  //   borderRadius: const BorderRadius.vertical(
-                  //     top: Radius.circular(16),
-                  //   ),
-                  // ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Expanded(
-                          // height: 300,
-                          // height: 300,
-                          child: tagsRecommendations.when(
-                        data: (data) {
-                          return ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) {
-                              final List<Color> colors = [
-                                const Color(0xffFFBB00),
-                                const Color(0xffFF4500),
-                                const Color(0xffFF006D),
-                                const Color(0xff8E33F5),
-                                const Color(0xff0088FF),
-                              ];
-                              final Color randomColor =
-                                  colors[Random().nextInt(colors.length)];
+                        child: tagsRecommendations.when(
+                          data: (data) {
+                            return ListView.separated(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                final List<Color> colors = [
+                                  const Color(0xffFFBB00),
+                                  const Color(0xffFF4500),
+                                  const Color(0xffFF006D),
+                                  const Color(0xff8E33F5),
+                                  const Color(0xff0088FF),
+                                ];
+                                final Color randomColor =
+                                    colors[Random().nextInt(colors.length)];
 
-                              return InkWell(
-                                onTap: () {
-                                  _tagQuery.text = data[index];
-                                  submitTagQuery();
-                                },
-                                child: Chip(
-                                  side: BorderSide.none,
-                                  avatar: SvgPicture.asset(
-                                    "assets/icon4star.svg",
-                                    color: randomColor,
+                                return InkWell(
+                                  onTap: () {
+                                    _tagQuery.text = data[index];
+                                    submitTagQuery();
+                                  },
+                                  child: Chip(
+                                    side: BorderSide.none,
+                                    avatar: SvgPicture.asset(
+                                        "assets/icon4star.svg",
+                                        color: randomColor),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    label: Text(data[index]),
+                                    backgroundColor: Colors.grey[900],
+                                    labelStyle:
+                                        const TextStyle(color: Colors.white),
                                   ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 10),
-                                  label: Text(data[index]),
-                                  backgroundColor: Colors.grey[900],
-                                  labelStyle:
-                                      const TextStyle(color: Colors.white),
-                                ),
-                              );
-                              // return ElevatedButton(
-                              //   onPressed: () {},
-                              //   style: ElevatedButton.styleFrom(
-                              //     backgroundColor: Colors.grey[900],
-                              //   ),
-                              //   child: Row(
-                              //     children: [
-                              //       SvgPicture.asset(
-                              //         "assets/icon4star.svg",
-                              //         color: randomColor,
-                              //       ),
-                              //       Text(
-                              //         data[index],
-                              //         style:   const TextStyle(color: Colors.white),
-                              //       ),
-                              //     ],
-                              //   ),
-                              // );
-                            },
-                            separatorBuilder: (context, index) {
-                              return const SizedBox(width: 5);
-                            },
-                            itemCount: data.length,
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          return Text("error: $error");
-                        },
-                        loading: () {
-                          return ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: 9,
-                            itemBuilder: (context, index) {
-                              return Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromARGB(51, 255, 255, 255),
-                                highlightColor:
-                                    const Color.fromARGB(65, 255, 255, 255),
-                                child: Chip(
-                                  side: BorderSide.none,
-                                  // avatar: SvgPicture.asset(
-                                  //   "assets/icon4star.svg",
-                                  //   // color: randomColor,
-                                  // ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 10),
-                                  label: const Text("             "),
-                                  backgroundColor: Colors.grey[900],
-                                  labelStyle:
-                                      const TextStyle(color: Colors.white),
-                                ),
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return const SizedBox(width: 5);
-                            },
-                          );
-                        },
-                      )),
-                      const CustomDivider(),
-                      const SizedBox(
-                        height: 5,
+                                );
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 5);
+                              },
+                              itemCount: data.length,
+                            );
+                          },
+                          error: (error, stackTrace) {
+                            return Text("error: $error");
+                          },
+                          loading: () {
+                            return ListView.separated(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 9,
+                              itemBuilder: (context, index) {
+                                return Shimmer.fromColors(
+                                  baseColor:
+                                      const Color.fromARGB(51, 255, 255, 255),
+                                  highlightColor:
+                                      const Color.fromARGB(65, 255, 255, 255),
+                                  child: Chip(
+                                    side: BorderSide.none,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    label: const Text("             "),
+                                    backgroundColor: Colors.grey[900],
+                                    labelStyle:
+                                        const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 5);
+                              },
+                            );
+                          },
+                        ),
                       ),
+                      const CustomDivider(),
+                      const SizedBox(height: 5),
                       AnimatedTextField(
                         animationDuration: const Duration(milliseconds: 98000),
                         animationType: Animationtype.slide,
@@ -610,7 +573,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           fontSize: 14,
                         ),
                         hintTexts: const [
-                          // 'Chill Lo-Fi Beats to Help Me Study',
                           'What do you like to listen to?',
                           'Songs like Owl City Fireflies',
                           '1970\'s RnB For Long Drives',
@@ -620,7 +582,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           submit();
                         },
                       ),
-                      // const SizedBox(height: 16),
                     ],
                   ),
                 ),

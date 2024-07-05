@@ -19,6 +19,7 @@ import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/general_button.dart';
+import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
@@ -67,7 +68,7 @@ class _RecommendationsResultScreenState
     // sessionState = arguments['sessionState'] as AsyncValue<SessionData?>?;
     log("STATE : ${widget.sessionState?.value?.accessToken}");
 
-    ();
+    ref.invalidate(playlistProvider);
     _fetchRecommendationsOrPlaylistTracks();
   }
 
@@ -95,11 +96,12 @@ class _RecommendationsResultScreenState
                       accessToken, providerToken, widget.playlistId ?? "")
                   : null;
       print("HIIIIIIIII: ${result?.first}");
-
-      setState(() {
-        recommendations = result;
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          recommendations = result;
+          isLoading = false;
+        });
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -175,7 +177,7 @@ class _RecommendationsResultScreenState
   void _showPlaylists(
       BuildContext context, WidgetRef ref, List<SongModel> recommendations) {
     showModalBottomSheet(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 22, 22, 22),
       useSafeArea: true,
       showDragHandle: true,
       useRootNavigator: true,
@@ -189,7 +191,7 @@ class _RecommendationsResultScreenState
         return Container(
           // height: MediaQuery.of(context).size.height * 0.93,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Colors.transparent,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(25.0),
               topRight: Radius.circular(25.0),
@@ -201,7 +203,7 @@ class _RecommendationsResultScreenState
               Container(
                 width: MediaQuery.of(context).size.width,
                 alignment: Alignment.bottomLeft,
-                color: Colors.white,
+                color: Colors.transparent,
                 padding: const EdgeInsets.only(
                   top: 25,
                   bottom: 20,
@@ -210,7 +212,7 @@ class _RecommendationsResultScreenState
                 ),
                 child: const Text(
                   "Add to your Music Library",
-                  style: TextStyle(color: Colors.black, fontSize: 14),
+                  style: TextStyle(color: Colors.white, fontSize: 14),
                 ),
               ),
               Expanded(
@@ -218,14 +220,16 @@ class _RecommendationsResultScreenState
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
                     final addTracksState = ref.watch(addTracksProvider);
-                    final trackIds =
-                        recommendations.map((song) => song.trackUri).toList();
+                    final trackIds = recommendations
+                        .map((song) => song.trackUri ?? "")
+                        .toList();
 
                     return playlistsState.when(
                       data: (playlists) {
                         return Stack(
                           children: [
                             ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 150),
                               shrinkWrap: true,
                               itemCount: playlists.length,
                               itemBuilder: (context, index) {
@@ -236,7 +240,7 @@ class _RecommendationsResultScreenState
                                   accessToken:
                                       widget.sessionState!.value!.accessToken,
                                   playlistId: playlist.id ?? "",
-                                  trackIds: trackIds.map((e) => e!).toList(),
+                                  trackIds: trackIds.map((e) => e).toList(),
                                 );
 
                                 return ListTile(
@@ -256,9 +260,14 @@ class _RecommendationsResultScreenState
                                           child: const Icon(Icons.error),
                                         );
                                       }),
-                                  title: Text(playlist.name ?? ""),
+                                  title: Text(
+                                    playlist.name ?? "",
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
                                   subtitle: Text(
-                                      "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} "),
+                                    "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} ",
+                                    style: subtitleTextStyle,
+                                  ),
                                   // enabled: !isCurrentLoading &&
                                   //     addTracksState.maybeWhen(
                                   //       loading: () => false,
@@ -325,32 +334,64 @@ class _RecommendationsResultScreenState
                             ),
                             Positioned(
                               bottom: 30.0,
-                              right: Get.width / 2 - 26.0,
-                              child: FloatingActionButton(
-                                elevation: 0,
-                                backgroundColor: AppTheme.primaryColor,
-                                // color: AppTheme.textColor,
-                                onPressed: () {
-                                  // Get.back();
-                                  // delay 1 second
-                                  // Get.offAllNamed(Routes.HOME);
-                                  _showCreatePlaylistForm(context, ref,
-                                      trackIds.map((e) => e!).toList());
-                                },
-                                child: const Icon(
-                                  Icons.add,
-                                  color: Colors.white,
+                              // right: Get.width / 2 - 70.0,
+                              child: Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 15),
+                                width: Get.width,
+                                child: GeneralButton(
+                                  text: "New Playlist",
+                                  backgroundColor: const Color(0xffD9D9D9),
+                                  hasPadding: true,
+                                  icon: Icon(
+                                    Icons.playlist_add_check_rounded,
+                                    color: Colors.grey.shade800,
+                                  ),
+                                  onPressed: () {
+                                    widget.songs == null
+                                        ? _showCreatePlaylistForm(
+                                            context,
+                                            ref,
+                                            trackIds,
+                                          )
+                                        : _showCreatePlaylistForm(
+                                            context,
+                                            ref,
+                                            (widget.songs ?? [])
+                                                .map((song) =>
+                                                    song.trackUri ?? "")
+                                                .toList(),
+                                          );
+                                  },
                                 ),
                               ),
                             ),
                           ],
                         );
                       },
-                      loading: () => const Center(
-                        child: CupertinoActivityIndicator(),
+                      loading: () => Center(
+                        child: SpinningSvg(
+                          svgWidget:
+                              // SvgPicture.asset('assets/images/your_svg.svg'),
+                              Image.asset(
+                            'assets/hdlogo.png',
+                            height: 40,
+                          ),
+                          // size: 10.0,
+                          textList: const [
+                            'Just a moment...',
+                            'Generating your playlist...',
+                            'Almost done...',
+                          ],
+                        ),
                       ),
-                      error: (error, stack) => Center(
-                        child: Text('Error: $error'),
+                      error: (error, stack) => const Center(
+                        child: Text(
+                          'Error loading playlist',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -365,12 +406,13 @@ class _RecommendationsResultScreenState
 
   void _showCreatePlaylistForm(
       BuildContext context, WidgetRef ref, List<String> trackIds) {
-    final nameController = TextEditingController(text: "${widget.searchQuery}");
+    final nameController = TextEditingController(
+        text: "${widget.searchQuery ?? widget.tagQuery ?? widget.searchTitle}");
     final descriptionController = TextEditingController();
     bool isLoading = false;
 
     showModalBottomSheet(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 22, 22, 22),
       useSafeArea: true,
       showDragHandle: true,
       useRootNavigator: true,
@@ -397,7 +439,7 @@ class _RecommendationsResultScreenState
                     alignment: Alignment.centerLeft,
                     child: const Text(
                       "Create New Playlist",
-                      style: TextStyle(color: Colors.black, fontSize: 14),
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -409,11 +451,16 @@ class _RecommendationsResultScreenState
                       },
                       controller: nameController,
                       decoration: const InputDecoration(
+                        fillColor: Color.fromARGB(255, 22, 22, 22),
                         filled: true,
                         contentPadding: EdgeInsets.all(12),
                       ),
-                      hintTextStyle: TextStyle(
-                        color: Theme.of(context).hintColor,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                      hintTextStyle: const TextStyle(
+                        color: Colors.white,
                         fontSize: 14,
                       ),
                       hintTexts: const [
@@ -431,11 +478,16 @@ class _RecommendationsResultScreenState
                     },
                     controller: descriptionController,
                     decoration: const InputDecoration(
+                      fillColor: Color.fromARGB(255, 22, 22, 22),
                       filled: true,
                       contentPadding: EdgeInsets.all(12),
                     ),
-                    hintTextStyle: TextStyle(
-                      color: Theme.of(context).hintColor,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                    hintTextStyle: const TextStyle(
+                      color: Colors.white,
                       fontSize: 14,
                     ),
                     hintTexts: const [
@@ -446,114 +498,222 @@ class _RecommendationsResultScreenState
                     },
                   ),
                   const Spacer(),
-                  FloatingActionButton(
-                    backgroundColor: AppTheme.primaryColor,
-                    elevation: 0,
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            final name = nameController.text.trim();
-                            final description =
-                                descriptionController.text.trim();
-                            if (name.isNotEmpty) {
-                              final Map<String, String> data = {
-                                'name': name,
-                                'description': description,
-                              };
-                              ref
-                                  .read(createPlaylistProvider(data).future)
-                                  .then((newPlaylist) {
-                                final isCurrentLoading =
-                                    _loadingPlaylistId == newPlaylist.id;
-                                // add to playlist
-                                log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
-                                if (widget.sessionState?.value?.accessToken !=
-                                    null) {
-                                  setState(() {
-                                    _loadingPlaylistId = newPlaylist.id;
-                                  });
-                                  log("LOG PLAYLIST DETAILS: ${newPlaylist.id}");
-                                  // setState(() {
-                                  //   // _loadingPlaylistId = playlist.id;
-                                  // });
-                                  log("ABOUT TO ADD TO AN EXISTING PLAYLIST accessToken NOT NULL");
+                  Container(
+                    width: Get.width,
+                    margin: const EdgeInsets.only(
+                      bottom: 30,
+                    ),
+                    child: GeneralButton(
+                      text: "Add to Library",
+                      backgroundColor: const Color(0xffD9D9D9),
+                      hasPadding: true,
+                      icon: Icon(
+                        Icons.add,
+                        color: Colors.grey.shade800,
+                      ),
+                      onPressed: isLoading
+                          ? null
+                          : () {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              final name = nameController.text.trim();
+                              final description =
+                                  descriptionController.text.trim();
+                              if (name.isNotEmpty) {
+                                final Map<String, String> data = {
+                                  'name': name,
+                                  'description': description,
+                                };
+                                ref
+                                    .read(createPlaylistProvider(data).future)
+                                    .then((newPlaylist) {
+                                  final isCurrentLoading =
+                                      _loadingPlaylistId == newPlaylist.id;
+                                  // add to playlist
+                                  log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
+                                  if (widget.sessionState?.value?.accessToken !=
+                                      null) {
+                                    setState(() {
+                                      _loadingPlaylistId = newPlaylist.id;
+                                    });
+                                    log("LOG PLAYLIST DETAILS: ${newPlaylist.id}");
+                                    // setState(() {
+                                    //   // _loadingPlaylistId = playlist.id;
+                                    // });
+                                    log("ABOUT TO ADD TO AN EXISTING PLAYLIST accessToken NOT NULL");
 
-                                  final params = AddTracksParams(
-                                    accessToken:
-                                        widget.sessionState!.value!.accessToken,
-                                    playlistId: newPlaylist.id ?? "",
-                                    trackIds: trackIds,
-                                  );
+                                    final params = AddTracksParams(
+                                      accessToken: widget
+                                          .sessionState!.value!.accessToken,
+                                      playlistId: newPlaylist.id ?? "",
+                                      trackIds: trackIds,
+                                    );
 
-                                  ref
-                                      .read(addTracksProvider.notifier)
-                                      .addTracksToPlaylist(params);
+                                    ref
+                                        .read(addTracksProvider.notifier)
+                                        .addTracksToPlaylist(params);
 
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).pop();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Successfully created ${newPlaylist.name} playlist.',
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Successfully created ${newPlaylist.name} playlist.',
+                                        ),
                                       ),
-                                    ),
-                                  );
+                                    );
 
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content:
+                                              Text('No access token found.')),
+                                    );
+                                  }
+                                  // Navigator.pop(context); // Close the modal
+                                  // ScaffoldMessenger.of(context).showSnackBar(
+                                  //   const SnackBar(
+                                  //     content: Text('Playlist created successfully'),
+                                  //   ),
+                                  // );
+                                }).catchError((error) {
                                   setState(() {
                                     isLoading = false;
                                   });
-                                } else {
+
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                        content:
-                                            Text('No access token found.')),
+                                    SnackBar(
+                                      content: Text(
+                                          'Failed to create playlist: $error'),
+                                    ),
                                   );
-                                }
-                                // Navigator.pop(context); // Close the modal
-                                // ScaffoldMessenger.of(context).showSnackBar(
-                                //   const SnackBar(
-                                //     content: Text('Playlist created successfully'),
-                                //   ),
-                                // );
-                              }).catchError((error) {
+                                });
+                              } else {
                                 setState(() {
                                   isLoading = false;
                                 });
-
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
+                                  const SnackBar(
                                     content: Text(
-                                        'Failed to create playlist: $error'),
+                                        'Please provide a name for the playlist'),
                                   ),
                                 );
-                              });
-                            } else {
-                              setState(() {
-                                isLoading = false;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      'Please provide a name for the playlist'),
-                                ),
-                              );
-                            }
-                          },
-                    child: isLoading
-                        ? const CupertinoActivityIndicator(
-                            color: Colors.white,
-                          )
-                        : const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                          ),
-                  ).marginSymmetric(
-                    // horizontal: 16,
-                    vertical: 30,
+                              }
+                            },
+                    ),
                   ),
+                  // FloatingActionButton(
+                  //   backgroundColor: AppTheme.primaryColor,
+                  //   elevation: 0,
+                  //   onPressed: isLoading
+                  //       ? null
+                  //       : () {
+                  //           setState(() {
+                  //             isLoading = true;
+                  //           });
+                  //           final name = nameController.text.trim();
+                  //           final description =
+                  //               descriptionController.text.trim();
+                  //           if (name.isNotEmpty) {
+                  //             final Map<String, String> data = {
+                  //               'name': name,
+                  //               'description': description,
+                  //             };
+                  //             ref
+                  //                 .read(createPlaylistProvider(data).future)
+                  //                 .then((newPlaylist) {
+                  //               final isCurrentLoading =
+                  //                   _loadingPlaylistId == newPlaylist.id;
+                  //               // add to playlist
+                  //               log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
+                  //               if (widget.sessionState?.value?.accessToken !=
+                  //                   null) {
+                  //                 setState(() {
+                  //                   _loadingPlaylistId = newPlaylist.id;
+                  //                 });
+                  //                 log("LOG PLAYLIST DETAILS: ${newPlaylist.id}");
+                  //                 // setState(() {
+                  //                 //   // _loadingPlaylistId = playlist.id;
+                  //                 // });
+                  //                 log("ABOUT TO ADD TO AN EXISTING PLAYLIST accessToken NOT NULL");
+
+                  //                 final params = AddTracksParams(
+                  //                   accessToken:
+                  //                       widget.sessionState!.value!.accessToken,
+                  //                   playlistId: newPlaylist.id ?? "",
+                  //                   trackIds: trackIds,
+                  //                 );
+
+                  //                 ref
+                  //                     .read(addTracksProvider.notifier)
+                  //                     .addTracksToPlaylist(params);
+
+                  //                 Navigator.of(context).pop();
+                  //                 Navigator.of(context).pop();
+                  //                 ScaffoldMessenger.of(context).showSnackBar(
+                  //                   SnackBar(
+                  //                     content: Text(
+                  //                       'Successfully created ${newPlaylist.name} playlist.',
+                  //                     ),
+                  //                   ),
+                  //                 );
+
+                  //                 setState(() {
+                  //                   isLoading = false;
+                  //                 });
+                  //               } else {
+                  //                 ScaffoldMessenger.of(context).showSnackBar(
+                  //                   const SnackBar(
+                  //                       content:
+                  //                           Text('No access token found.')),
+                  //                 );
+                  //               }
+                  //               // Navigator.pop(context); // Close the modal
+                  //               // ScaffoldMessenger.of(context).showSnackBar(
+                  //               //   const SnackBar(
+                  //               //     content: Text('Playlist created successfully'),
+                  //               //   ),
+                  //               // );
+                  //             }).catchError((error) {
+                  //               setState(() {
+                  //                 isLoading = false;
+                  //               });
+
+                  //               ScaffoldMessenger.of(context).showSnackBar(
+                  //                 SnackBar(
+                  //                   content: Text(
+                  //                       'Failed to create playlist: $error'),
+                  //                 ),
+                  //               );
+                  //             });
+                  //           } else {
+                  //             setState(() {
+                  //               isLoading = false;
+                  //             });
+                  //             ScaffoldMessenger.of(context).showSnackBar(
+                  //               const SnackBar(
+                  //                 content: Text(
+                  //                     'Please provide a name for the playlist'),
+                  //               ),
+                  //             );
+                  //           }
+                  //         },
+                  //   child: isLoading
+                  //       ? const CupertinoActivityIndicator(
+                  //           color: Colors.white,
+                  //         )
+                  //       : const Icon(
+                  //           Icons.add,
+                  //           color: Colors.white,
+                  //         ),
+                  // ).marginSymmetric(
+                  //   // horizontal: 16,
+                  //   vertical: 30,
+                  // ),
                 ],
               ),
             );
@@ -607,6 +767,7 @@ class _RecommendationsResultScreenState
         body: Center(child: Text('No search term found')),
       );
     }
+    ref.invalidate(playlistProvider);
     final sessionData = ref.read(sessionProvider.notifier);
     int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
     int uniqueArtistsCount =
@@ -663,7 +824,10 @@ class _RecommendationsResultScreenState
                     // )
                     )
                 : errorList.isNotEmpty
-                    ? Center(child: Text('Error: ${errorList.join(', ')}'))
+                    ? Text(
+                        'Error  loading  details',
+                        style: subtitleTextStyle,
+                      )
                     : Text(
                         '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
                         style: subtitleTextStyle,
@@ -735,105 +899,190 @@ class _RecommendationsResultScreenState
           ),
         ],
       ),
-      body: Center(
-        child: Stack(
-          children: [
-            Container(
-              color: Colors.black,
-              child: isLoading
-                  ? const Center(
-                      child: CupertinoActivityIndicator(
-                      color: Colors.white,
-                    ))
-                  : errorList.isNotEmpty
-                      ? Center(child: Text('Error: ${errorList.join(', ')}'))
-                      : ListView.builder(
-                          padding: const EdgeInsets.only(top: 24, bottom: 200),
-                          itemCount: recommendations?.length ??
-                              widget.songs?.length ??
-                              0,
-                          itemBuilder: (context, index) {
-                            final song =
-                                recommendations?[index] ?? widget.songs?[index];
-                            return MusicListTile(
-                              isPlaying:
-                                  _isPlaying && _currentSong?.id == song?.id,
-                              trailingOnTap: () => _togglePlay(song),
-                              recommendation: song!,
-                            );
-                          },
-                        ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
+      body: Container(
+        color: Colors.black,
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Container(
                 color: Colors.black,
-                height: 150,
-                child: Column(
-                  children: [
-                    if (widget.tagQuery != null)
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: () {
-                              Get.back();
-                            },
-                            icon: SvgPicture.asset(
-                              "assets/x.svg",
-                            ),
+                child: isLoading
+                    ? Center(
+                        child: SpinningSvg(
+                          svgWidget:
+                              // SvgPicture.asset('assets/images/your_svg.svg'),
+                              Image.asset(
+                            'assets/hdlogo.png',
+                            height: 40,
                           ),
-                          GeneralButton(
-                            text: widget.searchQuery ?? widget.tagQuery ?? "",
-                            backgroundColor: Colors.white,
-                            icon: SvgPicture.asset(
-                              "assets/icon4star.svg",
-                              color: const Color(0xffFFBB00),
+                          // size: 10.0,
+                          textList: const [
+                            'Just a moment...',
+                            'Generating your playlist...',
+                            'Almost done...',
+                          ],
+                        ),
+                      )
+                    : errorList.isNotEmpty
+                        ? const Center(
+                            child: Text(
+                              'Error loading playlist songs',
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
                             ),
-                            onPressed: () {},
                           )
-                        ],
-                      ),
+                        : ListView.builder(
+                            padding:
+                                const EdgeInsets.only(top: 24, bottom: 150),
+                            itemCount: recommendations?.length ??
+                                widget.songs?.length ??
+                                0,
+                            itemBuilder: (context, index) {
+                              final song = recommendations?[index] ??
+                                  widget.songs?[index];
 
-                    const SizedBox(height: 10),
-                    const CustomDivider(),
-                    const SizedBox(height: 10),
-                    // const Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: GeneralButton(
-                              hasPadding: true,
-                              text: "Share",
-                              icon: SvgPicture.asset("assets/sendto.svg"),
-                              backgroundColor: const Color(0xffD9D9D9),
-                              onPressed: () {},
+                              return widget.playlistId != null ||
+                                      widget.searchQuery != null ||
+                                      widget.tagQuery != null
+                                  ? Animate(
+                                      effects: [
+                                        // SlideEffect(
+                                        //   delay: Duration(milliseconds: 100 * index),
+                                        //   duration: const Duration(milliseconds: 500),
+                                        //   curve: Curves.easeInOut,
+                                        //   begin: const Offset(-1, 0),
+                                        //   end: Offset.zero,
+                                        // ),
+                                        FadeEffect(
+                                          delay: Duration(
+                                              milliseconds: 100 * index),
+                                          duration:
+                                              const Duration(milliseconds: 500),
+                                          curve: Curves.easeInOut,
+                                          begin: 0.0,
+                                          end: 1.0,
+                                        ),
+                                      ],
+                                      child: MusicListTile(
+                                        isPlaying: _isPlaying &&
+                                            _currentSong?.id == song?.id,
+                                        trailingOnTap: () => _togglePlay(song),
+                                        recommendation: song!,
+                                      ),
+                                    )
+                                  : Animate(
+                                      effects: [
+                                        // SlideEffect(
+                                        //   delay: Duration(milliseconds: 100 * index),
+                                        //   duration: const Duration(milliseconds: 500),
+                                        //   curve: Curves.easeInOut,
+                                        //   begin: const Offset(-1, 0),
+                                        //   end: Offset.zero,
+                                        // ),
+                                        FadeEffect(
+                                          delay: Duration(
+                                              milliseconds: 80 * index),
+                                          duration:
+                                              const Duration(milliseconds: 60),
+                                          curve: Curves.easeInOut,
+                                          begin: 0.0,
+                                          end: 1.0,
+                                        ),
+                                      ],
+                                      child: MusicListTile(
+                                        isPlaying: _isPlaying &&
+                                            _currentSong?.id == song?.id,
+                                        trailingOnTap: () => _togglePlay(song),
+                                        recommendation: song!,
+                                      ),
+                                    );
+                            },
+                          ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  color: Colors.black,
+                  height: 140,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // const SizedBox(height: 7),
+                      if (widget.tagQuery != null)
+                        Animate(
+                          
+                          child: Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                icon: SvgPicture.asset(
+                                  "assets/x.svg",
+                                ),
+                              ),
+                              GeneralButton(
+                                text: widget.searchQuery ?? widget.tagQuery ?? "",
+                                backgroundColor: Colors.white,
+                                icon: SvgPicture.asset(
+                                  "assets/icon4star.svg",
+                                  color: const Color(0xffFFBB00),
+                                ),
+                                onPressed: () {},
+                              )
+                            ],
+                          ),
+                        ),
+
+                      // const SizedBox(height: 5),
+                      const CustomDivider(),
+                      const SizedBox(height: 1),
+                      // const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: Row(
+                          children: [
+                            // TODO: share playlists with links
+                            // Expanded(
+                            //   child: GeneralButton(
+                            //     hasPadding: true,
+                            //     text: "Share",
+                            //     icon: SvgPicture.asset("assets/sendto.svg"),
+                            //     backgroundColor: const Color(0xffD9D9D9),
+                            //     onPressed: () {},
+                            //   ),
+                            // ),
+                            // const SizedBox(
+                            //   width: 8,
+                            // ),
+                            Expanded(
+                              child: GeneralButton(
+                                backgroundColor: const Color(0xffFDAD3C),
+                                hasPadding: true,
+                                icon: SvgPicture.asset("assets/bookmark.svg"),
+                                onPressed: () {
+                                  _showPlaylists(
+                                    context,
+                                    ref,
+                                    widget.songs ?? recommendations ?? [],
+                                  );
+                                },
+                              ),
                             ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            child: GeneralButton(
-                              backgroundColor: const Color(0xffFDAD3C),
-                              hasPadding: true,
-                              icon: SvgPicture.asset("assets/bookmark.svg"),
-                              onPressed: () {},
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    // const SizedBox(
-                    //   height: 5,
-                    // ),
-                    // const SizedBox(height: 16),
-                  ],
+                      // const SizedBox(
+                      //   height: 5,
+                      // ),
+                      // const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

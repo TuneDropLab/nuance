@@ -76,9 +76,11 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
         throw Exception('Failed to load artist images');
       }
 
-      setState(() {
-        artistImages = images;
-      });
+      if (mounted) {
+        setState(() {
+          artistImages = images;
+        });
+      }
     } catch (e) {
       log('Exception in _fetchArtistsImages: $e');
     }
