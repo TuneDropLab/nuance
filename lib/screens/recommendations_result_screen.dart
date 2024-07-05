@@ -1004,14 +1004,13 @@ class _RecommendationsResultScreenState
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   color: Colors.black,
-                  height: 140,
+                  height: widget.tagQuery != null ? 140 : 80,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       // const SizedBox(height: 7),
                       if (widget.tagQuery != null)
                         Animate(
-                          
                           child: Row(
                             children: [
                               IconButton(
@@ -1023,7 +1022,8 @@ class _RecommendationsResultScreenState
                                 ),
                               ),
                               GeneralButton(
-                                text: widget.searchQuery ?? widget.tagQuery ?? "",
+                                text:
+                                    widget.searchQuery ?? widget.tagQuery ?? "",
                                 backgroundColor: Colors.white,
                                 icon: SvgPicture.asset(
                                   "assets/icon4star.svg",
@@ -1034,28 +1034,13 @@ class _RecommendationsResultScreenState
                             ],
                           ),
                         ),
+                      if (widget.tagQuery != null)
+                        const CustomDivider().marginOnly(bottom: 5),
 
-                      // const SizedBox(height: 5),
-                      const CustomDivider(),
-                      const SizedBox(height: 1),
-                      // const Spacer(),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 15),
                         child: Row(
                           children: [
-                            // TODO: share playlists with links
-                            // Expanded(
-                            //   child: GeneralButton(
-                            //     hasPadding: true,
-                            //     text: "Share",
-                            //     icon: SvgPicture.asset("assets/sendto.svg"),
-                            //     backgroundColor: const Color(0xffD9D9D9),
-                            //     onPressed: () {},
-                            //   ),
-                            // ),
-                            // const SizedBox(
-                            //   width: 8,
-                            // ),
                             Expanded(
                               child: GeneralButton(
                                 backgroundColor: const Color(0xffFDAD3C),
@@ -1073,10 +1058,6 @@ class _RecommendationsResultScreenState
                           ],
                         ),
                       ),
-                      // const SizedBox(
-                      //   height: 5,
-                      // ),
-                      // const SizedBox(height: 16),
                     ],
                   ),
                 ),
