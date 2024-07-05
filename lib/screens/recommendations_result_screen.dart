@@ -874,7 +874,7 @@ class _RecommendationsResultScreenState
                                   color: const Color(0xffFFBB00),
                                 ),
                                 onPressed: () {},
-                              )
+                              ),
                             ],
                           ),
                         ),
