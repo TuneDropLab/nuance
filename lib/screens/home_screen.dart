@@ -49,14 +49,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   int currentPage = 1; // Track current page number
   bool isLoading = false; // Track loading state
-  bool isMoreLoading = false; // Track loading state for pagination
+  bool isMoreLoading = true; // Track loading state for pagination
   List<dynamic> recommendations = []; // List to store recommendations
   // final sessionState = ref.watch(sessionProvider);
 
   @override
   void initState() {
     super.initState();
-    // _scrollController.addListener(_onScroll);
+    _scrollController.addListener(_onScroll);
 
     Future.delayed(Duration.zero, () {
       // this._getCategories();
@@ -71,14 +71,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  // void _onScroll() {
-  //   if (_scrollController.position.pixels >=
-  //           _scrollController.position.maxScrollExtent - 200 &&
-  //       !isLoading &&
-  //       !isMoreLoading) {
-  //     _fetchMoreRecommendations();
-  //   }
-  // }
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      print("IsLoaiding before fetching more recommedations on scroll!!!!!!!");
+      _fetchMoreRecommendations();
+    }
+  }
 
   Future<void> _fetchRecommendations() async {
     setState(() {
@@ -93,14 +92,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
       setState(() {
-        recommendations = newRecommendations;
+        recommendations = [...recommendations, ...newRecommendations];
         isLoading = false;
       });
     } catch (e) {
-      // print('Error loading recommendations: $e');
-      // setState(() {
-      //   isLoading = false;
-      // });
       rethrow;
     } finally {
       print('Error loading recommendations: $e');
@@ -110,26 +105,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  // Future<void> _fetchMoreRecommendations() async {
-  //   setState(() {
-  //     isMoreLoading = true;
-  //   });
-  //   try {
-  //     final newRecommendations =
-  //         await ref.read(spotifyHomeRecommendationsProvider.future);
-  //     setState(() {
-  //       recommendations = List.from(recommendations)
-  //         ..addAll(newRecommendations);
-  //       currentPage++;
-  //       isMoreLoading = false;
-  //     });
-  //   } catch (e) {
-  //     print('Error loading more recommendations: $e');
-  //     setState(() {
-  //       isMoreLoading = false;
-  //     });
-  //   }
-  // }
+  Future<void> _fetchMoreRecommendations() async {
+    if (currentPage >= 14) return;
+    print("Current page is $currentPage");
+
+    setState(() {
+      isMoreLoading = true;
+    });
+    try {
+      final newRecommendations =
+          await ref.read(spotifyHomeRecommendationsProvider.future);
+      setState(() {
+        recommendations = List.from(recommendations)
+          ..addAll(newRecommendations);
+        currentPage++;
+        isMoreLoading = false;
+      });
+      print({newRecommendations});
+    } catch (e) {
+      print('Error loading more recommendations: $e');
+      setState(() {
+        isMoreLoading = false;
+      });
+    }
+  }
 
   Future onRefresh() async {
     setState(() {
@@ -509,9 +508,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // enablePullDown: true,
                       // onRefresh: onRefresh,
                       // controller: _refreshController,
+
                       child: ListView.builder(
-                        itemCount:
-                            recommendations.length + (isMoreLoading ? 1 : 0),
+                        itemCount: recommendations.length + 1,
                         itemBuilder: (context, index) {
                           if (index < recommendations.length) {
                             final recommendation = recommendations[index];
@@ -545,12 +544,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ).marginOnly(bottom: 25);
                             }
                           }
-                          return null;
-                          // else {
-                          //   return const Center(
-                          //     child: CircularProgressIndicator(),
-                          //   );
-                          // }
+                          // return null;
+                          else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
                         },
                         padding: const EdgeInsets.only(
                             bottom: 200, left: 20, right: 20, top: 20),
