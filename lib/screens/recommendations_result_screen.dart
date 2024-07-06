@@ -9,11 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
+import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
+import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
@@ -502,12 +504,14 @@ class _RecommendationsResultScreenState
                       text: "Add to Library",
                       backgroundColor: const Color(0xffD9D9D9),
                       hasPadding: true,
-                      icon: Icon(
-                        Icons.add,
-                        color: Colors.grey.shade800,
-                      ),
+                      icon: isLoading
+                          ? const CupertinoActivityIndicator()
+                          : Icon(
+                              Icons.check,
+                              color: Colors.grey.shade800,
+                            ),
                       onPressed: isLoading
-                          ? null
+                          ? () {}
                           : () {
                               setState(() {
                                 isLoading = true;
@@ -658,10 +662,14 @@ class _RecommendationsResultScreenState
     int uniqueArtistsCount =
         getUniqueArtistsCount(recommendations ?? widget.songs ?? []);
 
+    // final GlobalKey<ScaffoldState> globalKey = GlobalKey();
+
     return Scaffold(
+      // key: globalKey,
       appBar: AppBar(
         leading: GestureDetector(
           onTap: () {
+            ref.invalidate(historyProvider);
             Get.back();
           },
           child: SizedBox(
@@ -722,7 +730,9 @@ class _RecommendationsResultScreenState
                       radius: 40,
                     ),
                     onPressed: () {
-                      sessionData.logout();
+                      globalKey.currentState!.openDrawer();
+                      Get.back();
+                      // sessionData.logout();
                     },
                   );
                 }
@@ -730,7 +740,14 @@ class _RecommendationsResultScreenState
                 return CupertinoButton(
                   padding: const EdgeInsets.all(0),
                   onPressed: () {
-                    sessionData.logout();
+                    // Get.back();
+                    Get.offAll(
+                      transition: Transition.leftToRight,
+                      () => const HomeScreen(),
+                      // fullscreenDialog: true,
+                    );
+                    globalKey.currentState!.openDrawer();
+                    // sessionData.logout();
                   },
                   child: CachedNetworkImage(
                     imageBuilder: (context, imageProvider) => Container(
@@ -848,11 +865,11 @@ class _RecommendationsResultScreenState
                                       ),
                                     )
                                   : MusicListTile(
-                                    isPlaying: _isPlaying &&
-                                        _currentSong?.id == song?.id,
-                                    trailingOnTap: () => _togglePlay(song),
-                                    recommendation: song!,
-                                  );
+                                      isPlaying: _isPlaying &&
+                                          _currentSong?.id == song?.id,
+                                      trailingOnTap: () => _togglePlay(song),
+                                      recommendation: song!,
+                                    );
                             },
                           ),
               ),
