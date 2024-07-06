@@ -8,7 +8,6 @@ import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
-import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/loader.dart';
 
@@ -42,149 +41,201 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
           height: Get.height,
           width: Get.width,
           color: Colors.transparent,
-          child: Column(
+          child: Stack(
             children: [
-              // Heading and Search Bar
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'History',
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    ),
-                    // Search bar
-                    Expanded(
-                      child: AnimatedTextField(
-                        maxLines: 1,
-                        animationDuration: const Duration(seconds: 8),
-                        onTapOutside: (event) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                        controller: _searchController,
-                        decoration: const InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(25),
+              Column(
+                children: [
+                  // Heading and Search Bar
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'History',
+                          style:
+                              Theme.of(context).textTheme.titleMedium!.copyWith(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                  ),
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        // Search bar
+                        Expanded(
+                          child: AnimatedTextField(
+                            maxLines: 1,
+                            animationDuration: const Duration(seconds: 8),
+                            onTapOutside: (event) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                            controller: _searchController,
+                            decoration: const InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(25),
+                                ),
+                                borderSide: BorderSide.none,
+                              ),
+                              fillColor: Color.fromARGB(98, 34, 34, 34),
+                              filled: true,
+                              contentPadding: EdgeInsets.all(12),
                             ),
-                            borderSide: BorderSide.none,
-                          ),
-                          fillColor: Color.fromARGB(98, 34, 34, 34),
-                          filled: true,
-                          contentPadding: EdgeInsets.all(12),
-                        ),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
-                        hintTextStyle:
-                            Theme.of(context).textTheme.titleMedium!.copyWith(
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            hintTextStyle: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w500,
                                   color: Colors.white,
                                 ),
-                        hintTexts: const [
-                          'Search',
-                        ],
-                        onSubmitted: (value) {
-                          setState(
-                              () {}); // Trigger a rebuild when search query is submitted
-                        },
-                      ),
+                            hintTexts: const [
+                              'Search',
+                            ],
+                            onSubmitted: (value) {
+                              setState(
+                                  () {}); // Trigger a rebuild when search query is submitted
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              // History List
-              Expanded(
-                child: Consumer(
-                  builder: (context, watch, child) {
-                    final historyAsyncValue = ref.watch(historyProvider);
-                    return historyAsyncValue.when(
-                      data: (history) {
-                        return ValueListenableBuilder<TextEditingValue>(
-                          valueListenable: _searchController,
-                          builder: (context, value, __) {
-                            final filteredHistory =
-                                _filterHistoryByQuery(history, value.text);
-                            return ListView.separated(
-                              separatorBuilder: (context, index) {
-                                return const Divider(
-                                  color: Colors.transparent,
-                                );
-                              },
-                              itemCount: filteredHistory.length,
-                              itemBuilder: (context, index) {
-                                final historyItem = filteredHistory[index];
-                                return ListTile(
-                                  title: Text(
-                                    historyItem.searchQuery ?? '',
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  subtitle: Text(
-                                    _formatRelativeTime(historyItem.createdAt ??
-                                        DateTime.now()),
-                                    style: subtitleTextStyle,
-                                  ),
-                                  leading: historyItem
-                                              .recommendations?.isNotEmpty ??
-                                          false
-                                      ? ArtworkSwitcher(
-                                          artworks: historyItem.recommendations!
-                                              .map(
-                                                (song) => song.artworkUrl,
-                                              )
-                                              .toList(),
-                                        )
-                                      : const Icon(
-                                          Icons.square,
+                  ),
+                  // History List
+                  Expanded(
+                    child: Consumer(
+                      builder: (context, watch, child) {
+                        final historyAsyncValue = ref.watch(historyProvider);
+                        return historyAsyncValue.when(
+                          data: (history) {
+                            return ValueListenableBuilder<TextEditingValue>(
+                              valueListenable: _searchController,
+                              builder: (context, value, __) {
+                                final filteredHistory =
+                                    _filterHistoryByQuery(history, value.text);
+                                return ListView.separated(
+                                  separatorBuilder: (context, index) {
+                                    return const Divider(
+                                      color: Colors.transparent,
+                                    );
+                                  },
+                                  itemCount: filteredHistory.length,
+                                  itemBuilder: (context, index) {
+                                    final historyItem = filteredHistory[index];
+                                    return ListTile(
+                                      title: Text(
+                                        historyItem.searchQuery ?? '',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
                                           color: Colors.white,
                                         ),
-                                  onTap: () {
-                                    Get.back();
-                                    Get.to(
-                                      RecommendationsResultScreen(
-                                        searchTitle: historyItem.searchQuery,
-                                        sessionState: widget.sessionState,
-                                        songs: historyItem.recommendations!,
                                       ),
+                                      subtitle: Text(
+                                        _formatRelativeTime(
+                                            historyItem.createdAt ??
+                                                DateTime.now()),
+                                        style: subtitleTextStyle,
+                                      ),
+                                      // minLeadingWidth: 30,
+                                      leading: historyItem.recommendations
+                                                  ?.isNotEmpty ??
+                                              false
+                                          ? SizedBox(
+                                              height: 50,
+                                              width: 50,
+                                              child: ArtworkSwitcher(
+                                                artworks: historyItem
+                                                    .recommendations!
+                                                    .map(
+                                                      (song) =>
+                                                          song.artworkUrl ?? "",
+                                                    )
+                                                    .toList(),
+                                              ),
+                                            )
+                                          : const Icon(
+                                              Icons.square,
+                                              color: Colors.white,
+                                            ),
+                                      onTap: () {
+                                        Get.back();
+                                        Get.to(
+                                          RecommendationsResultScreen(
+                                            searchTitle:
+                                                historyItem.searchQuery,
+                                            sessionState: widget.sessionState,
+                                            songs: historyItem.recommendations!,
+                                          ),
+                                        );
+                                      },
                                     );
                                   },
                                 );
                               },
                             );
                           },
+                          loading: () => Center(
+                            child: SpinningSvg(
+                              svgWidget: Image.asset(
+                                'assets/hdlogo.png',
+                                height: 40,
+                              ),
+                              textList: const [
+                                'Just a moment ...',
+                                'Loading your history ...',
+                                'Almost done ...',
+                              ],
+                            ),
+                          ),
+                          error: (error, stackTrace) => const Center(
+                            child: Text(
+                              'Error loading history',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
                         );
                       },
-                      loading: () => Center(
-                        child: SpinningSvg(
-                          svgWidget: Image.asset(
-                            'assets/hdlogo.png',
-                            height: 40,
-                          ),
-                          textList: const [
-                            'Just a moment ...',
-                            'Loading your history ...',
-                            'Almost done ...',
-                          ],
+                    ),
+                  ),
+                ],
+              ),
+              // Add the bottom bar
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  color: Colors.black,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.settings,
+                          color: Colors.white,
                         ),
+                        onPressed: () {
+                          // Get.back(); // Navigate back
+                        },
                       ),
-                      error: (error, stackTrace) => const Center(
-                        child: Text(
-                          'Error loading history',
-                          style: TextStyle(color: Colors.red),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.white,
                         ),
+                        onPressed: () {
+                          Get.back(); // Navigate back
+                        },
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -270,34 +321,48 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
       height: 45,
       width: 45,
       child: AnimatedSwitcher(
-        duration: const Duration(seconds: 1),
-        child:
-            widget.artworks.isNotEmpty && widget.artworks[_currentIndex] != null
-                ? CachedNetworkImage(
-                    imageUrl: widget.artworks[_currentIndex]!,
-                    key: ValueKey<int>(_currentIndex),
-                    placeholder: (context, url) {
-                      return const Center(
-                        child: CupertinoActivityIndicator(),
-                      );
-                    },
-                    errorWidget: (context, url, error) {
-                      return const Icon(
-                        Icons.error,
-                        color: Colors.white,
-                      );
-                    },
-                  )
-                : Container(
+        duration: const Duration(seconds: 3),
+        child: widget.artworks.isNotEmpty &&
+                widget.artworks[_currentIndex]!.isNotEmpty &&
+                widget.artworks[_currentIndex] != null
+            ? CachedNetworkImage(
+                imageBuilder: (context, imageProvider) {
+                  return Container(
+                    // height: 80,
+                    // width: 80,
                     decoration: BoxDecoration(
-                      color: Colors.amber,
-                      borderRadius: BorderRadius.circular(20),
+                      image: DecorationImage(
+                        image: imageProvider,
+                      ),
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(
-                      Icons.square,
-                      color: Colors.white,
-                    ),
-                  ),
+                  );
+                },
+                imageUrl: widget.artworks[_currentIndex]!,
+                key: ValueKey<int>(_currentIndex),
+                placeholder: (context, url) {
+                  return const Center(
+                    child: CupertinoActivityIndicator(),
+                  );
+                },
+                errorWidget: (context, url, error) {
+                  return const Icon(
+                    Icons.error,
+                    color: Colors.white,
+                  );
+                },
+              )
+            : Container(
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.square,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }
