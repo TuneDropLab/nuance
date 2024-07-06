@@ -18,7 +18,7 @@ import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
-import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
+// import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:nuance/providers/history_provider.dart';
 
@@ -36,8 +36,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _tagQuery = TextEditingController();
   final _generatedRecQuery = TextEditingController();
   final GlobalKey<ScaffoldState> _key = GlobalKey();
-  final RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  // final RefreshController _refreshController =
+  //     RefreshController(initialRefresh: false);
   // final focusNode = FocusNode();
 
   final ScrollController _scrollController = ScrollController();
@@ -113,8 +113,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void onRefresh() async {
     ref.invalidate(spotifyHomeRecommendationsProvider);
-    await Future.delayed(const Duration(seconds: 4));
-    _refreshController.refreshCompleted();
+    ref.invalidate(historyProvider);
+
+    await Future.delayed(const Duration(seconds: 6));
+    // _refreshController.refreshCompleted();
     _fetchRecommendations();
   }
 
@@ -124,6 +126,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sessionData = ref.read(sessionProvider.notifier);
     final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
+    // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
 
     void submit() {
@@ -218,6 +221,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         String lastQuery, String newQuery, void Function() submit) {
       print("LAST QUERY: $lastQuery");
       print("NEW QUERY: $newQuery");
+      ref.invalidate(historyProvider);
       if (lastQuery == newQuery) {
         showDialog(
           context: context,
@@ -431,15 +435,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           body: Stack(
             children: [
               Container(
-                child: SmartRefresher(
-                  enablePullDown: true,
-                  onRefresh: onRefresh,
-                  controller: _refreshController,
+                child: RefreshIndicator.adaptive(
+                  color: Colors.white,
+                  onRefresh: () async {
+                    onRefresh();
+                  },
+
+                  // enablePullDown: true,
+                  // onRefresh: onRefresh,
+                  // controller: _refreshController,
                   child: homeRecommendations.when(
                     data: (recommendations) {
                       return ListView.builder(
-                        itemCount: recommendations.length +
-                            1, // Add 1 for the loading indicator
+                        itemCount:
+                            recommendations.length + (isMoreLoading ? 1 : 0),
                         itemBuilder: (context, index) {
                           if (index < recommendations.length) {
                             final recommendation = recommendations[index];
@@ -469,17 +478,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     _generatedRecQuery.text,
                                     submitGeneratedQuery,
                                   );
-
-                                  // submitGeneratedQuery();
                                 },
                               ).marginOnly(bottom: 25);
                             }
-                          } else if (isMoreLoading) {
+                          } else {
                             return const Center(
                               child: CircularProgressIndicator(),
                             );
-                          } else {
-                            return Container();
                           }
                         },
                         padding: const EdgeInsets.only(
@@ -513,12 +518,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       },
                     ),
                     error: (error, stackTrace) => Center(
-                        child: Text(
-                      'Error loading playlists',
-                      style: subtitleTextStyle.copyWith(
-                        color: Colors.white,
+                      child: Text(
+                        'Error loading playlists',
+                        style: subtitleTextStyle.copyWith(
+                          color: Colors.white,
+                        ),
                       ),
-                    )),
+                    ),
                   ),
                 ),
               ),

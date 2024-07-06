@@ -193,9 +193,26 @@ class _RecommendationsResultScreenState
                   left: 15,
                   right: 15,
                 ),
-                child: const Text(
-                  "Add to your Music Library",
-                  style: TextStyle(color: Colors.white, fontSize: 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Add to your Library",
+                      style: headingTextStyle.copyWith(
+                        wordSpacing: 0.1,
+                        letterSpacing: 0.11,
+                        fontSize: 18,
+                      ),
+                    ),
+                    Text(
+                      "Select an exisiting playlist",
+                      style: subtitleTextStyle.copyWith(
+                        wordSpacing: 0.1,
+                        letterSpacing: 0.11,
+                        // fontSize: 18,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
@@ -412,15 +429,20 @@ class _RecommendationsResultScreenState
                   Container(
                     width: MediaQuery.of(context).size.width,
                     alignment: Alignment.centerLeft,
-                    child: const Text(
+                    child: Text(
                       "Create New Playlist",
-                      style: TextStyle(color: Colors.white, fontSize: 14),
+                      style: headingTextStyle.copyWith(
+                        wordSpacing: 0.1,
+                        letterSpacing: 0.11,
+                        fontSize: 18,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
                     // width: 200,
                     child: AnimatedTextField(
+                      animationDuration: 4000.ms,
                       onTapOutside: (event) {
                         FocusManager.instance.primaryFocus?.unfocus();
                       },
@@ -671,11 +693,7 @@ class _RecommendationsResultScreenState
                     widget.tagQuery ??
                     widget.searchTitle ??
                     ""),
-                style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
+                style: headingTextStyle,
               ),
             ),
             isLoading
@@ -773,9 +791,15 @@ class _RecommendationsResultScreenState
                             height: 40,
                           ),
                           // size: 10.0,
-                          textList: const [
+                          textList: [
                             'Just a moment...',
-                            'Generating your playlist...',
+                            widget.searchQuery != null
+                                ? 'Searching for songs...'
+                                : widget.tagQuery != null
+                                    ? 'Generating playlist songs...'
+                                    : widget.searchTitle != null
+                                        ? 'Getting playlist songs...'
+                                        : 'Loading playlist songs...',
                             'Almost done...',
                           ],
                         ),
@@ -823,25 +847,12 @@ class _RecommendationsResultScreenState
                                         recommendation: song!,
                                       ),
                                     )
-                                  : Animate(
-                                      effects: [
-                                        FadeEffect(
-                                          delay: Duration(
-                                              milliseconds: 80 * index),
-                                          duration:
-                                              const Duration(milliseconds: 60),
-                                          curve: Curves.easeInOut,
-                                          begin: 0.0,
-                                          end: 1.0,
-                                        ),
-                                      ],
-                                      child: MusicListTile(
-                                        isPlaying: _isPlaying &&
-                                            _currentSong?.id == song?.id,
-                                        trailingOnTap: () => _togglePlay(song),
-                                        recommendation: song!,
-                                      ),
-                                    );
+                                  : MusicListTile(
+                                    isPlaying: _isPlaying &&
+                                        _currentSong?.id == song?.id,
+                                    trailingOnTap: () => _togglePlay(song),
+                                    recommendation: song!,
+                                  );
                             },
                           ),
               ),
@@ -880,27 +891,28 @@ class _RecommendationsResultScreenState
                         ),
                       if (widget.tagQuery != null)
                         const CustomDivider().marginOnly(bottom: 5),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 15),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: GeneralButton(
-                                backgroundColor: const Color(0xffFDAD3C),
-                                hasPadding: true,
-                                icon: SvgPicture.asset("assets/bookmark.svg"),
-                                onPressed: () {
-                                  _showPlaylists(
-                                    context,
-                                    ref,
-                                    widget.songs ?? recommendations ?? [],
-                                  );
-                                },
+                      if (!isLoading || errorList.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 15),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GeneralButton(
+                                  backgroundColor: const Color(0xffFDAD3C),
+                                  hasPadding: true,
+                                  icon: SvgPicture.asset("assets/bookmark.svg"),
+                                  onPressed: () {
+                                    _showPlaylists(
+                                      context,
+                                      ref,
+                                      widget.songs ?? recommendations ?? [],
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ),

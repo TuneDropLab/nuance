@@ -76,3 +76,8 @@ final subtitleTextStyle = TextStyle(
   wordSpacing: -0.9,
   color: Colors.grey.shade500,
 );
+const headingTextStyle = TextStyle(
+  fontSize: 20,
+  fontWeight: FontWeight.w500,
+  color: Colors.white,
+);
