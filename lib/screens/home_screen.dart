@@ -22,6 +22,8 @@ import 'package:nuance/widgets/spotify_playlist_card.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:nuance/providers/history_provider.dart';
 
+final GlobalKey<ScaffoldState> globalKey = GlobalKey();
+
 class HomeScreen extends ConsumerStatefulWidget {
   static const routeName = '/home';
 
@@ -35,7 +37,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(text: '');
   final _tagQuery = TextEditingController();
   final _generatedRecQuery = TextEditingController();
-  final GlobalKey<ScaffoldState> _key = GlobalKey();
+  // final GlobalKey<ScaffoldState> _key = GlobalKey();
   // final RefreshController _refreshController =
   //     RefreshController(initialRefresh: false);
   // final focusNode = FocusNode();
@@ -52,7 +54,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    // ref.invalidate(historyProvider);
+
+    Future.delayed(Duration.zero, () {
+      // this._getCategories();
+      // ref.invalidate(historyProvider);
+    });
     _fetchRecommendations();
   }
 
@@ -75,6 +81,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() {
       isLoading = true;
     });
+    //    Future.delayed(Duration.zero, () {
+    //     // this._getCategories();
+    //   ref.invalidate(historyProvider);
+    //  });
     try {
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
@@ -241,16 +251,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               actions: <Widget>[
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Get.back();
+                    globalKey.currentState!.openDrawer();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text(
+                    'Go to history',
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     submit(); // Correctly call the submit function
                   },
-                  child: const Text('Regenerate'),
+                  child: const Text(
+                    'Regenerate',
+                  ),
                 ),
               ],
             );
@@ -268,7 +283,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: SafeArea(
         child: Scaffold(
           backgroundColor: Colors.black,
-          key: _key,
+          key: globalKey,
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerFloat,
           drawerEnableOpenDragGesture: true,
@@ -281,10 +296,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Welcome',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      Text('Discover Playlists',
-                          style: Theme.of(context).textTheme.titleMedium),
+                      Text(
+                        'Welcome',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      Text(
+                        'Discover Playlists',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ],
                   );
                 }
@@ -345,14 +364,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ),
                         onTap: () {
-                          sessionData.logout();
+                          globalKey.currentState!.openDrawer();
+                          // sessionData.logout();
                         },
                       );
                     }
                     return CupertinoButton(
                       padding: const EdgeInsets.all(0),
                       onPressed: () {
-                        sessionData.logout();
+                        globalKey.currentState!.openDrawer();
+                        // sessionData.logout();
                       },
                       child: CachedNetworkImage(
                         imageBuilder: (context, imageProvider) => Container(
@@ -405,7 +426,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
                           onTap: () {
-                            sessionData.logout();
+                            globalKey.currentState!.openDrawer();
+                            // sessionData.logout();
                           },
                         ),
                       ),
@@ -425,7 +447,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                     onTap: () {
-                      sessionData.logout();
+                      globalKey.currentState!.openDrawer();
+                      // sessionData.logout();
                     },
                   ),
                 ),

@@ -128,6 +128,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
+                // alignment: Alignment.center,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                 decoration: BoxDecoration(
@@ -175,18 +176,23 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                           }),
                         ),
                       )
-                    : Stack(
-                        alignment: Alignment.center,
-                        children: List.generate(artistImages.length, (index) {
-                          return Positioned(
-                            left: index *
-                                34.0, // Adjust the overlap distance here
-                            child: ArtistChip(
-                              imageUrl: artistImages[index],
-                            ),
-                          );
-                        }),
-                      ),
+                    : Center(
+                      child: Stack(
+                          alignment: Alignment.center,
+                          children: List.generate(
+                            artistImages.length,
+                            (index) {
+                              return Positioned(
+                                left: index *
+                                    34.0, // Adjust the overlap distance here
+                                child: ArtistChip(
+                                  imageUrl: artistImages[index],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                    ),
               ),
               const SizedBox(height: 20),
               Text(

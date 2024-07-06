@@ -149,6 +149,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           color: Colors.white,
                                         ),
                                   onTap: () {
+                                    Get.back();
                                     Get.to(
                                       RecommendationsResultScreen(
                                         searchTitle: historyItem.searchQuery,
