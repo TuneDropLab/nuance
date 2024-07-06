@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
@@ -8,6 +9,7 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/services/auth_service.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/utils/constants.dart';
 
 class SessionNotifier extends AsyncNotifier<SessionData?> {
   late final AuthService authService;
@@ -61,27 +63,38 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         // ),
         CupertinoAlertDialog(
       title: const Text(
-        "Sign Out",
+        "Sign out",
         style: TextStyle(
           // wordSpacing: 2,
           letterSpacing: 0.5,
           fontSize: 18,
         ),
       ),
-      content: const Text(
-        "Confirm Sign Out",
-        style: TextStyle(
-          letterSpacing: 0.5,
-          color: CupertinoColors.darkBackgroundGray,
-          fontSize: 14,
+      content: Text(
+        "Are you sure you want to sign out?",
+        style: subtitleTextStyle.copyWith(
+          color: Colors.black,
+          letterSpacing: 0.1,
         ),
         selectionColor: CupertinoColors.systemGrey4,
       ),
       actions: <Widget>[
         CupertinoDialogAction(
+          child: const Text(
+            "Cancel",
+            style: TextStyle(
+              color: AppTheme.textColor,
+              fontSize: 20,
+            ),
+          ),
+          onPressed: () async {
+            Get.back();
+          },
+        ),
+        CupertinoDialogAction(
           isDefaultAction: true,
           child: const Text(
-            "Yes",
+            "Okay",
             style: TextStyle(
               color: AppTheme.textColor,
               fontSize: 20,
@@ -96,18 +109,6 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
             state = const AsyncData(null);
           },
         ),
-        CupertinoDialogAction(
-          child: const Text(
-            "No",
-            style: TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 20,
-            ),
-          ),
-          onPressed: () async {
-            Get.back();
-          },
-        )
       ],
     ));
   }
