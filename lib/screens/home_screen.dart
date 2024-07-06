@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -17,6 +19,7 @@ import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
+import 'package:nuance/widgets/myindicator.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
 // import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
@@ -53,7 +56,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    // _scrollController.addListener(_onScroll);
 
     Future.delayed(Duration.zero, () {
       // this._getCategories();
@@ -68,17 +71,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-        !isLoading &&
-        !isMoreLoading) {
-      _fetchMoreRecommendations();
-    }
-  }
+  // void _onScroll() {
+  //   if (_scrollController.position.pixels >=
+  //           _scrollController.position.maxScrollExtent - 200 &&
+  //       !isLoading &&
+  //       !isMoreLoading) {
+  //     _fetchMoreRecommendations();
+  //   }
+  // }
 
   Future<void> _fetchRecommendations() async {
     setState(() {
+      recommendations.clear();
       isLoading = true;
     });
     //    Future.delayed(Duration.zero, () {
@@ -93,6 +97,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isLoading = false;
       });
     } catch (e) {
+      // print('Error loading recommendations: $e');
+      // setState(() {
+      //   isLoading = false;
+      // });
+      rethrow;
+    } finally {
       print('Error loading recommendations: $e');
       setState(() {
         isLoading = false;
@@ -100,30 +110,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _fetchMoreRecommendations() async {
-    setState(() {
-      isMoreLoading = true;
-    });
-    try {
-      final newRecommendations =
-          await ref.read(spotifyHomeRecommendationsProvider.future);
-      setState(() {
-        recommendations = List.from(recommendations)
-          ..addAll(newRecommendations);
-        currentPage++;
-        isMoreLoading = false;
-      });
-    } catch (e) {
-      print('Error loading more recommendations: $e');
-      setState(() {
-        isMoreLoading = false;
-      });
-    }
-  }
+  // Future<void> _fetchMoreRecommendations() async {
+  //   setState(() {
+  //     isMoreLoading = true;
+  //   });
+  //   try {
+  //     final newRecommendations =
+  //         await ref.read(spotifyHomeRecommendationsProvider.future);
+  //     setState(() {
+  //       recommendations = List.from(recommendations)
+  //         ..addAll(newRecommendations);
+  //       currentPage++;
+  //       isMoreLoading = false;
+  //     });
+  //   } catch (e) {
+  //     print('Error loading more recommendations: $e');
+  //     setState(() {
+  //       isMoreLoading = false;
+  //     });
+  //   }
+  // }
 
-  void onRefresh() async {
-    ref.invalidate(spotifyHomeRecommendationsProvider);
-    ref.invalidate(historyProvider);
+  Future onRefresh() async {
+    setState(() {
+      ref.invalidate(spotifyHomeRecommendationsProvider);
+      ref.invalidate(historyProvider);
+    });
 
     await Future.delayed(const Duration(seconds: 6));
     // _refreshController.refreshCompleted();
@@ -171,17 +183,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (tagQuery.isEmpty) {
         return;
       }
-
-      // Navigator.pushNamed(
-      //   context,
-      //   RecommendationsResultScreen.routeName,
-      //   arguments: {
-      //     'search_term': userMessage.trim(),
-      //     'tag_query': tagQuery,
-      //     'sessionState': sessionState,
-      //   },
-      // ).then((value) => setState(() {}));
-
       Get.to(() => RecommendationsResultScreen(
             searchQuery: null,
             tagQuery: tagQuery,
@@ -455,21 +456,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          body: Stack(
-            children: [
-              Container(
-                child: RefreshIndicator.adaptive(
-                  color: Colors.white,
-                  onRefresh: () async {
-                    onRefresh();
-                  },
+          body: Stack(children: [
+            Container(
+              child: recommendations.isEmpty
+                  ? ListView.builder(
+                      padding: const EdgeInsets.only(top: 24),
+                      itemCount: 30,
+                      itemBuilder: (context, index) {
+                        return SizedBox(
+                          child: Shimmer.fromColors(
+                            baseColor: const Color.fromARGB(51, 255, 255, 255),
+                            highlightColor:
+                                const Color.fromARGB(65, 255, 255, 255),
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              height: 190,
+                              decoration: BoxDecoration(
+                                color: Colors.grey,
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                            ).marginOnly(bottom: 25),
+                          ),
+                        );
+                      },
+                    )
+                  : CheckMarkIndicator(
+                      // backgroundColor: Colors.transparent,
+                      // onRefresh: onRefresh,
+                      // indicatorBuilder: (context, controller) {
+                      //   return CheckMarkIndicator(
+                      //     child: Container(
+                      //       height: 40,
+                      //       width: 40,
+                      //       decoration: const BoxDecoration(
+                      //         color: Colors.transparent,
+                      //         shape: BoxShape.circle,
+                      //       ),
+                      //       // color: Colors.white,
+                      //       alignment: Alignment.center,
+                      //       child: Image.asset(
+                      //         "assets/whitelogo.png",
+                      //         color: Colors.white,
+                      //       ),
+                      //     ),
+                      //   );
+                      // },
+                      // triggerMode: RefreshIndicatorTriggerMode.anywhere,
+                      // displacement: 100,
+                      // color: Colors.white,
 
-                  // enablePullDown: true,
-                  // onRefresh: onRefresh,
-                  // controller: _refreshController,
-                  child: homeRecommendations.when(
-                    data: (recommendations) {
-                      return ListView.builder(
+                      // enablePullDown: true,
+                      // onRefresh: onRefresh,
+                      // controller: _refreshController,
+                      child: ListView.builder(
                         itemCount:
                             recommendations.length + (isMoreLoading ? 1 : 0),
                         itemBuilder: (context, index) {
@@ -504,11 +544,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                               ).marginOnly(bottom: 25);
                             }
-                          } else {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
                           }
+                          return null;
+                          // else {
+                          //   return const Center(
+                          //     child: CircularProgressIndicator(),
+                          //   );
+                          // }
                         },
                         padding: const EdgeInsets.only(
                             bottom: 200, left: 20, right: 20, top: 20),
@@ -516,191 +558,187 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         physics: const AlwaysScrollableScrollPhysics(),
                         scrollDirection: Axis.vertical,
                         shrinkWrap: true,
-                      );
-                    },
-                    loading: () => ListView.builder(
-                      padding: const EdgeInsets.only(top: 24),
-                      itemCount: 30,
-                      itemBuilder: (context, index) {
-                        return SizedBox(
-                          child: Shimmer.fromColors(
-                            baseColor: const Color.fromARGB(51, 255, 255, 255),
-                            highlightColor:
-                                const Color.fromARGB(65, 255, 255, 255),
-                            child: Container(
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              height: 190,
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                            ).marginOnly(bottom: 25),
-                          ),
-                        );
-                      },
-                    ),
-                    error: (error, stackTrace) => Center(
-                      child: Text(
-                        'Error loading playlists',
-                        style: subtitleTextStyle.copyWith(
-                          color: Colors.white,
-                        ),
                       ),
+                      // loading: () => ListView.builder(
+                      //   padding: const EdgeInsets.only(top: 24),
+                      //   itemCount: 30,
+                      //   itemBuilder: (context, index) {
+                      //     return SizedBox(
+                      //       child: Shimmer.fromColors(
+                      //         baseColor: const Color.fromARGB(51, 255, 255, 255),
+                      //         highlightColor:
+                      //             const Color.fromARGB(65, 255, 255, 255),
+                      //         child: Container(
+                      //           margin:
+                      //               const EdgeInsets.symmetric(horizontal: 20),
+                      //           height: 190,
+                      //           decoration: BoxDecoration(
+                      //             color: Colors.grey,
+                      //             borderRadius: BorderRadius.circular(25),
+                      //           ),
+                      //         ).marginOnly(bottom: 25),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
+                      // error: (error, stackTrace) => Center(
+                      //   child: Text(
+                      //     'Error loading playlists',
+                      //     style: subtitleTextStyle.copyWith(
+                      //       color: Colors.white,
+                      //     ),
+                      //   ),
+                      // ),
+                      // ,
                     ),
-                  ),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  color: Colors.black,
-                  height: 150,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: tagsRecommendations.when(
-                          data: (data) {
-                            return ListView.separated(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) {
-                                final List<Color> colors = [
-                                  const Color(0xffFFBB00),
-                                  const Color(0xffFF4500),
-                                  const Color(0xffFF006D),
-                                  const Color(0xff8E33F5),
-                                  const Color(0xff0088FF),
-                                ];
-                                final Color randomColor =
-                                    colors[Random().nextInt(colors.length)];
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                color: Colors.black,
+                height: 150,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      child: tagsRecommendations.when(
+                        data: (data) {
+                          return ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemBuilder: (context, index) {
+                              final List<Color> colors = [
+                                const Color(0xffFFBB00),
+                                const Color(0xffFF4500),
+                                const Color(0xffFF006D),
+                                const Color(0xff8E33F5),
+                                const Color(0xff0088FF),
+                              ];
+                              final Color randomColor =
+                                  colors[Random().nextInt(colors.length)];
 
-                                return InkWell(
-                                  onTap: () {
-                                    _tagQuery.text = data[index];
-                                    submitTagQuery();
-                                  },
-                                  child: Chip(
-                                    side: BorderSide.none,
-                                    avatar: SvgPicture.asset(
-                                        "assets/icon4star.svg",
-                                        color: randomColor),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 10),
-                                    label: Text(data[index]),
-                                    backgroundColor: Colors.grey[900],
-                                    labelStyle:
-                                        const TextStyle(color: Colors.white),
-                                  ),
-                                );
-                              },
-                              separatorBuilder: (context, index) {
-                                return const SizedBox(width: 5);
-                              },
-                              itemCount: data.length,
-                            );
-                          },
-                          error: (error, stackTrace) {
-                            return Text(
-                              "Error loading tags",
-                              style: subtitleTextStyle.copyWith(
-                                color: Colors.white,
-                              ),
-                            );
-                          },
-                          loading: () {
-                            return ListView.separated(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              itemCount: 9,
-                              itemBuilder: (context, index) {
-                                return Shimmer.fromColors(
-                                  baseColor:
-                                      const Color.fromARGB(51, 255, 255, 255),
-                                  highlightColor:
-                                      const Color.fromARGB(65, 255, 255, 255),
-                                  child: Chip(
-                                    side: BorderSide.none,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 10),
-                                    label: const Text("             "),
-                                    backgroundColor: Colors.grey[900],
-                                    labelStyle:
-                                        const TextStyle(color: Colors.white),
-                                  ),
-                                );
-                              },
-                              separatorBuilder: (context, index) {
-                                return const SizedBox(width: 5);
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                      const CustomDivider(),
-                      const SizedBox(height: 5),
-                      AnimatedTextField(
-                        animationDuration: const Duration(milliseconds: 98000),
-                        animationType: Animationtype.slide,
-                        focusNode: focusNode,
-                        onTapOutside: (event) {
-                          FocusManager.instance.primaryFocus?.unfocus();
+                              return InkWell(
+                                onTap: () {
+                                  _tagQuery.text = data[index];
+                                  submitTagQuery();
+                                },
+                                child: Chip(
+                                  side: BorderSide.none,
+                                  avatar: SvgPicture.asset(
+                                      "assets/icon4star.svg",
+                                      color: randomColor),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  label: Text(data[index]),
+                                  backgroundColor: Colors.grey[900],
+                                  labelStyle:
+                                      const TextStyle(color: Colors.white),
+                                ),
+                              );
+                            },
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(width: 5);
+                            },
+                            itemCount: data.length,
+                          );
                         },
-                        controller: _controller,
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(
-                              borderSide: BorderSide.none),
-                          filled: false,
-                          suffixIcon: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 12),
-                            child: GeneralButton(
-                              text: "Generate",
-                              backgroundColor: Colors.white,
-                              onPressed: () {
-                                compareAndConfirmQuery(
-                                  lastGeneratedQuery ?? "",
-                                  _controller.text,
-                                  submit, // Pass the submit function reference
-                                );
-                              },
+                        error: (error, stackTrace) {
+                          return Text(
+                            "Error loading tags",
+                            style: subtitleTextStyle.copyWith(
+                              color: Colors.white,
                             ),
-                          ),
-                          contentPadding: const EdgeInsets.all(12),
-                        ),
-                        hintTextStyle: const TextStyle(
-                          color: Color(0xFFFAFAFA),
-                          fontSize: 14,
-                        ),
-                        style: const TextStyle(
-                          color: Color(0xFFFAFAFA),
-                          fontSize: 14,
-                        ),
-                        hintTexts: const [
-                          'What do you like to listen to?',
-                          'Songs like Owl City Fireflies',
-                          '1970\'s RnB For Long Drives',
-                          'Songs to Help Me Sleep',
-                        ],
-                        onSubmitted: (value) {
-                          compareAndConfirmQuery(
-                            lastGeneratedQuery ?? "",
-                            _controller.text,
-                            submit, // Pass the submit function reference
+                          );
+                        },
+                        loading: () {
+                          return ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            shrinkWrap: true,
+                            scrollDirection: Axis.horizontal,
+                            itemCount: 9,
+                            itemBuilder: (context, index) {
+                              return Shimmer.fromColors(
+                                baseColor:
+                                    const Color.fromARGB(51, 255, 255, 255),
+                                highlightColor:
+                                    const Color.fromARGB(65, 255, 255, 255),
+                                child: Chip(
+                                  side: BorderSide.none,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 10),
+                                  label: const Text("             "),
+                                  backgroundColor: Colors.grey[900],
+                                  labelStyle:
+                                      const TextStyle(color: Colors.white),
+                                ),
+                              );
+                            },
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(width: 5);
+                            },
                           );
                         },
                       ),
-                    ],
-                  ),
+                    ),
+                    const CustomDivider(),
+                    const SizedBox(height: 5),
+                    AnimatedTextField(
+                      animationDuration: const Duration(milliseconds: 98000),
+                      animationType: Animationtype.slide,
+                      focusNode: focusNode,
+                      onTapOutside: (event) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(
+                            borderSide: BorderSide.none),
+                        filled: false,
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 12),
+                          child: GeneralButton(
+                            text: "Generate",
+                            backgroundColor: Colors.white,
+                            onPressed: () {
+                              compareAndConfirmQuery(
+                                lastGeneratedQuery ?? "",
+                                _controller.text,
+                                submit, // Pass the submit function reference
+                              );
+                            },
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                      hintTextStyle: const TextStyle(
+                        color: Color(0xFFFAFAFA),
+                        fontSize: 14,
+                      ),
+                      style: const TextStyle(
+                        color: Color(0xFFFAFAFA),
+                        fontSize: 14,
+                      ),
+                      hintTexts: const [
+                        'What do you like to listen to?',
+                        'Songs like Owl City Fireflies',
+                        '1970\'s RnB For Long Drives',
+                        'Songs to Help Me Sleep',
+                      ],
+                      onSubmitted: (value) {
+                        compareAndConfirmQuery(
+                          lastGeneratedQuery ?? "",
+                          _controller.text,
+                          submit, // Pass the submit function reference
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ]),
         ),
       ),
     );

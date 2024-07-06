@@ -806,7 +806,6 @@ class _RecommendationsResultScreenState
                           ),
                           // size: 10.0,
                           textList: [
-                            'Just a moment...',
                             widget.searchQuery != null
                                 ? 'Searching for songs...'
                                 : widget.tagQuery != null
@@ -814,6 +813,7 @@ class _RecommendationsResultScreenState
                                     : widget.searchTitle != null
                                         ? 'Getting playlist songs...'
                                         : 'Loading playlist songs...',
+                            'Just a moment...',
                             'Almost done...',
                           ],
                         ),

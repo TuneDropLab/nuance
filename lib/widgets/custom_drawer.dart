@@ -211,8 +211,8 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                   height: 40,
                                 ),
                                 textList: const [
-                                  'Just a moment ...',
                                   'Loading your history ...',
+                                  'Just a moment ...',
                                   'Almost done ...',
                                 ],
                               ),

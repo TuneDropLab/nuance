@@ -89,10 +89,8 @@ class _SpinningSvgState extends State<SpinningSvg>
         AnimatedBuilder(
           animation: _spinController,
           builder: (context, child) {
-            return Transform.rotate(
-              angle: _spinController.value * 2 * 3.141592653589793,
-              child: widget.svgWidget,
-            );
+            return SpininWidget(
+                spinController: _spinController, widget: widget);
           },
         ),
         const SizedBox(height: 20.0),
@@ -106,6 +104,25 @@ class _SpinningSvgState extends State<SpinningSvg>
           ),
         ),
       ],
+    );
+  }
+}
+
+class SpininWidget extends StatelessWidget {
+  const SpininWidget({
+    super.key,
+    required AnimationController spinController,
+    required this.widget,
+  }) : _spinController = spinController;
+
+  final AnimationController _spinController;
+  final SpinningSvg widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: _spinController.value * 2 * 3.141592653589793,
+      child: widget.svgWidget,
     );
   }
 }
