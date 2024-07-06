@@ -267,6 +267,7 @@ class RecommendationsService {
       }
     } catch (e) {
       log('Exception in getSpotifyHomeRecommendations: $e');
+      // 
       rethrow;
     }
   }
