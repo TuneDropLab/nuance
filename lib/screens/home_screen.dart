@@ -310,21 +310,141 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Welcome ${data.user["user_metadata"]["full_name"].split(" ")[0]}',
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey.shade500,
+                    Row(
+                      children: [
+                        Animate(
+                          effects: const [
+                            MoveEffect(
+                              begin: Offset(0, -5), // Move down from 10px above
+                              end: Offset(0, 0),
+                              duration: Duration(
+                                  milliseconds:
+                                      500), // Duration of the animation
+                              curve: Curves.easeOut, // Smooth transition
+                            ),
+                            FadeEffect(
+                              begin: 0.0,
+                              end: 1.0,
+                              duration: Duration(milliseconds: 500),
+                              curve: Curves.easeOut,
+                            ),
+                          ],
+                          child: Text(
+                            'Welcome',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade500,
+                                ),
                           ),
+                        ),
+                        Animate(
+                          effects: const [
+                            MoveEffect(
+                              begin: Offset(0, -5), // Move down from 10px above
+                              end: Offset(0, 0),
+                              duration: Duration(
+                                  milliseconds:
+                                      500), // Duration of the animation
+                              delay: Duration(
+                                  milliseconds:
+                                      500), // Delay for the second animation
+                              curve: Curves.easeOut, // Smooth transition
+                            ),
+                            FadeEffect(
+                              begin: 0.0,
+                              end: 1.0,
+                              duration: Duration(milliseconds: 500),
+                              delay: Duration(milliseconds: 500),
+                              curve: Curves.easeOut,
+                            ),
+                          ],
+                          child: Text(
+                            ' ${data.user["user_metadata"]["full_name"].split(" ")[0]}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade500,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
-                    Text(
-                      'Discover Playlists',
-                      style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                    Row(
+                      children: [
+                        Animate(
+                          effects: const [
+                            MoveEffect(
+                              begin: Offset(0, -5), // Move down from 10px above
+                              end: Offset(0, 0),
+                              duration: Duration(
+                                  milliseconds:
+                                      500), // Duration of the animation
+                              delay: Duration(
+                                  milliseconds:
+                                      1000), // Delay for the third animation
+                              curve: Curves.easeOut, // Smooth transition
+                            ),
+                            FadeEffect(
+                              begin: 0.0,
+                              end: 1.0,
+                              duration: Duration(milliseconds: 500),
+                              delay: Duration(milliseconds: 1000),
+                              curve: Curves.easeOut,
+                            ),
+                          ],
+                          child: Text(
+                            'Discover',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                           ),
+                        ),
+                        Animate(
+                          effects: const [
+                            MoveEffect(
+                              begin: Offset(0, -5), // Move down from 10px above
+                              end: Offset(0, 0),
+                              duration: Duration(
+                                  milliseconds:
+                                      500), // Duration of the animation
+                              delay: Duration(
+                                  milliseconds:
+                                      1500), // Delay for the fourth animation
+                              curve: Curves.easeOut, // Smooth transition
+                            ),
+                            FadeEffect(
+                              begin: 0.0,
+                              end: 1.0,
+                              duration: Duration(milliseconds: 500),
+                              delay: Duration(milliseconds: 1500),
+                              curve: Curves.easeOut,
+                            ),
+                          ],
+                          child: Text(
+                            ' Playlists',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium!
+                                .copyWith(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 );

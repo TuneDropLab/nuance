@@ -250,6 +250,18 @@ class _RecommendationsResultScreenState
                                       height: 40,
                                       width: 40,
                                       imageUrl: playlist.imageUrl ?? "",
+                                      imageBuilder: (context, imageProvider) {
+                                        return Container(
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            image: DecorationImage(
+                                              image: imageProvider,
+                                            ),
+                                          ),
+                                        );
+                                      },
                                       placeholder: (context, url) {
                                         return Container(
                                             alignment: Alignment.center,
