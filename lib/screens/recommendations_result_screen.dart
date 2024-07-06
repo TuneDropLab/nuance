@@ -912,15 +912,30 @@ class _RecommendationsResultScreenState
                             children: [
                               Expanded(
                                 child: GeneralButton(
-                                  backgroundColor: const Color(0xffFDAD3C),
+                                  backgroundColor: isLoading
+                                      ? const Color.fromARGB(255, 166, 166, 166)
+                                      : const Color(0xffFDAD3C),
                                   hasPadding: true,
-                                  icon: SvgPicture.asset("assets/bookmark.svg"),
+                                  color: isLoading
+                                      ? const Color.fromARGB(255, 112, 112, 112)
+                                      : Colors.black,
+                                  icon: SvgPicture.asset(
+                                    "assets/bookmark.svg",
+                                    color: isLoading
+                                        ? const Color.fromARGB(
+                                            255, 112, 112, 112)
+                                        : Colors.black,
+                                  ),
                                   onPressed: () {
-                                    _showPlaylists(
-                                      context,
-                                      ref,
-                                      widget.songs ?? recommendations ?? [],
-                                    );
+                                    isLoading
+                                        ? null
+                                        : _showPlaylists(
+                                            context,
+                                            ref,
+                                            widget.songs ??
+                                                recommendations ??
+                                                [],
+                                          );
                                   },
                                 ),
                               ),
