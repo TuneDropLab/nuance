@@ -373,8 +373,8 @@ class _RecommendationsResultScreenState
                           ),
                           // size: 10.0,
                           textList: const [
+                            'Getting your playlists...',
                             'Just a moment...',
-                            'Generating your playlist...',
                             'Almost done...',
                           ],
                         ),
@@ -672,17 +672,14 @@ class _RecommendationsResultScreenState
             ref.invalidate(historyProvider);
             Get.back();
           },
-          child: SizedBox(
-            // width: 50,
-            child: CircleAvatar(
-              backgroundColor: Colors.transparent,
-              radius: 10.0,
-              child: Image.asset(
-                "assets/backbtn.png",
-                height: 40.0,
-                width: 40.0,
-                fit: BoxFit.fill,
-              ),
+          child: CircleAvatar(
+            backgroundColor: Colors.transparent,
+            radius: 10.0,
+            child: Image.asset(
+              "assets/backbtn.png",
+              height: 40.0,
+              width: 40.0,
+              fit: BoxFit.fill,
             ),
           ),
         ),

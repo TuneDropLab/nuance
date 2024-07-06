@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/general_button.dart';
 
 final GlobalKey<ScaffoldState> lobalKey = GlobalKey();
@@ -45,9 +46,30 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           drawerEnableOpenDragGesture: true,
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: Text(
-              'Profile',
-              style: Theme.of(context).textTheme.titleMedium,
+            leading: GestureDetector(
+              onTap: () {
+                // ref.invalidate(historyProvider);
+                Get.back();
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.transparent,
+                radius: 10.0,
+                child: Image.asset(
+                  "assets/backbtn.png",
+                  height: 40.0,
+                  width: 40.0,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ),
+            title: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Profile",
+                  style: headingTextStyle,
+                ),
+              ],
             ),
             automaticallyImplyLeading: false,
             centerTitle: false,
@@ -72,26 +94,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         const SizedBox(height: 20),
                         Center(
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundImage: CachedNetworkImageProvider(
-                              data.user["user_metadata"]["avatar_url"] ?? "",
+                          child: CachedNetworkImage(
+                            imageBuilder: (context, imageProvider) =>
+                                CircleAvatar(
+                              radius: 70,
+                              backgroundImage: imageProvider,
+                              backgroundColor: Colors.grey,
                             ),
-                            backgroundColor: Colors.grey,
+                            fit: BoxFit.cover,
+                            // height: 150,
+                            imageUrl:
+                                data.user["user_metadata"]["avatar_url"] ?? "",
+                            placeholder: (context, url) => const Center(
+                              child: CupertinoActivityIndicator(
+                                  // color: AppTheme.textColor,
+                                  ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              width: 140.0,
+                              height: 140.0,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.black12,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
                         Center(
-                          child: TextButton(
-                            onPressed: editName,
-                            child: Text(
-                              data.user["user_metadata"]["full_name"],
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
+                          child: Text(
+                            data.user["user_metadata"]["full_name"],
+                            style: headingTextStyle,
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -100,7 +133,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             text: data.user["user_metadata"]["full_name"],
                           ),
                           decoration: InputDecoration(
-                            labelText: 'Name',
+                            labelStyle: const TextStyle(color: Colors.white),
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide.none,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[900],
+                          ),
+                          style: const TextStyle(color: Colors.white),
+                          // readOnly: true,
+                        ),
+                        const SizedBox(height: 20),
+                        TextField(
+                          controller: TextEditingController(
+                            text: data.user["email"],
+                          ),
+                          decoration: InputDecoration(
                             labelStyle: const TextStyle(color: Colors.white),
                             border: OutlineInputBorder(
                               borderSide: BorderSide.none,
@@ -113,33 +162,34 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           readOnly: true,
                         ),
                         const SizedBox(height: 20),
-                        TextField(
-                          controller: TextEditingController(
-                            text: data.user["email"],
+                        SizedBox(
+                          width: Get.width,
+                          // padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: GeneralButton(
+                            hasPadding: true,
+                            text: "Save",
+                            color: Colors.white,
+                            backgroundColor:
+                                const Color.fromARGB(255, 4, 37, 6),
+                            onPressed: () {
+                              // sessionData.logout();
+                              // save details user has stored to their profile
+                            },
                           ),
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            labelStyle: const TextStyle(color: Colors.white),
-                            border: OutlineInputBorder(
-                              borderSide: BorderSide.none,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[900],
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          readOnly: true,
                         ),
                       ],
                     ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: Padding(
+                    child: Container(
+                      width: Get.width,
                       padding: const EdgeInsets.all(20),
                       child: GeneralButton(
+                        hasPadding: true,
                         text: "Sign Out",
-                        backgroundColor: Colors.red,
+                        color: Colors.white,
+                        backgroundColor: Colors.grey.shade800,
                         onPressed: () {
                           sessionData.logout();
                         },
