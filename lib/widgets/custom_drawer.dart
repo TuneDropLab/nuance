@@ -361,7 +361,7 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
                         image: imageProvider,
                       ),
                       color: Colors.black,
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(5),
                     ),
                   );
                 },
