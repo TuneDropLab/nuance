@@ -30,18 +30,21 @@ class CheckMarkStyle {
 class CheckMarkIndicator extends StatefulWidget {
   final Widget child;
   final CheckMarkStyle style;
+  final Future Function() onRefresh;
 
   const CheckMarkIndicator({
     super.key,
     required this.child,
     this.style = CheckMarkStyle.defaultStyle,
+    required this.onRefresh,
   });
 
   @override
   State<CheckMarkIndicator> createState() => _CheckMarkIndicatorState();
 }
 
-class _CheckMarkIndicatorState extends State<CheckMarkIndicator> with SingleTickerProviderStateMixin {
+class _CheckMarkIndicatorState extends State<CheckMarkIndicator>
+    with SingleTickerProviderStateMixin {
   /// Whether to render check mark instead of spinner
   bool _renderCompleteState = false;
 
@@ -51,7 +54,7 @@ class _CheckMarkIndicatorState extends State<CheckMarkIndicator> with SingleTick
   Widget build(BuildContext context) {
     return CustomMaterialIndicator(
       withRotation: false,
-      onRefresh: () => Future.delayed(const Duration(seconds: 2)),
+      onRefresh: widget.onRefresh,
       durations: const RefreshIndicatorDurations(
         completeDuration: Duration(seconds: 2),
       ),
@@ -69,7 +72,9 @@ class _CheckMarkIndicatorState extends State<CheckMarkIndicator> with SingleTick
         BuildContext context,
         IndicatorController controller,
       ) {
-        final style = _renderCompleteState ? widget.style.completed : widget.style.loading;
+        final style = _renderCompleteState
+            ? widget.style.completed
+            : widget.style.loading;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           alignment: Alignment.center,
@@ -88,7 +93,9 @@ class _CheckMarkIndicatorState extends State<CheckMarkIndicator> with SingleTick
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: style.content,
-                    value: controller.isDragging || controller.isArmed ? controller.value.clamp(0.0, 1.0) : null,
+                    value: controller.isDragging || controller.isArmed
+                        ? controller.value.clamp(0.0, 1.0)
+                        : null,
                   ),
                 ),
         );

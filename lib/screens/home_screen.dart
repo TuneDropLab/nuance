@@ -483,7 +483,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     )
                   : CheckMarkIndicator(
                       // backgroundColor: Colors.transparent,
-                      // onRefresh: onRefresh,
+                      onRefresh: onRefresh,
                       // indicatorBuilder: (context, controller) {
                       //   return CheckMarkIndicator(
                       //     child: Container(
