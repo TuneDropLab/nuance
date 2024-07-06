@@ -25,14 +25,12 @@ class MyCustomDrawer extends ConsumerStatefulWidget {
 
 class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   String? _selectedArtist;
+  final TextEditingController _searchController = TextEditingController();
 
-  // Dynamic artists
-  // final Map<String, int> _artists = {};
   @override
-  void initState() {
-    super.initState();
-    // TODO: implement initState
-    // ref.invalidate(historyProvider);
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,7 +69,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                         onTapOutside: (event) {
                           FocusManager.instance.primaryFocus?.unfocus();
                         },
-                        // controller: nameController,
+                        controller: _searchController,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.all(
@@ -97,105 +95,47 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           'Search',
                         ],
                         onSubmitted: (value) {
-                          // submit();
+                          setState(
+                              () {}); // Trigger a rebuild when search query is submitted
                         },
                       ),
                     ),
                   ],
                 ),
               ),
-              // Dynamic Artist Chips
-              // Container(
-              //   height: 50,
-              //   padding: const EdgeInsets.symmetric(vertical: 8.0),
-              //   child: Consumer(
-              //     builder: (context, watch, child) {
-              //       final historyAsyncValue = ref.watch(historyProvider);
-              //       return historyAsyncValue.when(
-              //         data: (history) {
-              //           // Generate artists
-              //           _artists = _generateArtists(history);
-              //           return ListView(
-              //             scrollDirection: Axis.horizontal,
-              //             children: _artists.keys.map((artist) {
-              //               return AnimatedOpacity(
-              //                 opacity: _selectedArtist == null ||
-              //                         _selectedArtist == artist
-              //                     ? 1.0
-              //                     : 0.2,
-              //                 duration: const Duration(milliseconds: 500),
-              //                 child: Padding(
-              //                   padding:
-              //                       const EdgeInsets.symmetric(horizontal: 4.0),
-              //                   child: ChoiceChip(
-              //                     label: Text('$artist (${_artists[artist]})'),
-              //                     selected: _selectedArtist == artist,
-              //                     onSelected: (bool selected) {
-              //                       setState(() {
-              //                         _selectedArtist =
-              //                             selected ? artist : null;
-              //                       });
-              //                     },
-              //                     selectedColor: Colors.blue,
-              //                     backgroundColor: Colors.white10,
-              //                     shape: RoundedRectangleBorder(
-              //                       borderRadius: BorderRadius.circular(20.0),
-              //                     ),
-              //                     labelStyle: TextStyle(
-              //                       color: _selectedArtist == artist
-              //                           ? Colors.white
-              //                           : Colors.black,
-              //                     ),
-              //                   ),
-              //                 ),
-              //               );
-              //             }).toList(),
-              //           );
-              //         },
-              //         loading: () => const Center(
-              //           child: CupertinoActivityIndicator(),
-              //         ),
-              //         error: (error, stackTrace) => Center(
-              //           child: Text(
-              //             'Error: $error',
-              //             style: const TextStyle(color: Colors.red),
-              //           ),
-              //         ),
-              //       );
-              //     },
-              //   ),
-              // ),
               // History List
               Expanded(
                 child: Consumer(
                   builder: (context, watch, child) {
                     final historyAsyncValue = ref.watch(historyProvider);
-
                     return historyAsyncValue.when(
                       data: (history) {
-                        final filteredHistory =
-                            _filterHistoryByArtist(history, _selectedArtist);
-                        return ListView.separated(
-                          separatorBuilder: (context, index) {
-                            return const Divider(
-                              color: Colors.transparent,
-                            );
-                          },
-                          itemCount: filteredHistory.length,
-                          itemBuilder: (context, index) {
-                            final historyItem = filteredHistory[index];
-                            return ListTile(
-                              title: Text(
-                                historyItem.searchQuery ?? '',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              subtitle: Text(
-                                _formatRelativeTime(
-                                    historyItem.createdAt ?? DateTime.now()),
-                                style: subtitleTextStyle,
-                              ),
-                              leading:
-                                  historyItem.recommendations?.isNotEmpty ??
+                        return ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _searchController,
+                          builder: (context, value, __) {
+                            final filteredHistory =
+                                _filterHistoryByQuery(history, value.text);
+                            return ListView.separated(
+                              separatorBuilder: (context, index) {
+                                return const Divider(
+                                  color: Colors.transparent,
+                                );
+                              },
+                              itemCount: filteredHistory.length,
+                              itemBuilder: (context, index) {
+                                final historyItem = filteredHistory[index];
+                                return ListTile(
+                                  title: Text(
+                                    historyItem.searchQuery ?? '',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  subtitle: Text(
+                                    _formatRelativeTime(historyItem.createdAt ??
+                                        DateTime.now()),
+                                    style: subtitleTextStyle,
+                                  ),
+                                  leading: historyItem
+                                              .recommendations?.isNotEmpty ??
                                           false
                                       ? ArtworkSwitcher(
                                           artworks: historyItem.recommendations!
@@ -208,15 +148,16 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           Icons.square,
                                           color: Colors.white,
                                         ),
-                              onTap: () {
-                                // setState(() {
-                                //   // Trigger the change of artwork
-                                // });
-                                Get.to(RecommendationsResultScreen(
-                                  searchTitle: historyItem.searchQuery,
-                                  sessionState: widget.sessionState,
-                                  songs: historyItem.recommendations!,
-                                ));
+                                  onTap: () {
+                                    Get.to(
+                                      RecommendationsResultScreen(
+                                        searchTitle: historyItem.searchQuery,
+                                        sessionState: widget.sessionState,
+                                        songs: historyItem.recommendations!,
+                                      ),
+                                    );
+                                  },
+                                );
                               },
                             );
                           },
@@ -224,13 +165,10 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                       },
                       loading: () => Center(
                         child: SpinningSvg(
-                          svgWidget:
-                              // SvgPicture.asset('assets/images/your_svg.svg'),
-                              Image.asset(
+                          svgWidget: Image.asset(
                             'assets/hdlogo.png',
                             height: 40,
                           ),
-                          // size: 10.0,
                           textList: const [
                             'Just a moment ...',
                             'Loading your history ...',
@@ -255,36 +193,12 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
     );
   }
 
-  Map<String, int> _generateArtists(List<HistoryModel> history) {
-    final artistMap = <String, int>{};
-    for (var item in history) {
-      if (item.recommendations != null) {
-        for (var song in item.recommendations!) {
-          if (song.artistUri != null && song.artistUri!.isNotEmpty) {
-            var artists = song.artist!.split(', ');
-            for (var artist in artists) {
-              if (artistMap.containsKey(artist)) {
-                artistMap[artist] = artistMap[artist]! + 1;
-              } else {
-                artistMap[artist] = 1;
-              }
-            }
-          }
-        }
-      }
-    }
-    return artistMap..entries.toList();
-  }
-
-  List<HistoryModel> _filterHistoryByArtist(
-      List<HistoryModel> history, String? artist) {
-    if (artist == null) return history;
+  List<HistoryModel> _filterHistoryByQuery(
+      List<HistoryModel> history, String query) {
+    if (query.isEmpty) return history;
     return history.where((item) {
-      if (item.recommendations != null) {
-        return item.recommendations!
-            .any((song) => song.artist!.contains(artist));
-      }
-      return false;
+      return item.searchQuery?.toLowerCase().contains(query.toLowerCase()) ??
+          false;
     }).toList();
   }
 
@@ -348,11 +262,10 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
     });
   }
 
-  // random list of colors
-
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(25)),
       height: 45,
       width: 45,
       child: AnimatedSwitcher(
@@ -360,8 +273,6 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
         child:
             widget.artworks.isNotEmpty && widget.artworks[_currentIndex] != null
                 ? CachedNetworkImage(
-                    // height: 45,
-                    // width: 45,
                     imageUrl: widget.artworks[_currentIndex]!,
                     key: ValueKey<int>(_currentIndex),
                     placeholder: (context, url) {
@@ -377,8 +288,6 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
                     },
                   )
                 : Container(
-                    // height: 45,
-                    // width: 45,
                     decoration: BoxDecoration(
                       color: Colors.amber,
                       borderRadius: BorderRadius.circular(20),
