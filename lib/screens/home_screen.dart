@@ -629,54 +629,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // onRefresh: onRefresh,
                       // controller: _refreshController,
 
-                      child: ListView.builder(
-                        itemCount: recommendations.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index < recommendations.length) {
-                            final recommendation = recommendations[index];
-                            if (recommendation['type'] == 'playlist') {
-                              return SpotifyPlaylistCard(
-                                trackListHref: recommendation['tracks']['href'],
-                                playlistId: recommendation['id'],
-                                playlistName: recommendation['name'],
-                                artistNames: recommendation['description'],
-                                onClick: () {
-                                  Get.to(RecommendationsResultScreen(
-                                    sessionState: sessionState,
-                                    searchTitle: recommendation['name'],
-                                    playlistId: recommendation['id'],
-                                  ));
-                                },
-                              ).marginOnly(bottom: 25);
-                            } else {
-                              return GeneratePlaylistCard(
-                                prompt: recommendation['text'],
-                                image: recommendation['image'],
-                                onClick: () {
-                                  _generatedRecQuery.text =
-                                      recommendation['text'];
-                                  compareAndConfirmQuery(
-                                    lastGeneratedQuery ?? "",
-                                    _generatedRecQuery.text,
-                                    submitGeneratedQuery,
-                                  );
-                                },
-                              ).marginOnly(bottom: 25);
-                            }
-                          }
-                          // return null;
-                          else {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                        },
-                        padding: const EdgeInsets.only(
-                            bottom: 200, left: 20, right: 20, top: 20),
+                      child: RawScrollbar(
+                        fadeDuration: 500.ms,
+                        radius: const Radius.circular(20),
+                        timeToFade: 500.ms,
+                        trackBorderColor: Colors.grey,
                         controller: _scrollController,
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        scrollDirection: Axis.vertical,
-                        shrinkWrap: true,
+                        thumbVisibility: true,
+                        interactive: true,
+                        child: ListView.builder(
+                          itemCount: recommendations.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index < recommendations.length) {
+                              final recommendation = recommendations[index];
+                              if (recommendation['type'] == 'playlist') {
+                                return SpotifyPlaylistCard(
+                                  trackListHref: recommendation['tracks']
+                                      ['href'],
+                                  playlistId: recommendation['id'],
+                                  playlistName: recommendation['name'],
+                                  artistNames: recommendation['description'],
+                                  onClick: () {
+                                    Get.to(RecommendationsResultScreen(
+                                      sessionState: sessionState,
+                                      searchTitle: recommendation['name'],
+                                      playlistId: recommendation['id'],
+                                    ));
+                                  },
+                                ).marginOnly(bottom: 25);
+                              } else {
+                                return GeneratePlaylistCard(
+                                  prompt: recommendation['text'],
+                                  image: recommendation['image'],
+                                  onClick: () {
+                                    _generatedRecQuery.text =
+                                        recommendation['text'];
+                                    compareAndConfirmQuery(
+                                      lastGeneratedQuery ?? "",
+                                      _generatedRecQuery.text,
+                                      submitGeneratedQuery,
+                                    );
+                                  },
+                                ).marginOnly(bottom: 25);
+                              }
+                            }
+                            // return null;
+                            else {
+                              return const Center(
+                                child: CupertinoActivityIndicator(
+                                  color: Colors.white,
+                                ),
+                              );
+                            }
+                          },
+                          padding: const EdgeInsets.only(
+                              bottom: 200, left: 20, right: 20, top: 20),
+                          controller: _scrollController,
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          scrollDirection: Axis.vertical,
+                          shrinkWrap: true,
+                        ),
                       ),
                       // loading: () => ListView.builder(
                       //   padding: const EdgeInsets.only(top: 24),
