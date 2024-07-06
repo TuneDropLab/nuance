@@ -8,6 +8,7 @@ import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
+import 'package:nuance/screens/settings_page.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/loader.dart';
 
@@ -222,6 +223,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           color: Colors.white,
                         ),
                         onPressed: () {
+                          Get.to(const SettingsScreen());
                           // Get.back(); // Navigate back
                         },
                       ),
