@@ -245,6 +245,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                             color: Colors.white,
                           ),
                           onPressed: () {
+                            Get.back();
                             Get.to(const SettingsScreen());
                             // Get.back(); // Navigate back
                           },
