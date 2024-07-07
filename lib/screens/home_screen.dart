@@ -106,7 +106,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isLoading = false;
       });
     }
-  }
+  } 
+  
 
   Future<void> _fetchMoreRecommendations() async {
     if (currentPage >= 14) return;
