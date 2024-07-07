@@ -32,9 +32,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         callbackUrlScheme: callbackUrlScheme,
       );
       _status = "Alright";
-      print("USER RESULT!!!!: $result");
-      log("USER RESULT!!!!: $result");
-      log("Authentication Result: $result");
+      // print("USER RESULT!!!!: $result");
+      // log("USER RESULT!!!!: $result");
+      // log("Authentication Result: $result");
 
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];

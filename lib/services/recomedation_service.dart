@@ -245,10 +245,10 @@ class RecommendationsService {
   }
 
   Future<List<dynamic>> getSpotifyHomeRecommendations(
-      String accessToken) async {
+      String accessToken, int page, int limit) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseURL/spotify/home'),
+        Uri.parse('$baseURL/spotify/home?page=$page&limit=$limit'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -267,7 +267,6 @@ class RecommendationsService {
       }
     } catch (e) {
       log('Exception in getSpotifyHomeRecommendations: $e');
-      // 
       rethrow;
     }
   }

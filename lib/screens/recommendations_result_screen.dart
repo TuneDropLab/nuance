@@ -97,6 +97,7 @@ class _RecommendationsResultScreenState
         });
       }
     } catch (e) {
+      log("Error: ${e.toString()}");
       if (mounted) {
         setState(() {
           errorList.add(e.toString());

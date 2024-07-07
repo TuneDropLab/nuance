@@ -90,9 +90,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     //  });
     try {
       final newRecommendations =
-          await ref.read(spotifyHomeRecommendationsProvider.future);
+          ref.read(spotifyHomeRecommendationsProvider(currentPage));
       setState(() {
-        recommendations = [...recommendations, ...newRecommendations];
+        recommendations.addAll(newRecommendations.value ?? []);
         isLoading = false;
       });
     } catch (e) {
@@ -114,16 +114,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
     try {
       final newRecommendations =
-          await ref.read(spotifyHomeRecommendationsProvider.future);
+          ref.read(spotifyHomeRecommendationsProvider(currentPage));
+
       setState(() {
-        recommendations = List.from(recommendations)
-          ..addAll(newRecommendations);
+        recommendations.addAll(newRecommendations.value ?? []);
         currentPage++;
         isMoreLoading = false;
       });
-      print({newRecommendations});
+      print(newRecommendations.value);
     } catch (e) {
       print('Error loading more recommendations: $e');
+      print("RECOMMEDATIONS COUNT!!!!: ${recommendations.length}");
+
       setState(() {
         isMoreLoading = false;
       });
@@ -144,8 +146,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    final sessionData = ref.read(sessionProvider.notifier);
-    final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
+    // final sessionData = ref.read(sessionProvider.notifier);
+    // final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
     // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
