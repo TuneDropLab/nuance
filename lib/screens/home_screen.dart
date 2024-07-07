@@ -1,4 +1,6 @@
-import 'dart:math';
+import 'dart:developer';
+import 'dart:math' as math;
+
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -6,7 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
@@ -90,15 +92,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     //  });
     try {
       final newRecommendations =
-          ref.read(spotifyHomeRecommendationsProvider(currentPage));
+          await ref.read(spotifyHomeRecommendationsProvider.future);
       setState(() {
-        recommendations.addAll(newRecommendations.value ?? []);
+        recommendations = newRecommendations;
         isLoading = false;
       });
+      log("Recommendations: $recommendations");
     } catch (e) {
       rethrow;
     } finally {
-      print('Error loading recommendations: $e');
+      // print('Error loading recommendations: $e');
       setState(() {
         isLoading = false;
       });
@@ -114,18 +117,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
     try {
       final newRecommendations =
-          ref.read(spotifyHomeRecommendationsProvider(currentPage));
-
+          await ref.read(spotifyHomeRecommendationsProvider.future);
       setState(() {
-        recommendations.addAll(newRecommendations.value ?? []);
+        recommendations = List.from(recommendations)
+          ..addAll(newRecommendations);
         currentPage++;
         isMoreLoading = false;
       });
-      print(newRecommendations.value);
+      print({newRecommendations});
     } catch (e) {
-      print('Error loading more recommendations: $e');
-      print("RECOMMEDATIONS COUNT!!!!: ${recommendations.length}");
-
+      log('Error loading more recommendations: $e');
       setState(() {
         isMoreLoading = false;
       });
@@ -146,8 +147,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    // final sessionData = ref.read(sessionProvider.notifier);
-    // final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
+    final sessionData = ref.read(sessionProvider.notifier);
+    final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
     // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
@@ -749,7 +750,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const Color(0xff0088FF),
                               ];
                               final Color randomColor =
-                                  colors[Random().nextInt(colors.length)];
+                                  colors[math.Random().nextInt(colors.length)];
 
                               return InkWell(
                                 onTap: () {
