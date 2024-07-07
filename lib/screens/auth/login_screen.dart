@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
 import 'package:nuance/providers/auth_provider.dart';
+import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/utils/constants.dart';
@@ -41,8 +42,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       log("Session data: $sessionData");
 
       if (sessionData != null) {
-        final authService = ref.read(authServiceProvider);
-        await authService.loginWithSpotify(sessionData);
+        // lets get the user's profile details here
+        // then pass the name and email to the sessiondata
+        // final authService = ref.read(authServiceProvider);
+        ref
+            .read(sessionProvider.notifier)
+            .storeSessionAndSaveToState(sessionData);
+
+        // await authService.storeSessionData(sessionData);
 
         await Get.to(
           () => const HomeScreen(),

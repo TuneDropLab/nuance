@@ -6,7 +6,7 @@ class AuthService {
 
   AuthService(this.secureStorage);
 
-  Future<void> loginWithSpotify(String sessionData) async {
+  Future<void> storeSessionData(String sessionData) async {
     final sessionJson = jsonDecode(sessionData);
     await secureStorage.write(
         key: 'access_token', value: sessionJson['access_token']);

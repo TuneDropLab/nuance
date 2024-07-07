@@ -136,7 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.invalidate(historyProvider);
     });
 
-    await Future.delayed(const Duration(seconds: 6));
+    // await Future.delayed(const Duration(seconds: 6));
     // _refreshController.refreshCompleted();
     _fetchRecommendations();
   }
@@ -775,10 +775,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           );
                         },
                         error: (error, stackTrace) {
-                          return Text(
-                            "Error loading tags",
-                            style: subtitleTextStyle.copyWith(
-                              color: Colors.white,
+                          return Center(
+                            child: Text(
+                              "Error loading tags",
+                              style: subtitleTextStyle.copyWith(
+                                color: Colors.grey,
+                              ),
                             ),
                           );
                         },

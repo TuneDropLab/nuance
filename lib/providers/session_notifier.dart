@@ -34,11 +34,13 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     return null;
   }
 
-  Future<void> loginWithSpotify(String sessionData) async {
+  Future<void> storeSessionAndSaveToState(String sessionData) async {
     state = const AsyncLoading();
     try {
-      await authService.loginWithSpotify(sessionData);
-      state = AsyncData(SessionData.fromJson(jsonDecode(sessionData)));
+      await authService.storeSessionData(sessionData);
+      state = AsyncData(SessionData.fromJson(
+        jsonDecode(sessionData),
+      ));
     } catch (e) {
       state = AsyncError(
         e,
