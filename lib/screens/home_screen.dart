@@ -11,10 +11,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/history_model.dart';
+import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
@@ -51,7 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   int currentPage = 1; // Track current page number
   bool isLoading = false; // Track loading state
-  bool isMoreLoading = true; // Track loading state for pagination
+  bool isMoreLoading = false; // Track loading state for pagination
   List<dynamic> recommendations = []; // List to store recommendations
   // final sessionState = ref.watch(sessionProvider);
 
@@ -59,24 +61,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-
-    Future.delayed(Duration.zero, () {
-      // this._getCategories();
-      // ref.invalidate(historyProvider);
-    });
     _fetchRecommendations();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Dispose the scroll controller
+    _scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      print("IsLoaiding before fetching more recommedations on scroll!!!!!!!");
       _fetchMoreRecommendations();
     }
   }
@@ -86,22 +82,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       recommendations.clear();
       isLoading = true;
     });
-    //    Future.delayed(Duration.zero, () {
-    //     // this._getCategories();
-    //   ref.invalidate(historyProvider);
-    //  });
     try {
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
       setState(() {
-        recommendations = newRecommendations;
+        recommendations = List.from(
+            newRecommendations); // Initialize with new recommendations
         isLoading = false;
       });
-      log("Recommendations: $recommendations");
     } catch (e) {
-      rethrow;
+      // Handle error
+      print("ERROR initial fetch: $e");
+      throw Exception('Failed to load intial recommendations');
     } finally {
-      // print('Error loading recommendations: $e');
       setState(() {
         isLoading = false;
       });
@@ -109,24 +102,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _fetchMoreRecommendations() async {
-    if (currentPage >= 14) return;
-    print("Current page is $currentPage");
+    if (isMoreLoading) return;
 
     setState(() {
       isMoreLoading = true;
     });
+
     try {
-      final newRecommendations =
-          await ref.read(spotifyHomeRecommendationsProvider.future);
+      final authService = ref.read(authServiceProvider);
+      final sessionData = await authService.getSessionData();
+
+      if (sessionData == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final accessToken = sessionData['access_token'];
+      final newRecommendations = await RecommendationsService()
+          .getSpotifyHomeRecommendations(accessToken);
+
       setState(() {
         recommendations = List.from(recommendations)
-          ..addAll(newRecommendations);
+          ..addAll(newRecommendations); // Append new recommendations
         currentPage++;
         isMoreLoading = false;
       });
-      print({newRecommendations});
+
+      log('FETCH MORE NEW RECOMMENDATIONS: $newRecommendations');
     } catch (e) {
-      log('Error loading more recommendations: $e');
+      print("ERROR extra fetch: $e");
+      throw Exception('Failed to load more recommendations');
+    } finally {
       setState(() {
         isMoreLoading = false;
       });

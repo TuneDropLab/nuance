@@ -63,53 +63,41 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         //   },
         //   child: const Text("OK"),
         // ),
-        CupertinoAlertDialog(
+        AlertDialog(
+      backgroundColor: Colors.grey[900],
       title: const Text(
-        "Sign out",
+        'Sign Out',
         style: TextStyle(
-          // wordSpacing: 2,
-          letterSpacing: 0.5,
-          fontSize: 18,
+          color: Colors.white,
         ),
       ),
       content: Text(
-        "Are you sure you want to sign out?",
-        style: subtitleTextStyle.copyWith(
-          color: Colors.black,
-          letterSpacing: 0.1,
-        ),
-        selectionColor: CupertinoColors.systemGrey4,
+        'Are you sure you want to sign out?',
+        style: subtitleTextStyle,
       ),
       actions: <Widget>[
-        CupertinoDialogAction(
-          child: const Text(
-            "Cancel",
-            style: TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 20,
-            ),
-          ),
-          onPressed: () async {
+        TextButton(
+          onPressed: () {
             Get.back();
+            // globalKey.currentState!.openDrawer();
           },
-        ),
-        CupertinoDialogAction(
-          isDefaultAction: true,
           child: const Text(
-            "Okay",
-            style: TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 20,
-            ),
+            'Cancel',
           ),
+        ),
+        TextButton(
           onPressed: () async {
             state = const AsyncLoading();
             await authService.logout();
-            Get.offAllNamed(
-              LoginScreen.routeName,
+            Get.offAll(
+              const LoginScreen(),
+              transition: Transition.zoom,
             );
             state = const AsyncData(null);
           },
+          child: const Text(
+            'Sign Out',
+          ),
         ),
       ],
     ));
