@@ -222,7 +222,7 @@ class _RecommendationsResultScreenState
                 child: Consumer(
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
-                    final addTracksState = ref.watch(addTracksProvider);
+                    // final addTracksState = ref.watch(addTracksProvider);
                     final trackIds = recommendations
                         .map((song) => song.trackUri ?? "")
                         .toList();
@@ -503,7 +503,7 @@ class _RecommendationsResultScreenState
                       fontSize: 14,
                     ),
                     hintTexts: const [
-                      'Enter playlist descripion',
+                      'Descripion',
                     ],
                     onSubmitted: (value) {},
                   ),
@@ -540,8 +540,8 @@ class _RecommendationsResultScreenState
                                 ref
                                     .read(createPlaylistProvider(data).future)
                                     .then((newPlaylist) {
-                                  final isCurrentLoading =
-                                      _loadingPlaylistId == newPlaylist.id;
+                                  // final isCurrentLoading =
+                                  //     _loadingPlaylistId == newPlaylist.id;
                                   // add to playlist
                                   log("BEFORE ABOUT TO ADD TO AN EXISTING PLAYLIST");
                                   if (widget.sessionState?.value?.accessToken !=
@@ -861,6 +861,38 @@ class _RecommendationsResultScreenState
                             children: [
                               Expanded(
                                 child: GeneralButton(
+                                  hasPadding: true,
+                                  backgroundColor: isLoading
+                                      ? const Color.fromARGB(255, 166, 166, 166)
+                                      : const Color(0xffD9D9D9),
+                                  text: "Share",
+                                  color: isLoading
+                                      ? const Color.fromARGB(255, 112, 112, 112)
+                                      : Colors.black,
+                                  icon: SvgPicture.asset(
+                                    "assets/sendto.svg",
+                                    color: isLoading
+                                        ? const Color.fromARGB(
+                                            255,
+                                            112,
+                                            112,
+                                            112,
+                                          )
+                                        : Colors.black,
+                                  ),
+                                  // backgroundColor: const Color(0xffD9D9D9),
+                                  onPressed: () {
+                                    // RecommendationsService()
+                                    //     .shareRecommendation(
+                                    //         context, recommendations ?? []);
+                                  },
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              Expanded(
+                                child: GeneralButton(
                                   backgroundColor: isLoading
                                       ? const Color.fromARGB(255, 166, 166, 166)
                                       : const Color(0xffFDAD3C),
@@ -872,7 +904,11 @@ class _RecommendationsResultScreenState
                                     "assets/bookmark.svg",
                                     color: isLoading
                                         ? const Color.fromARGB(
-                                            255, 112, 112, 112)
+                                            255,
+                                            112,
+                                            112,
+                                            112,
+                                          )
                                         : Colors.black,
                                   ),
                                   onPressed: () {

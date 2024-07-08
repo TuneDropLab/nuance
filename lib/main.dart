@@ -8,6 +8,7 @@ import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/theme.dart';
+import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 
 void main() async {
@@ -34,6 +35,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    CustomSnackbar().setNavigatorKey(CustomSnackbar().navigatorKey);
     return ScaffoldMessenger(
       child: RefreshConfiguration(
         headerBuilder: () =>
@@ -57,6 +59,7 @@ class MyApp extends StatelessWidget {
             false, // Disable pull-up to load more functionality when Viewport is less than one screen
         enableBallisticLoad: true, //
         child: GetCupertinoApp(
+          navigatorKey: CustomSnackbar().navigatorKey,
           localizationsDelegates: const [
             DefaultCupertinoLocalizations.delegate,
             DefaultMaterialLocalizations.delegate,
