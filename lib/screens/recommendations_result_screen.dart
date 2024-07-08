@@ -796,6 +796,7 @@ class _RecommendationsResultScreenState
                                         ? 'Getting playlist songs...'
                                         : 'Loading playlist songs...',
                             'Just a moment...',
+                            'Getting playlist songs...',
                             'Almost done...',
                           ],
                         ),

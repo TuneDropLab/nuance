@@ -327,7 +327,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             MoveEffect(
                               begin: Offset(0, -5), // Move down from 10px above
                               end: Offset(0, 0),
-                              delay: Duration(seconds: 8),
+                              delay: Duration(
+                                milliseconds: 2000,
+                              ),
                               duration: Duration(
                                   milliseconds:
                                       500), // Duration of the animation
@@ -336,8 +338,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              duration: Duration(milliseconds: 500),
-                              curve: Curves.easeOut,
+                              // duration: Duration(milliseconds: 500),
+                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
@@ -358,18 +360,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               begin: Offset(0, -5), // Move down from 10px above
                               end: Offset(0, 0),
                               duration: Duration(
-                                  milliseconds:
-                                      500), // Duration of the animation
+                                seconds: 2,
+                              ), // Duration of the animation
                               // delay: Duration(seconds: 1),
 // Delay for the second animation
+                              delay: Duration(
+                                milliseconds: 2500,
+                              ),
                               curve: Curves.easeOut, // Smooth transition
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              duration: Duration(milliseconds: 500),
-                              delay: Duration(milliseconds: 500),
-                              curve: Curves.easeOut,
+                              // duration: Duration(milliseconds: 100),
+                              // delay: Duration(
+                              //   seconds: 2,
+                              // ),
+                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
@@ -398,15 +405,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       500), // Duration of the animation
                               delay: Duration(
                                   milliseconds:
-                                      1000), // Delay for the third animation
+                                      3500), // Delay for the third animation
                               curve: Curves.easeOut, // Smooth transition
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              duration: Duration(milliseconds: 500),
-                              delay: Duration(milliseconds: 1000),
-                              curve: Curves.easeOut,
+                              // duration: Duration(milliseconds: 500),
+                              // delay: Duration(
+                              //   seconds: 3,
+                              // ),
+                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
@@ -427,19 +436,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               begin: Offset(0, -5), // Move down from 10px above
                               end: Offset(0, 0),
                               duration: Duration(
-                                  milliseconds:
-                                      500), // Duration of the animation
+                                milliseconds: 500,
+                              ), // Duration of the animation
                               delay: Duration(
-                                  milliseconds:
-                                      1500), // Delay for the fourth animation
+                                milliseconds: 4000,
+                              ),
+                              // / Delay for the fourth animation
                               curve: Curves.easeOut, // Smooth transition
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              duration: Duration(milliseconds: 500),
-                              delay: Duration(milliseconds: 1500),
-                              curve: Curves.easeOut,
+                              // duration: Duration(milliseconds: 500),
+                              // delay: Duration(milliseconds: 1500),
+                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(

@@ -21,10 +21,10 @@ class CustomSnackbar {
     // required String message,
     Widget icon = const SizedBox.shrink(),
     TextStyle? textStyle,
-    Duration enterDuration = const Duration(milliseconds: 300),
-    Duration exitDuration = const Duration(milliseconds: 300),
+    Duration enterDuration = const Duration(milliseconds: 400),
+    Duration exitDuration = const Duration(milliseconds: 100),
     Curve enterCurve = Curves.easeOut,
-    Curve exitCurve = Curves.easeIn,
+    Curve exitCurve = Curves.easeOutBack,
   }) {
     final overlayState = _navigatorKey.currentState?.overlay;
     OverlayEntry? overlayEntry;
@@ -32,7 +32,7 @@ class CustomSnackbar {
     if (overlayState != null) {
       overlayEntry = OverlayEntry(
         builder: (context) => Positioned(
-          bottom: 40.0,
+          bottom: 41.0,
           left: 0,
           right: 0,
           child: Material(
@@ -69,7 +69,7 @@ class CustomSnackbar {
                 child: Container(
                   // margin: const EdgeInsets.symmetric(horizontal: 15.0),
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0, vertical: 20.0),
+                      horizontal: 5.0, vertical: 20.0),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade900,
                     borderRadius: BorderRadius.circular(5.0),
