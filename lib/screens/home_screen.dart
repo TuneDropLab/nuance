@@ -326,6 +326,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             MoveEffect(
                               begin: Offset(0, -5), // Move down from 10px above
                               end: Offset(0, 0),
+                              // delay: Duration(milliseconds: 100),
                               duration: Duration(
                                   milliseconds:
                                       500), // Duration of the animation

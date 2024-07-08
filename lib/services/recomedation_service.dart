@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
@@ -184,7 +186,7 @@ class RecommendationsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> historyData = jsonDecode(response.body);
-        log("History Data: $historyData");
+        print("History Data: $historyData");
         return historyData.map((item) => HistoryModel.fromJson(item)).toList();
       } else {
         log('Failed to load history: ${response.body}');
@@ -246,6 +248,7 @@ class RecommendationsService {
 
   Future<List<dynamic>> getSpotifyHomeRecommendations(
       String accessToken) async {
+    errorDialog(text: "Failed to generate recommendation tags");
     try {
       final response = await http.get(
         Uri.parse('$baseURL/spotify/home'),
@@ -262,18 +265,22 @@ class RecommendationsService {
         log("Spotify Home Recommendations Data: $data");
         return data;
       } else {
+        errorDialog(text: "Failed to get recommendations");
         log('Failed to load Spotify home recommendations: ${response.body}');
         throw Exception('Failed to load Spotify home recommendations');
       }
     } catch (e) {
+      errorDialog(text: "Failed to get recommendations");
+
       log('Exception in getSpotifyHomeRecommendations: $e');
-      
+
       rethrow;
     }
   }
 
   Future<List<String>> getTags(String accessToken) async {
     try {
+      errorDialog(text: "Failed to generate recommendation tags");
       final response = await http.get(
         Uri.parse('$baseURL/gemini/tags'),
         headers: {
@@ -290,13 +297,41 @@ class RecommendationsService {
         return tags.map((tag) => tag.toString()).toList();
       } else {
         log('Failed to generate recommendation tags: ${response.body}');
+
+        errorDialog(text: "Failed to generate recommendation tags");
         throw Exception('Failed to generate recommendation tags');
       }
     } catch (e) {
+      errorDialog(text: "Failed to generate recommendation tags");
+      // newMethod();
       log('Exception in generateRecommendationTags: $e');
       rethrow;
     }
   }
+
+  SnackbarController errorDialog({required String text}) {
+    return Get.snackbar('User 123', 'Successfully created',
+        snackPosition: SnackPosition.BOTTOM);
+  }
+
+  // Future<dynamic> errorDialog({required String text}) {
+  //   // snakcbar for error messages
+  //   return showDialog(
+  //     context: Get.context!,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('An error occured'),
+  //       content: Text(text),
+  //       actions: [
+  //         TextButton(
+  //           child: const Text('Ok'),
+  //           onPressed: () {
+  //             Get.back();
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Future<List<SongModel>> fetchPlaylistTracks(
       String accessToken, String providerId, String playlistId) async {

@@ -54,3 +54,4 @@ final deleteAllHistoryProvider = FutureProvider<void>((ref) async {
     throw Exception('Failed to delete all history');
   }
 });
+

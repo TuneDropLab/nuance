@@ -9,6 +9,7 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/screens/settings_page.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/loader.dart';
 
@@ -26,6 +27,7 @@ class MyCustomDrawer extends ConsumerStatefulWidget {
 class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   String? _selectedArtist;
   final TextEditingController _searchController = TextEditingController();
+  List<HistoryModel> _localHistory = [];
 
   @override
   void dispose() {
@@ -129,11 +131,18 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           final historyAsyncValue = ref.watch(historyProvider);
                           return historyAsyncValue.when(
                             data: (history) {
+                              Future.microtask(() {
+                                if (mounted) {
+                                  setState(() {
+                                    _localHistory = history;
+                                  });
+                                }
+                              });
                               return ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _searchController,
                                 builder: (context, value, __) {
                                   final filteredHistory = _filterHistoryByQuery(
-                                      history, value.text);
+                                      _localHistory, value.text);
                                   return ListView.separated(
                                     padding: const EdgeInsets.only(
                                       bottom: 120,
@@ -148,57 +157,66 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                       final historyItem =
                                           filteredHistory[index];
                                       return ListTile(
-                                        title: Text(
-                                          historyItem.searchQuery ?? '',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          _formatRelativeTime(
-                                            historyItem.createdAt ??
-                                                DateTime.now(),
-                                          ),
-                                          style: subtitleTextStyle,
-                                        ),
-                                        // minLeadingWidth: 30,
-                                        leading: historyItem.recommendations
-                                                    ?.isNotEmpty ??
-                                                false
-                                            ? SizedBox(
-                                                height: 50,
-                                                width: 50,
-                                                child: ArtworkSwitcher(
-                                                  artworks: historyItem
-                                                      .recommendations!
-                                                      .map(
-                                                        (song) =>
-                                                            song.artworkUrl ??
-                                                            "",
-                                                      )
-                                                      .toList(),
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.square,
-                                                color: Colors.white,
-                                              ),
-                                        contentPadding: EdgeInsets.zero,
-                                        onTap: () {
-                                          Get.back();
-                                          Get.to(
-                                            RecommendationsResultScreen(
-                                              searchTitle:
-                                                  historyItem.searchQuery,
-                                              sessionState: widget.sessionState,
-                                              songs:
-                                                  historyItem.recommendations!,
+                                          title: Text(
+                                            historyItem.searchQuery ?? '',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white,
                                             ),
-                                          );
-                                        },
-                                      );
+                                          ),
+                                          subtitle: Text(
+                                            _formatRelativeTime(
+                                              historyItem.createdAt ??
+                                                  DateTime.now(),
+                                            ),
+                                            style: subtitleTextStyle,
+                                          ),
+                                          // minLeadingWidth: 30,
+                                          leading: historyItem.recommendations
+                                                      ?.isNotEmpty ??
+                                                  false
+                                              ? SizedBox(
+                                                  height: 50,
+                                                  width: 50,
+                                                  child: ArtworkSwitcher(
+                                                    artworks: historyItem
+                                                        .recommendations!
+                                                        .map(
+                                                          (song) =>
+                                                              song.artworkUrl ??
+                                                              "",
+                                                        )
+                                                        .toList(),
+                                                  ),
+                                                )
+                                              : const Icon(
+                                                  Icons.square,
+                                                  color: Colors.white,
+                                                ),
+                                          contentPadding: EdgeInsets.zero,
+                                          onTap: () {
+                                            Get.back();
+                                            Get.to(
+                                              RecommendationsResultScreen(
+                                                searchTitle:
+                                                    historyItem.searchQuery,
+                                                sessionState:
+                                                    widget.sessionState,
+                                                songs: historyItem
+                                                    .recommendations!,
+                                              ),
+                                            );
+                                          },
+                                          trailing: IconButton(
+                                            icon: const Icon(
+                                              Icons.remove_rounded,
+                                              color: Colors.white,
+                                            ),
+                                            onPressed: () {
+                                              _deleteHistoryItem(historyItem);
+                                            },
+                                          ));
                                     },
                                   );
                                 },
@@ -306,6 +324,52 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
       final years = difference.inDays ~/ 365;
       return '$years ${years == 1 ? 'year' : 'years'} ago';
     }
+  }
+
+  void _deleteHistoryItem(HistoryModel historyItem) {
+    print("HII HERE: ${historyItem.id}");
+    // dialog then call Recommendations . delete histry item
+    Get.dialog(AlertDialog(
+      backgroundColor: Colors.grey[900],
+      title: Text(
+        'Delete ${historyItem.searchQuery}?',
+        style: headingTextStyle,
+      ),
+      content: Text(
+        'Are you sure you want to delete this item?',
+        style: subtitleTextStyle,
+      ),
+      actions: [
+        TextButton(
+          child: const Text(
+            'Cancel',
+          ),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.white,
+            // backgroundColor: Colors.red,
+          ),
+          onPressed: () {
+            Get.back();
+            // Remove item locally
+            setState(() {
+              _localHistory.remove(historyItem);
+            });
+
+            RecommendationsService().deleteHistory(
+              widget.sessionState.value?.accessToken ?? "",
+              historyItem.id ?? 0,
+            );
+            ref.invalidate(historyProvider);
+          },
+          child: const Text('Delete'),
+        ),
+      ],
+    ));
   }
 }
 
