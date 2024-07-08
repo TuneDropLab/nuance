@@ -8,8 +8,11 @@ import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_snackbar.dart';
+import 'package:share_plus/share_plus.dart';
 
 class RecommendationsService {
+  final CustomSnackbar _customSnackbar = CustomSnackbar();
   Future<List<SongModel>> getRecommendations(
       String accessToken, String userMessage) async {
     try {
@@ -189,10 +192,13 @@ class RecommendationsService {
         print("History Data: $historyData");
         return historyData.map((item) => HistoryModel.fromJson(item)).toList();
       } else {
+        _customSnackbar.show('Failed to get history');
         log('Failed to load history: ${response.body}');
         throw Exception('Failed to load history');
       }
     } catch (e) {
+      _customSnackbar.show('Failed to get history');
+
       log('Exception in getHistory: $e');
       rethrow;
     }
@@ -248,7 +254,8 @@ class RecommendationsService {
 
   Future<List<dynamic>> getSpotifyHomeRecommendations(
       String accessToken) async {
-    errorDialog(text: "Failed to generate recommendation tags");
+    // _customSnackbar.show("Hi");
+    // errorDialog(text: "Failed to generate recommendation tags");
     try {
       final response = await http.get(
         Uri.parse('$baseURL/spotify/home'),
@@ -265,12 +272,14 @@ class RecommendationsService {
         log("Spotify Home Recommendations Data: $data");
         return data;
       } else {
-        errorDialog(text: "Failed to get recommendations");
+        _customSnackbar.show('Failed to generate recommendations');
         log('Failed to load Spotify home recommendations: ${response.body}');
         throw Exception('Failed to load Spotify home recommendations');
       }
     } catch (e) {
-      errorDialog(text: "Failed to get recommendations");
+      _customSnackbar.show('Failed to generate recommendations');
+
+      // errorDialog(text: "Failed to get recommendations");
 
       log('Exception in getSpotifyHomeRecommendations: $e');
 
@@ -280,7 +289,7 @@ class RecommendationsService {
 
   Future<List<String>> getTags(String accessToken) async {
     try {
-      errorDialog(text: "Failed to generate recommendation tags");
+      // errorDialog(text: "Failed to generate recommendation tags");
       final response = await http.get(
         Uri.parse('$baseURL/gemini/tags'),
         headers: {
@@ -296,23 +305,27 @@ class RecommendationsService {
         log("Generated Tags Data: $tags");
         return tags.map((tag) => tag.toString()).toList();
       } else {
+        _customSnackbar.show('Failed to generate recommendation tags');
+
         log('Failed to generate recommendation tags: ${response.body}');
 
-        errorDialog(text: "Failed to generate recommendation tags");
+        // errorDialog(text: "Failed to generate recommendation tags");
         throw Exception('Failed to generate recommendation tags');
       }
     } catch (e) {
-      errorDialog(text: "Failed to generate recommendation tags");
+      // _customSnackbar.show(context, message);
+      _customSnackbar.show('Failed to generate recommendation tags');
+      // errorDialog(text: "Failed to generate recommendation tags");
       // newMethod();
       log('Exception in generateRecommendationTags: $e');
       rethrow;
     }
   }
 
-  SnackbarController errorDialog({required String text}) {
-    return Get.snackbar('User 123', 'Successfully created',
-        snackPosition: SnackPosition.BOTTOM);
-  }
+  // SnackbarController errorDialog({required String text}) {
+  //   // return Get.snackbar('User 123', 'Successfully created',
+  //   //     snackPosition: SnackPosition.BOTTOM);
+  // }
 
   // Future<dynamic> errorDialog({required String text}) {
   //   // snakcbar for error messages
@@ -355,11 +368,34 @@ class RecommendationsService {
             .map((e) => SongModel.fromJson(e))
             .toList();
       } else {
-        throw Exception('Failed to load playlist tracks');
+        _customSnackbar.show('Failed to get playlist songs');
+        throw Exception('Failed to load playlist songs');
       }
     } catch (e) {
+      _customSnackbar.show('Failed to get playlist songs');
+
       print('Error fetching playlist tracks: $e');
       throw Exception('Failed to fetch playlist tracks');
+    }
+  }
+
+  Future<void> shareRecommendation(
+      BuildContext context, Map<String, dynamic> recommendationData) async {
+    final url = Uri.parse('$baseURL/generate');
+    final response = await http.post(url,
+        body: jsonEncode({'recommendationData': recommendationData}),
+        headers: {'Content-Type': 'application/json'});
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      final shareLink = body['link'];
+
+      // Open the share dialog
+      Share.share('Check out this recommendation: $shareLink');
+      // Get.dialog();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to generate share link')));
     }
   }
 }

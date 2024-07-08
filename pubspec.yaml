@@ -63,6 +63,7 @@ dependencies:
   pull_to_refresh_flutter3: ^2.0.2
   infinite_scroll_pagination: ^4.0.0
   custom_refresh_indicator: ^3.1.1
+  share_plus: ^9.0.0
   # scrolls_to_top: ^2.1.1
   
 
