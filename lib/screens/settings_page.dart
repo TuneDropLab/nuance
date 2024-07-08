@@ -94,28 +94,146 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         const SizedBox(height: 20),
                         Center(
-                          child: CachedNetworkImage(
-                            imageBuilder: (context, imageProvider) =>
-                                CircleAvatar(
-                              radius: 70,
-                              backgroundImage: imageProvider,
-                              backgroundColor: Colors.grey,
-                            ),
-                            fit: BoxFit.cover,
-                            // height: 150,
-                            imageUrl:
-                                data.user["user_metadata"]["avatar_url"] ?? "",
-                            placeholder: (context, url) => const Center(
-                              child: CupertinoActivityIndicator(
-                                  // color: AppTheme.textColor,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: sessionState.when(
+                              data: (data) {
+                                if (data == null) {
+                                  return GestureDetector(
+                                    child: Container(
+                                      width: 140.0,
+                                      height: 140.0,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.orange,
+                                            Color.fromARGB(255, 255, 222, 59),
+                                            Color.fromARGB(255, 225, 153, 47),
+                                            Colors.red,
+                                          ],
+                                        ),
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      // globalKey.currentState!.openDrawer();
+                                      // sessionData.logout();
+                                    },
+                                  );
+                                }
+
+                                //       CachedNetworkImage(
+                                //   imageBuilder: (context, imageProvider) =>
+                                //       CircleAvatar(
+                                //     radius: 70,
+                                //     backgroundImage: imageProvider,
+                                //     backgroundColor: Colors.grey,
+                                //   ),
+                                //   fit: BoxFit.cover,
+                                //   // height: 150,
+                                //   imageUrl:
+                                //       data.user["user_metadata"]["avatar_url"] ?? "",
+                                //   placeholder: (context, url) => const Center(
+                                //     child: CupertinoActivityIndicator(
+                                //         // color: AppTheme.textColor,
+                                //         ),
+                                //   ),
+                                //   errorWidget: (context, url, error) => Container(
+                                //     width: 140.0,
+                                //     height: 140.0,
+                                //     decoration: const BoxDecoration(
+                                //       shape: BoxShape.circle,
+                                //       color: Colors.black12,
+                                //     ),
+                                //   ),
+                                // ),
+                                return CupertinoButton(
+                                  padding: const EdgeInsets.all(0),
+                                  onPressed: () {
+                                    // globalKey.currentState!.openDrawer();
+                                    // sessionData.logout();
+                                  },
+                                  child: CachedNetworkImage(
+                                    imageBuilder: (context, imageProvider) =>
+                                        CircleAvatar(
+                                      radius: 70,
+                                      backgroundImage: imageProvider,
+                                      backgroundColor: Colors.grey,
+                                    ),
+                                    fit: BoxFit.fill,
+                                    height: 150,
+                                    imageUrl: data.user["user_metadata"]
+                                            ["avatar_url"] ??
+                                        "",
+                                    placeholder: (context, url) => const Center(
+                                      child: CupertinoActivityIndicator(
+                                          color: AppTheme.textColor),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        GestureDetector(
+                                      child: Container(
+                                        // width: 40.0,
+                                        // height: 40.0,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Colors.orange,
+                                              Color.fromARGB(255, 255, 222, 59),
+                                              Color.fromARGB(255, 225, 153, 47),
+                                              Colors.red,
+                                            ],
+                                          ),
+                                          color: Colors.orange,
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 70,
+                                          backgroundColor: Colors.transparent,
+                                          child: Center(
+                                            child: Text(
+                                              data.user["user_metadata"]
+                                                      ["full_name"]
+                                                  .toString()
+                                                  .substring(0, 1)
+                                                  .toUpperCase(),
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        // globalKey.currentState!.openDrawer();
+                                        // sessionData.logout();
+                                      },
+                                    ),
                                   ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              width: 140.0,
-                              height: 140.0,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.black12,
+                                );
+                              },
+                              loading: () => const Center(
+                                child: CupertinoActivityIndicator(
+                                    color: AppTheme.textColor),
+                              ),
+                              error: (error, stack) => GestureDetector(
+                                child: Container(
+                                  width: 70.0,
+                                  height: 70.0,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                onTap: () {
+                                  // globalKey.currentState!.openDrawer();
+                                  // sessionData.logout();
+                                },
                               ),
                             ),
                           ),

@@ -66,7 +66,7 @@ class RecommendationsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> trackData = jsonDecode(response.body)['trackInfo'];
-        log("spotify trackData: ${trackData[0]}");
+        // log("spotify trackData: ${trackData[0]}");
         return trackData.map((item) => SongModel.fromJson(item)).toList();
       } else {
         log('Failed to load track info: ${response.body}');

@@ -51,7 +51,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
   Future<void> _fetchArtistsImages({required String playlistId}) async {
     try {
       final sessionState = ref.watch(sessionProvider);
-      final accessToken = sessionState.value!.accessToken;
+      final accessToken = sessionState.value?.accessToken ?? '';
 
       final List<String> images = [];
 

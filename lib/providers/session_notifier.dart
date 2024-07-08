@@ -66,7 +66,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         AlertDialog(
       backgroundColor: Colors.grey[900],
       title: const Text(
-        'Sign Out',
+        'Sign out',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -96,7 +96,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
             state = const AsyncData(null);
           },
           child: const Text(
-            'Sign Out',
+            'Okay',
           ),
         ),
       ],

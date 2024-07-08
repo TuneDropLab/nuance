@@ -730,75 +730,11 @@ class _RecommendationsResultScreenState
         automaticallyImplyLeading: false,
         centerTitle: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: widget.sessionState!.when(
-              data: (data) {
-                if (data == null) {
-                  return CupertinoButton(
-                    child: const CircleAvatar(
-                      radius: 40,
-                    ),
-                    onPressed: () {
-                      globalKey.currentState!.openDrawer();
-                      Get.back();
-                      // sessionData.logout();
-                    },
-                  );
-                }
-
-                return CupertinoButton(
-                  padding: const EdgeInsets.all(0),
-                  onPressed: () {
-                    // Get.back();
-                    Get.offAll(
-                      transition: Transition.leftToRight,
-                      () => const HomeScreen(),
-                      // fullscreenDialog: true,
-                    );
-                    globalKey.currentState!.openDrawer();
-                    // sessionData.logout();
-                  },
-                  child: CachedNetworkImage(
-                    imageBuilder: (context, imageProvider) => Container(
-                      width: 40.0,
-                      height: 40.0,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: imageProvider,
-                        ),
-                      ),
-                    ),
-                    fit: BoxFit.fill,
-                    height: 150,
-                    imageUrl: data.user["user_metadata"]["avatar_url"] ?? "",
-                    placeholder: (context, url) => const Center(
-                      child: CupertinoActivityIndicator(
-                          // color: AppTheme.textColor,
-                          ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 40.0,
-                      height: 40.0,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black12,
-                      ),
-                    ),
-                  ),
-                );
-              },
-              loading: () => const Center(
-                child: CupertinoActivityIndicator(
-                  color: AppTheme.textColor,
-                ),
-              ),
-              error: (error, stack) => const CircleAvatar(
-                radius: 30,
-              ),
+          newMethod(
+            ref.read(
+              sessionProvider,
             ),
-          ),
+          )
         ],
       ),
       body: Container(
