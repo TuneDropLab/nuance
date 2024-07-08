@@ -145,7 +145,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.invalidate(historyProvider);
     });
 
-    // await Future.delayed(const Duration(seconds: 6));
+    await Future.delayed(const Duration(seconds: 2));
     // _refreshController.refreshCompleted();
     _fetchRecommendations();
   }
@@ -327,7 +327,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             MoveEffect(
                               begin: Offset(0, -5), // Move down from 10px above
                               end: Offset(0, 0),
-                              // delay: Duration(milliseconds: 100),
+                              delay: Duration(seconds: 8),
                               duration: Duration(
                                   milliseconds:
                                       500), // Duration of the animation
@@ -360,9 +360,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               duration: Duration(
                                   milliseconds:
                                       500), // Duration of the animation
-                              delay: Duration(
-                                  milliseconds:
-                                      500), // Delay for the second animation
+                              // delay: Duration(seconds: 1),
+// Delay for the second animation
                               curve: Curves.easeOut, // Smooth transition
                             ),
                             FadeEffect(
