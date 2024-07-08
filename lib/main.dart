@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/providers/auth_provider.dart';
@@ -35,7 +36,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    CustomSnackbar().setNavigatorKey(CustomSnackbar().navigatorKey);
     return ScaffoldMessenger(
       child: RefreshConfiguration(
         headerBuilder: () =>

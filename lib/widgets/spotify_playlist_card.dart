@@ -9,6 +9,7 @@ import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/artist_chip.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:shimmer/shimmer.dart';
 
 class SpotifyPlaylistCard extends ConsumerStatefulWidget {
@@ -83,6 +84,10 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
       }
     } catch (e) {
       log('Exception in _fetchArtistsImages: $e');
+      // if (mounted) {
+      //   CustomSnackbar().show('Failed to load artist images');
+      // }
+      throw Exception('Failed to load artist images');
     }
   }
 
@@ -177,7 +182,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                         ),
                       )
                     : Center(
-                      child: Stack(
+                        child: Stack(
                           alignment: Alignment.center,
                           children: List.generate(
                             artistImages.length,
@@ -192,7 +197,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                             },
                           ),
                         ),
-                    ),
+                      ),
               ),
               const SizedBox(height: 20),
               Text(

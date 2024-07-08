@@ -380,10 +380,15 @@ class RecommendationsService {
   }
 
   Future<void> shareRecommendation(
-      BuildContext context, Map<String, dynamic> recommendationData) async {
+      BuildContext context, String playlistName, List<dynamic> songs) async {
     final url = Uri.parse('$baseURL/generate');
     final response = await http.post(url,
-        body: jsonEncode({'recommendationData': recommendationData}),
+        body: jsonEncode({
+          'recommendationData': {
+            'searchQuery': playlistName,
+            'songs': songs,
+          }
+        }),
         headers: {'Content-Type': 'application/json'});
 
     if (response.statusCode == 200) {
@@ -394,8 +399,11 @@ class RecommendationsService {
       Share.share('Check out this recommendation: $shareLink');
       // Get.dialog();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to generate share link')));
+      CustomSnackbar().show(
+        'Failed to generate share link',
+      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(content: Text('Failed to generate share link')));
     }
   }
 }

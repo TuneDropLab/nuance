@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:nuance/utils/constants.dart';
 
 class CustomSnackbar {
   static final CustomSnackbar _instance = CustomSnackbar._internal();
-  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
+  GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
 
   factory CustomSnackbar() {
     return _instance;
@@ -12,54 +13,82 @@ class CustomSnackbar {
   CustomSnackbar._internal();
 
   void setNavigatorKey(GlobalKey<NavigatorState> key) {
-    _navigatorKey.currentState?.overlay?.dispose();
-    _navigatorKey.currentState?.overlay?.insert(
-      OverlayEntry(builder: (_) => Container()),
-    );
+    _navigatorKey = key;
   }
 
-  void show(String message, {TextStyle? textStyle}) {
+  void show(
+    String message, {
+    // required String message,
+    Widget icon = const SizedBox.shrink(),
+    TextStyle? textStyle,
+    Duration enterDuration = const Duration(milliseconds: 300),
+    Duration exitDuration = const Duration(milliseconds: 300),
+    Curve enterCurve = Curves.easeOut,
+    Curve exitCurve = Curves.easeIn,
+  }) {
     final overlayState = _navigatorKey.currentState?.overlay;
-    OverlayEntry? overlayEntry; // Declare overlayEntry here
+    OverlayEntry? overlayEntry;
 
     if (overlayState != null) {
       overlayEntry = OverlayEntry(
         builder: (context) => Positioned(
-          bottom: 50.0,
-          left: 15.0,
-          right: 15.0,
+          bottom: 40.0,
+          left: 0,
+          right: 0,
           child: Material(
             color: Colors.transparent,
-            child: Animate(
-              effects: [
-                SlideEffect(
-                  duration: 300.ms,
-                  begin: const Offset(0, 1),
-                  end: const Offset(0, 0),
-                ),
-                FadeEffect(
-                  duration: 300.ms,
-                  begin: 0,
-                  end: 1,
-                )
-              ],
-              onComplete: (controller) async {
-                await Future.delayed(const Duration(seconds: 3));
-                controller.reverse();
-                await Future.delayed(const Duration(milliseconds: 300));
+            child: Dismissible(
+              key: UniqueKey(),
+              direction: DismissDirection.down,
+              onDismissed: (direction) {
                 overlayEntry?.remove();
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0, vertical: 12.0),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade900,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Text(
-                  message,
-                  style: textStyle ??
-                      const TextStyle(color: Colors.white, fontSize: 16),
+              child: Animate(
+                effects: [
+                  SlideEffect(
+                    duration: enterDuration,
+                    begin: const Offset(0, 1),
+                    end: const Offset(0, 0),
+                    curve: enterCurve,
+                  ),
+                  // FadeEffect(
+                  //   duration: enterDuration,
+                  //   begin: 0,
+                  //   end: 1,
+                  // )
+                ],
+                onComplete: (controller) async {
+                  await Future.delayed(const Duration(seconds: 3));
+                  controller.reverse();
+                  controller.addStatusListener((status) {
+                    if (status == AnimationStatus.dismissed) {
+                      overlayEntry?.remove();
+                    }
+                  });
+                },
+                child: Container(
+                  // margin: const EdgeInsets.symmetric(horizontal: 15.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 15.0, vertical: 20.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade900,
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  child: Row(
+                    children: [
+                      icon,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          message,
+                          style: textStyle ??
+                              subtitleTextStyle.copyWith(
+                                color: Colors.white,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

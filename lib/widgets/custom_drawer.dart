@@ -444,6 +444,8 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
                 },
               )
             : Container(
+                // height: 80,
+                //     width: 80,
                 decoration: BoxDecoration(
                   color: Colors.amber,
                   borderRadius: BorderRadius.circular(20),

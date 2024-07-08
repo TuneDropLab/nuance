@@ -153,9 +153,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    final sessionData = ref.read(sessionProvider.notifier);
-    final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
+    // final sessionData = ref.read(sessionProvider.notifier);
+    // final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
+    final historyProviderRef = ref.read(historyProvider);
+    final List<HistoryModel>? historyList = historyProviderRef.value;
+    String? lastGeneratedQuery = historyList != null && historyList.isNotEmpty
+        ? historyList.first.searchQuery
+        : '';
+
     // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
 
@@ -224,12 +230,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     // final historyAsyncValue = ref.watch(historyProvider);
-
-    final historyProviderRef = ref.watch(historyProvider);
-    final List<HistoryModel>? historyList = historyProviderRef.value;
-    String? lastGeneratedQuery = historyList != null && historyList.isNotEmpty
-        ? historyList.first.searchQuery
-        : '';
 
     // Sort the history list in ascending order based on searchQuery
     // historyList?.sort((a, b) => a.searchQuery!.compareTo(b.searchQuery!));
@@ -301,6 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: Colors.black,
             title: sessionState.when(
               data: (data) {
+                print("data is this !!!!: ${data?.user ?? {}}");
                 if (data == null) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

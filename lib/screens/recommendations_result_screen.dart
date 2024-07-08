@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:nuance/main.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/recommendation_provider.dart';
@@ -20,6 +21,7 @@ import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
+import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
@@ -109,10 +111,11 @@ class _RecommendationsResultScreenState
 
   void _togglePlay(SongModel song) async {
     if (song.previewUrl?.isEmpty ?? true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Use Spotify Premium to preview this song')),
-      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //       content: Text('Use Spotify Premium to preview this song')),
+      // );
+      CustomSnackbar().show("Can't play this song right now");
       return;
     }
 
@@ -298,13 +301,16 @@ class _RecommendationsResultScreenState
                                         setState(() {
                                           _loadingPlaylistId = null;
                                         });
-                                        Navigator.pop(context); // Close modal
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                              content: Text(
-                                                  'Successfully added tracks to ${playlist.name} playlist.')),
-                                        );
+                                        // Navigator.pop(context); // Close modal
+                                        Get.back();
+                                        // ScaffoldMessenger.of(context)
+                                        //     .showSnackBar(
+                                        //   SnackBar(
+                                        //       content: Text(
+                                        //           'Successfully added tracks to ${playlist.name} playlist.')),
+                                        // );
+                                        CustomSnackbar().show(
+                                            "Successfully added tracks to ${playlist.name} playlist.");
 
                                         // Navigator.pop(context); // Navigate back to home screen
                                       }).catchError(
@@ -312,22 +318,30 @@ class _RecommendationsResultScreenState
                                           setState(() {
                                             _loadingPlaylistId = null;
                                           });
-                                          ScaffoldMessenger.of(context)
-                                              .showSnackBar(
-                                            const SnackBar(
-                                              content: Text(
-                                                  'Failed to add tracks to playlist.'),
-                                            ),
+                                          // ScaffoldMessenger.of(context)
+                                          //     .showSnackBar(
+                                          //   const SnackBar(
+                                          //     content: Text(
+                                          //         'Failed to add tracks to playlist.'),
+                                          //   ),
+                                          // );
+                                          CustomSnackbar().show(
+                                            "Failed to add tracks to playlist",
                                           );
                                         },
                                       );
                                     } else {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                            content:
-                                                Text('No access token found.')),
+                                      CustomSnackbar().show(
+                                        "No access token found.",
                                       );
+
+                                      // ScaffoldMessenger.of(context)
+                                      //     .showSnackBar(
+                                      //   const SnackBar(
+                                      //     content:
+                                      //         Text('No access token found.'),
+                                      //   ),
+                                      // );
                                     }
                                   },
                                   trailing: isCurrentLoading
@@ -564,25 +578,35 @@ class _RecommendationsResultScreenState
                                         .read(addTracksProvider.notifier)
                                         .addTracksToPlaylist(params);
 
-                                    Navigator.of(context).pop();
-                                    Navigator.of(context).pop();
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'Successfully created ${newPlaylist.name} playlist.',
-                                        ),
-                                      ),
+                                    // Navigator.of(context).pop();
+                                    // Navigator.of(context).pop();
+                                    Get.back();
+                                    Get.back();
+                                    CustomSnackbar().show(
+                                      'Successfully created ${newPlaylist.name} playlist.',
                                     );
+
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //   SnackBar(
+                                    //     content: Text(
+                                    //       'Successfully created ${newPlaylist.name} playlist.',
+                                    //     ),
+                                    //   ),
+                                    // );
 
                                     setState(() {
                                       isLoading = false;
                                     });
                                   } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                          content:
-                                              Text('No access token found.')),
+                                    CustomSnackbar().show(
+                                      "No access token found.",
                                     );
+
+                                    // ScaffoldMessenger.of(context).showSnackBar(
+                                    //   const SnackBar(
+                                    //       content:
+                                    //           Text('No access token found.')),
+                                    // );
                                   }
                                   // Navigator.pop(context); // Close the modal
                                   // ScaffoldMessenger.of(context).showSnackBar(
@@ -595,23 +619,32 @@ class _RecommendationsResultScreenState
                                     isLoading = false;
                                   });
 
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                          'Failed to create playlist: $error'),
-                                    ),
+                                  CustomSnackbar().show(
+                                    "Failed to create playlist: $error",
                                   );
+
+                                  // ScaffoldMessenger.of(context).showSnackBar(
+                                  //   SnackBar(
+                                  //     content: Text(
+                                  //         'Failed to create playlist: $error'),
+                                  //   ),
+                                  // );
                                 });
                               } else {
                                 setState(() {
                                   isLoading = false;
                                 });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        'Please provide a name for the playlist'),
-                                  ),
+
+                                CustomSnackbar().show(
+                                  'Please provide a name for the playlist',
                                 );
+
+                                // ScaffoldMessenger.of(context).showSnackBar(
+                                //   const SnackBar(
+                                //     content: Text(
+                                //         'Please provide a name for the playlist'),
+                                //   ),
+                                // );
                               }
                             },
                     ),
@@ -882,9 +915,20 @@ class _RecommendationsResultScreenState
                                   ),
                                   // backgroundColor: const Color(0xffD9D9D9),
                                   onPressed: () {
-                                    // RecommendationsService()
-                                    //     .shareRecommendation(
-                                    //         context, recommendations ?? []);
+                                    print(
+                                        "Share details: ${widget.searchQuery}");
+                                    print(
+                                        "Share details: ${widget.songs ?? recommendations}");
+
+                                    RecommendationsService()
+                                        .shareRecommendation(
+                                            context,
+                                            widget.searchQuery ??
+                                                widget.tagQuery ??
+                                                "",
+                                            recommendations ??
+                                                widget.songs ??
+                                                []);
                                   },
                                 ),
                               ),
