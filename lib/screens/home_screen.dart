@@ -154,6 +154,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
+    print(sessionState);
     // final sessionData = ref.read(sessionProvider.notifier);
     // final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
@@ -312,22 +313,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: Colors.black,
             title: sessionState.when(
               data: (data) {
-                print("data is this !!!!: ${data?.user ?? {}}");
-                if (data == null) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Welcome',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      Text(
-                        'Discover Playlists',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ],
-                  );
-                }
+                print("data is this !!!!: ${data?.accessToken} ");
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -391,7 +378,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
                           child: Text(
-                            ' ${data.user["user_metadata"]["full_name"].split(" ")[0]}',
+                            ' ${data?.user["user_metadata"]["full_name"].split(" ")[0]}',
+                            // ' ${data.user["user_metadata"]["full_name"]}',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium!

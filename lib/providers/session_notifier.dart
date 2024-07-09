@@ -35,20 +35,33 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     return null;
   }
 
-  Future<void> storeSessionAndSaveToState(String sessionData) async {
-    state = const AsyncLoading();
-    try {
-      await authService.storeSessionData(sessionData);
-      state = AsyncData(SessionData.fromJson(
-        jsonDecode(sessionData),
-      ));
-    } catch (e) {
-      state = AsyncError(
-        e,
-        StackTrace.current,
-      );
-    }
+Future<void> storeSessionAndSaveToState(
+  String sessionData, 
+  String name, 
+  String email
+) async {
+  state = const AsyncLoading();
+  try {
+    await authService.storeSessionData(sessionData);
+
+    final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
+    final updatedUser = {
+      ...sessionJson['user'] as Map<String, dynamic>,
+      'name': name,
+      'email': email,
+    };
+    
+    final updatedSessionJson = {
+      ...sessionJson,
+      'user': updatedUser,
+    };
+
+    state = AsyncData(SessionData.fromJson(updatedSessionJson));
+  } catch (e) {
+    state = AsyncError(e, StackTrace.current);
   }
+}
+
 
   Future<void> logout() async {
     // Get.dialog
@@ -69,6 +82,8 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
       ),
     );
   }
+
+  // void updateUserName(name) {}
 }
 
 final sessionProvider =

@@ -24,7 +24,7 @@ class CustomSnackbar {
     Duration enterDuration = const Duration(milliseconds: 500),
     Duration exitDuration = const Duration(milliseconds: 100),
     Curve enterCurve = Curves.easeOut,
-    Curve exitCurve = Curves.easeOutBack,
+    Curve exitCurve = Curves.easeIn,
   }) {
     final overlayState = _navigatorKey.currentState?.overlay;
     OverlayEntry? overlayEntry;
@@ -58,7 +58,7 @@ class CustomSnackbar {
                   // )
                 ],
                 onComplete: (controller) async {
-                  await Future.delayed(const Duration(seconds: 3));
+                  await Future.delayed(const Duration(seconds: 4));
                   controller.reverse();
                   controller.addStatusListener((status) {
                     if (status == AnimationStatus.dismissed) {

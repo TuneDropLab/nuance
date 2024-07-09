@@ -465,9 +465,15 @@ class RecommendationsService {
         return jsonDecode(response.body);
       } else {
         log('Failed to fetch user profile: ${response.body}');
+        CustomSnackbar().show(
+        'Failed to fetch user profile',
+      );
         throw Exception('Failed to fetch user profile');
       }
     } catch (e) {
+      CustomSnackbar().show(
+        'Failed to fetch user profile',
+      );
       log('Exception in getUserProfile: $e');
       rethrow;
     }

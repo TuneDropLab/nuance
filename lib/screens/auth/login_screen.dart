@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/utils/constants.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -23,6 +25,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   late String _status;
 
   Future<void> _authenticate() async {
+    // const baseURL = 'your_base_url'; // Replace with your actual base URL
     const authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
 
@@ -42,24 +45,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       log("Session data: $sessionData");
 
       if (sessionData != null) {
-        // lets get the user's profile details here
-        // then pass the name and email to the sessiondata
-        // final authService = ref.read(authServiceProvider);
-        ref
-            .read(sessionProvider.notifier)
-            .storeSessionAndSaveToState(sessionData);
+        final sessionMap = jsonDecode(sessionData);
+        final accessToken = sessionMap['access_token'];
 
-        // await authService.storeSessionData(sessionData);
+        // Fetch user profile details
+        try {
+          final profile =
+              await RecommendationsService().getUserProfile(accessToken);
+          final name = profile['user']['name'];
+          final email = profile['user']['email'];
 
-        await Get.to(
-          () => const HomeScreen(),
-          transition: Transition.fade,
-          curve: Curves.easeInOut,
-        );
+          // Update session data
+          ref
+              .read(sessionProvider.notifier)
+              .storeSessionAndSaveToState(sessionData, name, email);
+
+          // Navigate to HomeScreen
+          await Get.to(
+            () => const HomeScreen(),
+            transition: Transition.fade,
+            curve: Curves.easeInOut,
+          );
+        } catch (error) {
+          debugPrint("Error fetching user profile: $error");
+          setState(() {
+            _status = 'Error fetching user profile';
+          });
+        }
       }
     } on PlatformException catch (e) {
       setState(() {
-        log("ERROR MESSAGE: ${e.message}");
+        debugPrint("ERROR MESSAGE: ${e.message}");
         _status = 'Error: ${e.message}';
       });
     }
