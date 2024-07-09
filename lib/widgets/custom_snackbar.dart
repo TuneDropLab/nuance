@@ -21,7 +21,7 @@ class CustomSnackbar {
     // required String message,
     Widget icon = const SizedBox.shrink(),
     TextStyle? textStyle,
-    Duration enterDuration = const Duration(milliseconds: 400),
+    Duration enterDuration = const Duration(milliseconds: 500),
     Duration exitDuration = const Duration(milliseconds: 100),
     Curve enterCurve = Curves.easeOut,
     Curve exitCurve = Curves.easeOutBack,

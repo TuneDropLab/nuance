@@ -931,20 +931,21 @@ class _RecommendationsResultScreenState
                                   ),
                                   // backgroundColor: const Color(0xffD9D9D9),
                                   onPressed: () {
-                                    print(
-                                        "Share details: ${widget.searchQuery}");
-                                    print(
-                                        "Share details: ${widget.songs ?? recommendations}");
-
-                                    RecommendationsService()
-                                        .shareRecommendation(
-                                            context,
-                                            widget.searchQuery ??
-                                                widget.tagQuery ??
-                                                "",
-                                            recommendations ??
-                                                widget.songs ??
-                                                []);
+                                    // print(
+                                    //     "Share details: ${widget.searchQuery}");
+                                    // print(
+                                    //     "Share details: ${widget.songs ?? recommendations}");
+                                    isLoading
+                                        ? null
+                                        : RecommendationsService()
+                                            .shareRecommendation(
+                                                context,
+                                                widget.searchQuery ??
+                                                    widget.tagQuery ??
+                                                    "",
+                                                recommendations ??
+                                                    widget.songs ??
+                                                    []);
                                   },
                                 ),
                               ),
