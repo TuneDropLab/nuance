@@ -53,56 +53,6 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
   Future<void> logout() async {
     // Get.dialog
     Get.dialog(
-      // title: "Hello",
-      // content: const Text("You are logging out"),
-      // confirm: MaterialButton(
-      //   onPressed: () async {
-      //     state = const AsyncLoading();
-      //     await authService.logout();
-      //     Get.offAllNamed(LoginScreen.routeName);
-      //     state = const AsyncData(null);
-      //   },
-      //   child: const Text("OK"),
-      // ),
-      //     AlertDialog(
-      //   backgroundColor: Colors.grey[900],
-      //   title: const Text(
-      //     'Sign out',
-      //     style: TextStyle(
-      //       color: Colors.white,
-      //     ),
-      //   ),
-      //   content: Text(
-      //     'Are you sure you want to sign out?',
-      //     style: subtitleTextStyle,
-      //   ),
-      //   actions: <Widget>[
-      //     TextButton(
-      //       onPressed: () {
-      //         Get.back();
-      //         // globalKey.currentState!.openDrawer();
-      //       },
-      //       child: const Text(
-      //         'Cancel',
-      //       ),
-      //     ),
-      //     TextButton(
-      //       onPressed: () async {
-      //         state = const AsyncLoading();
-      //         await authService.logout();
-      //         Get.offAll(
-      //           const LoginScreen(),
-      //           transition: Transition.zoom,
-      //         );
-      //         state = const AsyncData(null);
-      //       },
-      //       child: const Text(
-      //         'Okay',
-      //       ),
-      //     ),
-      //   ],
-      // ));
-
       ConfirmDialog(
         heading: 'Sign out',
         subtitle: "Are you sure you want to sign out?",

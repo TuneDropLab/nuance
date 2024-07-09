@@ -33,7 +33,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     void editName() {
       // Navigate to a new screen to edit the user's name
-      Get.to(() => EditNameScreen(sessionState: sessionState));
+      // Get.to(() => EditNameScreen(sessionState: sessionState));
     }
 
     return WillPopScope(
@@ -324,7 +324,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       // });
 
                                       Get.back();
-                                      
+
                                       RecommendationsService().deleteAllHistory(
                                         sessionState.value?.accessToken ?? "",
                                       );
@@ -366,42 +366,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class EditNameScreen extends StatelessWidget {
-  final AsyncValue<SessionData?> sessionState;
-  const EditNameScreen({super.key, required this.sessionState});
-
-  @override
-  Widget build(BuildContext context) {
-    final sessionData = sessionState.asData?.value?.user;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Name'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: TextEditingController(
-                text: sessionData?["user_metadata"]["full_name"],
-              ),
-              decoration: const InputDecoration(
-                labelText: 'Name',
-              ),
-              onSubmitted: (newName) {
-                // Update the user's name in your backend or state management
-                // ...
-                Get.back();
-              },
-            ),
-          ],
         ),
       ),
     );

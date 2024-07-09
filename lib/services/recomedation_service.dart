@@ -445,4 +445,60 @@ class RecommendationsService {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> getUserProfile(
+    String accessToken,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/user/profile'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      log("getUserProfile REQUEST: ${response.request.toString()}");
+      log("getUserProfile RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        log('Failed to fetch user profile: ${response.body}');
+        throw Exception('Failed to fetch user profile');
+      }
+    } catch (e) {
+      log('Exception in getUserProfile: $e');
+      rethrow;
+    }
+  }
+
+  Future<Map<String, dynamic>> updateUserProfile(
+    String accessToken,
+    String name,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseURL/user/profile'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'name': name}),
+      );
+
+      log("updateUserProfile REQUEST: ${response.request.toString()}");
+      log("updateUserProfile RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        log('Failed to update user profile: ${response.body}');
+        throw Exception('Failed to update user profile');
+      }
+    } catch (e) {
+      log('Exception in updateUserProfile: $e');
+      rethrow;
+    }
+  }
 }
