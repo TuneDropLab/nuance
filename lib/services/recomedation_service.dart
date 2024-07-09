@@ -415,5 +415,34 @@ class RecommendationsService {
     }
   }
 
-  
+  Future<void> followSpotifyPlaylist(
+      String accessToken, String playlistId) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+          '$baseURL/spotify/playlists/$playlistId/follow',
+        ),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      log("followSpotifyPlaylist REQUEST: ${response.request.toString()}");
+      log("followSpotifyPlaylist RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        log('Playlist followed successfully');
+        CustomSnackbar().show(
+          'Successfully added playlist',
+        );
+      } else {
+        log('Failed to follow playlist: ${response.body}');
+        throw Exception('Failed to follow playlist');
+      }
+    } catch (e) {
+      log('Exception in followSpotifyPlaylist: $e');
+      rethrow;
+    }
+  }
 }

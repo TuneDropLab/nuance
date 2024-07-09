@@ -975,13 +975,20 @@ class _RecommendationsResultScreenState
                                   onPressed: () {
                                     isLoading
                                         ? null
-                                        : _showPlaylists(
-                                            context,
-                                            ref,
-                                            widget.songs ??
-                                                recommendations ??
-                                                [],
-                                          );
+                                        : widget.playlistId != null
+                                            ? RecommendationsService()
+                                                .followSpotifyPlaylist(
+                                                widget.sessionState!.value!
+                                                    .accessToken,
+                                                widget.playlistId!,
+                                              )
+                                            : _showPlaylists(
+                                                context,
+                                                ref,
+                                                widget.songs ??
+                                                    recommendations ??
+                                                    [],
+                                              );
                                   },
                                 ),
                               ),

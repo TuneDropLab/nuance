@@ -285,6 +285,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   "Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists",
               confirmText: "Regenerate",
               onConfirm: () {
+                Get.back();
                 submit(); // Correctly call the submit function
               },
             );
