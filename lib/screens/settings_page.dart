@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
+import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/general_button.dart';
 
 final GlobalKey<ScaffoldState> lobalKey = GlobalKey();
@@ -294,6 +297,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               // save details user has stored to their profile
                             },
                           ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: Get.width,
+                          // padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: GeneralButton(
+                              hasPadding: true,
+                              text: "Clear history",
+                              color: Colors.white,
+                              backgroundColor: Colors.grey.shade800,
+                              onPressed: () {
+                                // sessionData.logout();
+                                // save details user has stored to their profile
+                                // Dialog to clear history
+                                Get.dialog(
+                                  ConfirmDialog(
+                                    heading: "Delete all history",
+                                    subtitle:
+                                        "Are you sure you want to delete all history?",
+                                    confirmText: "Delete",
+                                    onConfirm: () {
+                                      // Remove item locally
+                                      // setState(() {
+                                      //   // _localHistory.remove(historyItem);
+                                      // });
+
+                                      Get.back();
+                                      
+                                      RecommendationsService().deleteAllHistory(
+                                        sessionState.value?.accessToken ?? "",
+                                      );
+                                      ref.invalidate(historyProvider);
+                                    },
+                                  ),
+                                );
+                              }),
                         ),
                       ],
                     ),

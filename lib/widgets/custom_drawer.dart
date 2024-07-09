@@ -11,6 +11,7 @@ import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/screens/settings_page.dart';
 import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/loader.dart';
 
 class MyCustomDrawer extends ConsumerStatefulWidget {
@@ -131,6 +132,17 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           final historyAsyncValue = ref.watch(historyProvider);
                           return historyAsyncValue.when(
                             data: (history) {
+                              if (history.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'Generate your first playlist to see history',
+                                    style: subtitleTextStyle.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+                              }
+
                               Future.microtask(() {
                                 if (mounted) {
                                   setState(() {
@@ -143,6 +155,17 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                 builder: (context, value, __) {
                                   final filteredHistory = _filterHistoryByQuery(
                                       _localHistory, value.text);
+
+                                  if (filteredHistory.isEmpty) {
+                                    return Center(
+                                      child: Text(
+                                        'No results found',
+                                        style: subtitleTextStyle.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  }
                                   return ListView.separated(
                                     padding: const EdgeInsets.only(
                                       bottom: 120,
@@ -329,47 +352,67 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   void _deleteHistoryItem(HistoryModel historyItem) {
     print("HII HERE: ${historyItem.id}");
     // dialog then call Recommendations . delete histry item
-    Get.dialog(AlertDialog(
-      backgroundColor: Colors.grey[900],
-      title: Text(
-        'Delete ${historyItem.searchQuery}?',
-        style: headingTextStyle,
-      ),
-      content: Text(
-        'Are you sure you want to delete this item?',
-        style: subtitleTextStyle,
-      ),
-      actions: [
-        TextButton(
-          child: const Text(
-            'Cancel',
-          ),
-          onPressed: () {
-            Get.back();
-          },
-        ),
-        TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.white,
-            // backgroundColor: Colors.red,
-          ),
-          onPressed: () {
-            Get.back();
-            // Remove item locally
-            setState(() {
-              _localHistory.remove(historyItem);
-            });
+    Get.dialog(
+      // AlertDialog(
+      //   backgroundColor: Colors.grey[900],
+      //   title: Text(
+      //     'Delete ${historyItem.searchQuery}?',
+      //     style: headingTextStyle,
+      //   ),
+      //   content: Text(
+      //     'Are you sure you want to delete this item?',
+      //     style: subtitleTextStyle,
+      //   ),
+      //   actions: [
+      //     TextButton(
+      //       child: const Text(
+      //         'Cancel',
+      //       ),
+      //       onPressed: () {
+      //         Get.back();
+      //       },
+      //     ),
+      //     TextButton(
+      //       style: TextButton.styleFrom(
+      //         foregroundColor: Colors.white,
+      //         // backgroundColor: Colors.red,
+      //       ),
+      //       onPressed: () {
+      //         Get.back();
+      //         // Remove item locally
+      //         setState(() {
+      //           _localHistory.remove(historyItem);
+      //         });
 
-            RecommendationsService().deleteHistory(
-              widget.sessionState.value?.accessToken ?? "",
-              historyItem.id ?? 0,
-            );
-            ref.invalidate(historyProvider);
-          },
-          child: const Text('Delete'),
-        ),
-      ],
-    ));
+      //         RecommendationsService().deleteHistory(
+      //           widget.sessionState.value?.accessToken ?? "",
+      //           historyItem.id ?? 0,
+      //         );
+      //         ref.invalidate(historyProvider);
+      //       },
+      //       child: const Text('Delete'),
+      //     ),
+      //   ],
+      // ),
+      ConfirmDialog(
+        heading: "Delete ${historyItem.searchQuery}?",
+        subtitle: "Are you sure you want to delete this item?",
+        confirmText: "Delete",
+        onConfirm: () {
+          Get.back();
+          // Remove item locally
+          setState(() {
+            _localHistory.remove(historyItem);
+          });
+
+          RecommendationsService().deleteHistory(
+            widget.sessionState.value?.accessToken ?? "",
+            historyItem.id ?? 0,
+          );
+          ref.invalidate(historyProvider);
+        },
+      ),
+    );
   }
 }
 

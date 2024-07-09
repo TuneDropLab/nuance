@@ -74,6 +74,9 @@ class _RecommendationsResultScreenState
   }
 
   Future<void> _fetchRecommendationsOrPlaylistTracks() async {
+    final sessionStateFromProvider = ref.read(sessionProvider);
+
+    // session state
     setState(() {
       isLoading = true;
       errorList = [];
@@ -81,8 +84,12 @@ class _RecommendationsResultScreenState
 
     try {
       final service = RecommendationsService();
-      final accessToken = widget.sessionState?.value?.accessToken ?? "";
-      final providerToken = widget.sessionState?.value?.providerToken ?? "";
+      final accessToken = widget.sessionState?.value?.accessToken ??
+          sessionStateFromProvider.value?.providerToken ??
+          "";
+      final providerToken = widget.sessionState?.value?.providerToken ??
+          sessionStateFromProvider.value?.providerToken ??
+          "";
 
       final result = widget.searchQuery != null || widget.tagQuery != null
           ? await service.getRecommendations(
@@ -230,6 +237,8 @@ class _RecommendationsResultScreenState
                         .map((song) => song.trackUri ?? "")
                         .toList();
 
+                    final sessionStateFromProvider = ref.read(sessionProvider);
+
                     return playlistsState.when(
                       data: (playlists) {
                         return Stack(
@@ -244,7 +253,10 @@ class _RecommendationsResultScreenState
                                     _loadingPlaylistId == playlist.id;
                                 final params = AddTracksParams(
                                   accessToken:
-                                      widget.sessionState!.value!.accessToken,
+                                      widget.sessionState?.value!.accessToken ??
+                                          sessionStateFromProvider
+                                              .value?.accessToken ??
+                                          "",
                                   playlistId: playlist.id ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
@@ -287,9 +299,12 @@ class _RecommendationsResultScreenState
                                     style: subtitleTextStyle,
                                   ),
                                   onTap: () {
-                                    if (widget
-                                            .sessionState?.value?.accessToken !=
-                                        null) {
+                                    if (widget.sessionState?.value
+                                                ?.accessToken !=
+                                            null ||
+                                        sessionStateFromProvider
+                                                .value!.accessToken !=
+                                            '') {
                                       setState(() {
                                         _loadingPlaylistId = playlist.id;
                                       });

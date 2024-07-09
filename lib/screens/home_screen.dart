@@ -20,6 +20,7 @@ import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
@@ -233,50 +234,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Sort the history list in ascending order based on searchQuery
     // historyList?.sort((a, b) => a.searchQuery!.compareTo(b.searchQuery!));
-    print("LAST GEENRATED HERW!!!!!: $lastGeneratedQuery");
+    // print("LAST GEENRATED HERW!!!!!: $lastGeneratedQuery");
 
     // Add a method to compare the last generated query with the new input query
     void compareAndConfirmQuery(
         String lastQuery, String newQuery, void Function() submit) {
-      print("LAST QUERY: $lastQuery");
-      print("NEW QUERY: $newQuery");
+      // print("LAST QUERY: $lastQuery");
+      // print("NEW QUERY: $newQuery");
       ref.invalidate(historyProvider);
       if (lastQuery == newQuery) {
         showDialog(
           context: context,
           builder: (context) {
-            return AlertDialog(
-              backgroundColor: Colors.grey[900],
-              title: const Text(
-                'You just generated a similar playlist',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              content: Text(
-                'Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists',
-                style: subtitleTextStyle,
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Get.back();
-                    globalKey.currentState!.openDrawer();
-                  },
-                  child: const Text(
-                    'Go to history',
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    submit(); // Correctly call the submit function
-                  },
-                  child: const Text(
-                    'Regenerate',
-                  ),
-                ),
-              ],
+            // return AlertDialog(
+            //   backgroundColor: Colors.grey[900],
+            //   title: const Text(
+            //     'You just generated a similar playlist',
+            //     style: TextStyle(
+            //       color: Colors.white,
+            //     ),
+            //   ),
+            //   content: Text(
+            //     'Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists',
+            //     style: subtitleTextStyle,
+            //   ),
+            //   actions: <Widget>[
+            //     TextButton(
+            //       onPressed: () {
+            //         Get.back();
+            //         globalKey.currentState!.openDrawer();
+            //       },
+            //       child: const Text(
+            //         'Go to history',
+            //       ),
+            //     ),
+            //     TextButton(
+            //       onPressed: () {
+            //         Navigator.of(context).pop();
+            //         submit(); // Correctly call the submit function
+            //       },
+            //       child: const Text(
+            //         'Regenerate',
+            //       ),
+            //     ),
+            //   ],
+            // );
+            return ConfirmDialog(
+              heading: 'You just generated a similar playlist',
+              subtitle:
+                  "Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists",
+              confirmText: "Regenerate",
+              onConfirm: () {
+                submit(); // Correctly call the submit function
+              },
             );
           },
         );

@@ -17,7 +17,7 @@ class SpinningSvg extends StatefulWidget {
     this.size = 40.0,
     required this.textList,
     this.animationDuration = const Duration(seconds: 2),
-    this.fadeDuration = const Duration(seconds: 3),
+    this.fadeDuration = const Duration(seconds: 4),
     this.fadeCurve = Curves.linear,
   }) : super(key: key);
 

@@ -381,7 +381,7 @@ class RecommendationsService {
 
   Future<void> shareRecommendation(
       BuildContext context, String playlistName, List<dynamic> songs) async {
-    final url = Uri.parse('$baseURL/generate');
+    final url = Uri.parse('$baseURL/share/generate');
     final response = await http.post(url,
         body: jsonEncode({
           'recommendationData': {
@@ -396,9 +396,17 @@ class RecommendationsService {
       final shareLink = body['link'];
 
       // Open the share dialog
-      Share.share('Check out this recommendation: $shareLink');
+      Share.share(
+        '$shareLink',
+        subject: "Check out this recommendation",
+        sharePositionOrigin: Rect.fromPoints(
+          const Offset(2, 2),
+          const Offset(3, 3),
+        ),
+      );
       // Get.dialog();
     } else {
+      log("status code!!!!!: ${response.statusCode}");
       CustomSnackbar().show(
         'Failed to generate share link',
       );
@@ -406,4 +414,6 @@ class RecommendationsService {
       //     const SnackBar(content: Text('Failed to generate share link')));
     }
   }
+
+  
 }
