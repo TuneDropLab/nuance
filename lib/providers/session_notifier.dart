@@ -38,8 +38,6 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
       String sessionData, String name, String email) async {
     state = const AsyncLoading();
     try {
-      await authService.storeSessionData(sessionData);
-
       final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
       final updatedUser = {
         ...sessionJson['user'] as Map<String, dynamic>,
@@ -51,6 +49,10 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         ...sessionJson,
         'user': updatedUser,
       };
+
+      final updatedSessionData = jsonEncode(updatedSessionJson);
+
+      await authService.storeSessionData(updatedSessionData);
 
       state = AsyncData(SessionData.fromJson(updatedSessionJson));
     } catch (e) {
@@ -67,9 +69,15 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         final accessToken = sessionJson['access_token'] as String;
         final response =
             await recommendationsService.updateUserProfile(accessToken, name);
-
+        // final sessionData = await authService.getSessionData();
+        // if (sessionData != null) {
+        // final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
+        // final accessToken = sessionJson['access_token'] as String;
+        // final response = await recommendationsService.updateUserProfile(accessToken, name);
+        final userMetadata =
+            sessionJson['user']['user_metadata'] as Map<String, dynamic>;
         final updatedUserMetadata = {
-          ...sessionJson['user']['user_metadata'] as Map<String, dynamic>,
+          ...userMetadata,
           'full_name': response['user']['name'],
         };
 
@@ -78,12 +86,13 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
           'user_metadata': updatedUserMetadata,
         };
 
-        log("mbmbff $updatedUser");
-
         final updatedSessionJson = {
           ...sessionJson,
           'user': updatedUser,
         };
+
+        final updatedSessionData = jsonEncode(updatedSessionJson);
+        await authService.storeSessionData(updatedSessionData);
 
         state = AsyncData(SessionData.fromJson(updatedSessionJson));
       }

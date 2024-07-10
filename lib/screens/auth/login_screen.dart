@@ -25,7 +25,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   late String _status;
 
   Future<void> _authenticate() async {
-    // const baseURL = 'your_base_url'; // Replace with your actual base URL
     const authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
 
@@ -35,9 +34,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         callbackUrlScheme: callbackUrlScheme,
       );
       _status = "Alright";
-      // print("USER RESULT!!!!: $result");
-      // log("USER RESULT!!!!: $result");
-      // log("Authentication Result: $result");
 
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];
@@ -56,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           final email = profile['user']['email'];
 
           // Update session data
-          ref
+          await ref
               .read(sessionProvider.notifier)
               .storeSessionAndSaveToState(sessionData, name, email);
 
