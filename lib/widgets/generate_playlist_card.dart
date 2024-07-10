@@ -25,9 +25,9 @@ class GeneratePlaylistCard extends StatelessWidget {
         gradients[Random().nextInt(gradients.length)];
 
     return Container(
-      height: Get.height * 0.25,
+      height: 200,
       // margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
