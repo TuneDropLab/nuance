@@ -431,14 +431,16 @@ class RecommendationsService {
       log("followSpotifyPlaylist REQUEST: ${response.request.toString()}");
       log("followSpotifyPlaylist RESPONSE: ${response.body}");
 
+      final Map<String, dynamic> responseBody = jsonDecode(response.body);
+      final String message = responseBody['message'];
+// Parse the JSON response and extract the value of the "message" key
+// Update the followSpotifyPlaylist method
       if (response.statusCode == 200) {
         log('Playlist followed successfully');
-        CustomSnackbar().show(
-          'Successfully added playlist',
-        );
+        CustomSnackbar().show(message);
       } else {
-        log('Failed to follow playlist: ${response.body}');
-        throw Exception('Failed to follow playlist');
+        log('Failed to follow playlist: $message');
+        throw Exception('Failed to follow playlist: $message');
       }
     } catch (e) {
       log('Exception in followSpotifyPlaylist: $e');
@@ -466,8 +468,8 @@ class RecommendationsService {
       } else {
         log('Failed to fetch user profile: ${response.body}');
         CustomSnackbar().show(
-        'Failed to fetch user profile',
-      );
+          'Failed to fetch user profile',
+        );
         throw Exception('Failed to fetch user profile');
       }
     } catch (e) {
