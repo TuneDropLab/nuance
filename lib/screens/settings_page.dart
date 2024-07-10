@@ -12,6 +12,7 @@ import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/general_button.dart';
+import 'package:nuance/widgets/loader.dart';
 
 final GlobalKey<ScaffoldState> lobalKey = GlobalKey();
 
@@ -35,6 +36,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       // Navigate to a new screen to edit the user's name
       // Get.to(() => EditNameScreen(sessionState: sessionState));
     }
+
+   
+
+    var nameController = TextEditingController();
 
     return WillPopScope(
       onWillPop: () async {
@@ -87,6 +92,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 );
               }
+
+              nameController.text = data.user["user_metadata"]["full_name"];
 
               return Stack(
                 children: [
@@ -250,9 +257,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 20),
                         TextField(
-                          controller: TextEditingController(
-                            text: data.user["user_metadata"]["full_name"],
-                          ),
+                          onChanged: (value) {
+                            nameController.text = value;
+                            // nameController.selection = TextSelection.fromPosition(
+                            //     TextPosition(offset: value.length));
+                            // value = nameController.text;
+                          },
+                          controller: nameController,
+                          maxLines: 1,
                           decoration: InputDecoration(
                             labelStyle: const TextStyle(color: Colors.white),
                             border: OutlineInputBorder(
@@ -293,6 +305,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             backgroundColor:
                                 const Color.fromARGB(255, 4, 37, 6),
                             onPressed: () {
+                              sessionData.updateUserName(nameController.text);
+                              // ref.invalidate(sessionProvider);
                               // sessionData.logout();
                               // save details user has stored to their profile
                             },
@@ -356,8 +370,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               );
             },
-            loading: () => const Center(
-              child: CupertinoActivityIndicator(color: AppTheme.textColor),
+            loading: () => Center(
+              child: SpinningSvg(
+                svgWidget: Image.asset(
+                  'assets/hdlogo.png',
+                  height: 40,
+                ),
+                textList: const [
+                  'Saving your data ...',
+                  'Just a moment ...',
+                  'Getting new data ...',
+                  'Almost done ...',
+                ],
+              ),
             ),
             error: (error, stack) => Center(
               child: Text(
