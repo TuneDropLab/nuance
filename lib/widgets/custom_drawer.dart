@@ -233,8 +233,10 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           },
                                           trailing: IconButton(
                                             icon: const Icon(
-                                              Icons.remove_rounded,
+                                              CupertinoIcons.delete,
+                                              size: 16,
                                               color: Colors.white,
+
                                             ),
                                             onPressed: () {
                                               _deleteHistoryItem(historyItem);
