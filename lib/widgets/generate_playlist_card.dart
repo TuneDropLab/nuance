@@ -55,6 +55,7 @@ class GeneratePlaylistCard extends StatelessWidget {
               maxLines: 3,
               style: const TextStyle(
                 height: 1.2,
+                overflow: TextOverflow.ellipsis,
                 
                 fontSize: 26,
                 color: Colors.white,
