@@ -182,7 +182,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               searchQuery: userMessage!.trim(),
               tagQuery: null,
               sessionState: sessionState,
-              playlistImage: Uri.encodeFull(_imageController.text),
+              // playlistImage: Uri.encodeFull(_imageController.text),
             ));
       } else if (type == 'tagQuery') {
         tagQuery = _tagQuery.text;
@@ -193,7 +193,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               searchQuery: null,
               tagQuery: tagQuery,
               sessionState: sessionState,
-              playlistImage: Uri.encodeFull(_imageController.text),
+              // playlistImage: Uri.encodeFull(_imageController.text),
             ));
       } else if (type == 'generatedRecQuery') {
         generatedRecQuery = _generatedRecQuery.text;
@@ -204,7 +204,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               searchQuery: generatedRecQuery,
               tagQuery: null,
               sessionState: sessionState,
-              playlistImage: Uri.encodeFull(_imageController.text),
+              // playlistImage: Uri.encodeFull(_imageController.text),
             ));
       }
     }
@@ -548,8 +548,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   onClick: () {
                                     _generatedRecQuery.text =
                                         recommendation['text'];
-                                    _imageController.text =
-                                        recommendation['image'];
+                                    // _imageController.text =
+                                    //     recommendation['image'];
                                     submit('generatedRecQuery');
                                   },
                                 ).marginOnly(bottom: 25);

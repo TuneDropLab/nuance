@@ -53,7 +53,7 @@ final createPlaylistProvider =
       userId,
       data['name']!,
       data['description']!,
-      data['image']!,
+      // data['image']!,
     );
     log("NEW PLAYLIST RETURNED:!!! $newPlaylist");
     return newPlaylist;

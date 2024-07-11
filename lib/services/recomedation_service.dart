@@ -152,10 +152,10 @@ class RecommendationsService {
     String userId,
     String name,
     String description,
-    String imageUrl,
+    // String imageUrl,
   ) async {
     try {
-      print("IMAGE STRING $imageUrl");
+      // print("IMAGE STRING $imageUrl");
 
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists'),
@@ -176,6 +176,10 @@ class RecommendationsService {
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
         debugPrint("created playlist data: $data");
+
+        // Get the playlist image from gemini
+        final imageUrl = await getGeneratedImage(accessToken, name);
+        log("imageResponse!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: $imageUrl");
 
         // Set the playlist cover image
         await setPlaylistCoverImage(accessToken, data['id'], imageUrl);
@@ -584,6 +588,78 @@ class RecommendationsService {
       }
     } catch (e) {
       log('Exception in updateUserProfile: $e');
+      rethrow;
+    }
+  }
+
+  // Future<String> getGeneratedImage(
+  //   String accessToken,
+  //   String promptMessage,
+  // ) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse('$baseURL/gemini/image'),
+  //       headers: {
+  //         'Authorization': 'Bearer $accessToken',
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: jsonEncode({'promptMessage': promptMessage}),
+  //     );
+  //     log("REQUEST: ${response.request.toString()}");
+  //     log("RESPONSE: ${response.body}");
+
+  //     if (response.statusCode == 200) {
+  //       log("RESPONSE DATA: ${response.statusCode}");
+  //       final Map<String, dynamic> data = jsonDecode(response.body);
+
+  //       log("RESPONSE DATA: $data");
+
+  //       final String image = data['image'];
+  //       log("Generated image DATA: $image");
+
+  //       return image;
+  //     } else {
+  //       log('Failed to generate image: ${response.body}');
+  //       throw Exception('Failed to generate image');
+  //     }
+  //   } catch (e) {
+  //     log('Exception in getGeneratedImage: $e');
+  //     rethrow;
+  //   }
+  // }
+
+  Future<String> getGeneratedImage(
+    String accessToken,
+    String promptMessage,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/gemini/image'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'promptMessage': promptMessage}),
+      );
+      log("REQUEST: ${response.request.toString()}");
+      log("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        log("RESPONSE DATA: ${response.statusCode}");
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        log("RESPONSE DATA: $data");
+
+        final String image = data['image'];
+        log("Generated image DATA: $image");
+
+        return image;
+      } else {
+        log('Failed to generate image: ${response.body}');
+        throw Exception('Failed to generate image');
+      }
+    } catch (e) {
+      log('Exception in getGeneratedImage: $e');
       rethrow;
     }
   }

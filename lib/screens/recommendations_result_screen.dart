@@ -34,7 +34,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   final String? playlistId;
   final AsyncValue<SessionData?>? sessionState;
   final List<SongModel>? songs;
-  final String? playlistImage;
+  // final String? playlistImage;
 
   const RecommendationsResultScreen({
     super.key,
@@ -43,7 +43,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
     this.searchTitle,
     this.playlistId,
     this.sessionState,
-    this.playlistImage,
+    // this.playlistImage,
     this.songs,
   });
 
@@ -68,8 +68,8 @@ class _RecommendationsResultScreenState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    log("didChangeDependencies ${widget.playlistImage}");
-    log("didChangeDependencies ${Uri.encodeFull(widget.playlistImage!)}");
+    // log("didChangeDependencies ${widget.playlistImage}");
+    // log("didChangeDependencies ${Uri.encodeFull(widget.playlistImage!)}");
 
     log("STATE : ${widget.sessionState?.value?.accessToken}");
 
@@ -388,6 +388,7 @@ class _RecommendationsResultScreenState
                                   icon: Icon(
                                     Icons.playlist_add_check_rounded,
                                     color: Colors.grey.shade800,
+                                    size: 18,
                                   ),
                                   onPressed: () {
                                     widget.songs == null
@@ -551,9 +552,13 @@ class _RecommendationsResultScreenState
                       backgroundColor: const Color(0xffD9D9D9),
                       hasPadding: true,
                       icon: isLoading
-                          ? const CupertinoActivityIndicator()
+                          ? const CupertinoActivityIndicator(
+                              radius: 8,
+                              color: Colors.black,
+                            )
                           : Icon(
                               Icons.check,
+                              size: 18,
                               color: Colors.grey.shade800,
                             ),
                       onPressed: isLoading
@@ -571,7 +576,7 @@ class _RecommendationsResultScreenState
                                   'description': description == ""
                                       ? "Powered by Nuance"
                                       : description,
-                                  'image': widget.playlistImage ?? "",
+                                  // 'image': widget.playlistImage ?? "",
                                 };
                                 ref
                                     .read(createPlaylistProvider(data).future)
