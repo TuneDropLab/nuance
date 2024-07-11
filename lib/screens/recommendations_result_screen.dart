@@ -34,6 +34,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   final String? playlistId;
   final AsyncValue<SessionData?>? sessionState;
   final List<SongModel>? songs;
+  final String? playlistImage;
 
   const RecommendationsResultScreen({
     super.key,
@@ -42,6 +43,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
     this.searchTitle,
     this.playlistId,
     this.sessionState,
+    this.playlistImage,
     this.songs,
   });
 
@@ -66,6 +68,8 @@ class _RecommendationsResultScreenState
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    log("didChangeDependencies ${widget.playlistImage}");
+    log("didChangeDependencies ${Uri.encodeFull(widget.playlistImage!)}");
 
     log("STATE : ${widget.sessionState?.value?.accessToken}");
 
@@ -564,7 +568,10 @@ class _RecommendationsResultScreenState
                               if (name.isNotEmpty) {
                                 final Map<String, String> data = {
                                   'name': name,
-                                  'description': description,
+                                  'description': description == ""
+                                      ? "Powered by Nuance"
+                                      : description,
+                                  'image': widget.playlistImage ?? "",
                                 };
                                 ref
                                     .read(createPlaylistProvider(data).future)

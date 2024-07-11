@@ -30,7 +30,9 @@ final playlistProvider = FutureProvider<List<PlaylistModel>>((ref) async {
   }
 });
 
-final createPlaylistProvider = FutureProvider.family<PlaylistModel, Map<String, String>>((ref, data) async {
+final createPlaylistProvider =
+    FutureProvider.family<PlaylistModel, Map<String, String>>(
+        (ref, data) async {
   try {
     log("CREATE PLAYLIST PROVIDER CALLED");
     final authService = ref.read(authServiceProvider);
@@ -46,8 +48,13 @@ final createPlaylistProvider = FutureProvider.family<PlaylistModel, Map<String, 
     log("USERID PASSED TO CREATE PLAYLIST: $sessionData");
     log("USERID PASSED TO CREATE PLAYLIST: $userId");
     log("SESSION DATA PASSED TO CREATE PLAYLIST: ${sessionData['access_token']}");
-    final newPlaylist = await RecommendationsService()
-        .createPlaylist(sessionData['access_token'], userId, data['name']!, data['description']!);
+    final newPlaylist = await RecommendationsService().createPlaylist(
+      sessionData['access_token'],
+      userId,
+      data['name']!,
+      data['description']!,
+      data['image']!,
+    );
     log("NEW PLAYLIST RETURNED:!!! $newPlaylist");
     return newPlaylist;
   } catch (e) {

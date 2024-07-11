@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:nuance/models/history_model.dart';
@@ -146,34 +147,111 @@ class RecommendationsService {
     }
   }
 
-  Future<PlaylistModel> createPlaylist(String accessToken, String userId,
-      String name, String description) async {
+  Future<PlaylistModel> createPlaylist(
+    String accessToken,
+    String userId,
+    String name,
+    String description,
+    String imageUrl,
+  ) async {
     try {
+      print("IMAGE STRING $imageUrl");
+
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode(
-            {'userId': userId, 'name': name, 'description': description}),
+        body: jsonEncode({
+          'userId': userId,
+          'name': name,
+          'description': description,
+        }),
       );
-      log("createPlaylist REQUEST: ${response.request.toString()}");
-      log("createPlaylist RESPONSE: ${response.statusCode}");
+
+      debugPrint("createPlaylist REQUEST: ${response.request.toString()}");
+      debugPrint("createPlaylist RESPONSE: ${response.statusCode}");
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
-        log("created playlist data: $data");
+        debugPrint("created playlist data: $data");
+
+        // Set the playlist cover image
+        await setPlaylistCoverImage(accessToken, data['id'], imageUrl);
+
         return PlaylistModel.fromJson(data);
       } else {
-        log('Failed to create playlist: ${response.body}');
+        debugPrint('Failed to create playlist: ${response.body}');
         throw Exception('Failed to create playlist');
       }
     } catch (e) {
-      log('Exception in createPlaylist: $e');
+      debugPrint('Exception in createPlaylist: $e');
       rethrow;
     }
   }
+
+  Future<Uint8List> getImageBytes(String imageUrl) async {
+    final response = await http.get(Uri.parse(imageUrl));
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      throw Exception('Failed to load image');
+    }
+  }
+
+  Future<void> setPlaylistCoverImage(
+      String accessToken, String playlistId, String imageUrl) async {
+    try {
+      // final imageBytes = await getImageBytes(imageUrl);
+      // final base64Image = base64Encode(imageBytes);
+
+      final response = await http.post(
+        Uri.parse('$baseURL/spotify/playlists/$playlistId/cover-image'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'baseImageUrl': imageUrl,
+          'logoUrl':
+              'https://uploads-ssl.webflow.com/668ee73d58f89c3cfa7bdf1c/668ee7d41a8ace1e7243b0ed_Nuances%20Frame%208%20(1).png'
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        debugPrint('Failed to set playlist cover image: ${response.body}');
+        throw Exception('Failed to set playlist cover image');
+      }
+      print('SET PLAYLIST COVER IMAGE: $response');
+    } catch (e) {
+      debugPrint('Exception in setPlaylistCoverImage: $e');
+      rethrow;
+    }
+  }
+
+  // Future<void> setPlaylistCoverImage(
+  //     String accessToken, String playlistId, String imageUrl) async {
+  //   try {
+  //     final response = await http.put(
+  //       Uri.parse('$baseURL/spotify/playlists/$playlistId/cover-image'),
+  //       headers: {
+  //         'Authorization': 'Bearer $accessToken',
+  //         'Content-Type': 'image/jpeg',
+  //       },
+  //       body: base64Decode(imageUrl),
+  //     );
+
+  //     if (response.statusCode != 202) {
+  //       debugPrint('Failed to set playlist cover image: ${response.body}');
+  //       throw Exception('Failed to set playlist cover image');
+  //     }
+  //     print('SET PLAYLIST COVER IMAGE: $response');
+  //   } catch (e) {
+  //     debugPrint('Exception in setPlaylistCoverImage: $e');
+  //     rethrow;
+  //   }
+  // }
 
   Future<List<HistoryModel>> getHistory(String accessToken) async {
     try {

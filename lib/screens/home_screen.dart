@@ -46,6 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(text: '');
   final _tagQuery = TextEditingController();
   final _generatedRecQuery = TextEditingController();
+  final _imageController = TextEditingController();
   // final GlobalKey<ScaffoldState> _key = GlobalKey();
   // final RefreshController _refreshController =
   //     RefreshController(initialRefresh: false);
@@ -166,69 +167,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
-
-    void submit() {
+    void submit(String type) {
       focusNode.unfocus();
-      final userMessage = _controller.text;
-      // final tagQuery = _tagQuery.text;
-      if (userMessage.isEmpty) {
-        return;
+      String? userMessage;
+      String? tagQuery;
+      String? generatedRecQuery;
+
+      if (type == 'userMessage') {
+        userMessage = _controller.text;
+        if (userMessage.isEmpty) {
+          return;
+        }
+        Get.to(() => RecommendationsResultScreen(
+              searchQuery: userMessage!.trim(),
+              tagQuery: null,
+              sessionState: sessionState,
+              playlistImage: Uri.encodeFull(_imageController.text),
+            ));
+      } else if (type == 'tagQuery') {
+        tagQuery = _tagQuery.text;
+        if (tagQuery.isEmpty) {
+          return;
+        }
+        Get.to(() => RecommendationsResultScreen(
+              searchQuery: null,
+              tagQuery: tagQuery,
+              sessionState: sessionState,
+              playlistImage: Uri.encodeFull(_imageController.text),
+            ));
+      } else if (type == 'generatedRecQuery') {
+        generatedRecQuery = _generatedRecQuery.text;
+        if (generatedRecQuery.isEmpty) {
+          return;
+        }
+        Get.to(() => RecommendationsResultScreen(
+              searchQuery: generatedRecQuery,
+              tagQuery: null,
+              sessionState: sessionState,
+              playlistImage: Uri.encodeFull(_imageController.text),
+            ));
       }
-
-      // Navigator.pushNamed(
-      //   context,
-      //   RecommendationsResultScreen.routeName,
-      //   arguments: {
-      //     'search_term': userMessage.trim(),
-      //     'tag_query': tagQuery,
-      //     'sessionState': sessionState,
-      //   },
-      // ).then((value) => setState(() {}));
-
-      Get.to(() => RecommendationsResultScreen(
-            searchQuery: userMessage.trim(),
-            tagQuery: null,
-            sessionState: sessionState,
-          ));
-    }
-
-    void submitTagQuery() {
-      focusNode.unfocus();
-      // final userMessage = _controller.text;
-      final tagQuery = _tagQuery.text;
-      if (tagQuery.isEmpty) {
-        return;
-      }
-      Get.to(() => RecommendationsResultScreen(
-            searchQuery: null,
-            tagQuery: tagQuery,
-            sessionState: sessionState,
-          ));
-    }
-
-    void submitGeneratedQuery() {
-      focusNode.unfocus();
-      // final userMessage = _controller.text;
-      final generatedRecQuery = _generatedRecQuery.text;
-      if (generatedRecQuery.isEmpty) {
-        return;
-      }
-
-      // Navigator.pushNamed(
-      //   context,
-      //   RecommendationsResultScreen.routeName,
-      //   arguments: {
-      //     'search_term': userMessage.trim(),
-      //     'tag_query': tagQuery,
-      //     'sessionState': sessionState,
-      //   },
-      // ).then((value) => setState(() {}));
-
-      Get.to(() => RecommendationsResultScreen(
-            searchQuery: generatedRecQuery,
-            tagQuery: null,
-            sessionState: sessionState,
-          ));
     }
 
     // final historyAsyncValue = ref.watch(historyProvider);
@@ -570,11 +548,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   onClick: () {
                                     _generatedRecQuery.text =
                                         recommendation['text'];
-                                    compareAndConfirmQuery(
-                                      lastGeneratedQuery ?? "",
-                                      _generatedRecQuery.text,
-                                      submitGeneratedQuery,
-                                    );
+                                    _imageController.text =
+                                        recommendation['image'];
+                                    submit('generatedRecQuery');
                                   },
                                 ).marginOnly(bottom: 25);
                               }
@@ -658,7 +634,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               return InkWell(
                                 onTap: () {
                                   _tagQuery.text = data[index];
-                                  submitTagQuery();
+                                  submit('tagQuery');
                                 },
                                 child: Chip(
                                   side: BorderSide.none,
@@ -741,11 +717,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             text: "Generate",
                             backgroundColor: Colors.white,
                             onPressed: () {
-                              compareAndConfirmQuery(
-                                lastGeneratedQuery ?? "",
-                                _controller.text,
-                                submit, // Pass the submit function reference
-                              );
+                              submit('userMessage');
                             },
                           ),
                         ),
@@ -766,11 +738,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         'Songs to Help Me Sleep',
                       ],
                       onSubmitted: (value) {
-                        compareAndConfirmQuery(
-                          lastGeneratedQuery ?? "",
-                          _controller.text,
-                          submit, // Pass the submit function reference
-                        );
+                        //  userMessage
+                        submit('userMessage');
                       },
                     ),
                   ],
