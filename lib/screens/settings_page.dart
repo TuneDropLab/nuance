@@ -213,7 +213,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                                   .toUpperCase(),
                                               style: const TextStyle(
                                                   color: Colors.black,
-                                                  fontSize: 20,
+                                                  fontSize: 64,
                                                   fontWeight: FontWeight.bold),
                                             ),
                                           ),
