@@ -952,6 +952,7 @@ class _RecommendationsResultScreenState
                                                 context,
                                                 widget.searchQuery ??
                                                     widget.tagQuery ??
+                                                    widget.searchTitle ??
                                                     "",
                                                 recommendations ??
                                                     widget.songs ??
