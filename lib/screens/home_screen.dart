@@ -16,6 +16,7 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
@@ -728,27 +729,40 @@ Padding newMethod(AsyncValue<SessionData?> sessionState) {
     child: sessionState.when(
       data: (data) {
         if (data == null) {
+          // IN THIS STATE THE USER IS SIGNED OUT
           return GestureDetector(
             child: Container(
-              width: 140.0,
-              height: 140.0,
+              width: 40.0,
+              height: 40.0,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.orange,
+                    Color.fromARGB(255, 215, 129, 0),
                     Color.fromARGB(255, 255, 222, 59),
-                    Color.fromARGB(255, 225, 153, 47),
-                    Colors.red,
                   ],
                 ),
                 color: Colors.orange,
               ),
             ),
             onTap: () {
-              globalKey.currentState!.openDrawer();
+              // globalKey.currentState!.openDrawer();
+              // OPEN A dialog to sign them back in
+              Get.dialog(
+                ConfirmDialog(
+                  heading: 'Sign in',
+                  subtitle:
+                      "You are currently signed out. Would you like to sign in?",
+                  confirmText: "Sign in",
+                  onConfirm: () {
+                    Get.back();
+                    Get.offAll(const LoginScreen());
+                    // submit(); // Correctly call the submit function
+                  },
+                ),
+              );
               // sessionData.logout();
             },
           );

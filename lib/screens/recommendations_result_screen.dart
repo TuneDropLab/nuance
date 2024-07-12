@@ -710,9 +710,12 @@ class _RecommendationsResultScreenState
     final sessionData = ref.read(sessionProvider.notifier);
     final sessionState = ref.watch(sessionProvider);
     if (widget.sessionState == null && sessionState.value == null) {
-      return const Scaffold(
-        body: Center(child: Text('No search term found')),
-      );
+      // return;
+      // const Scaffold(
+      //   body: Center(
+      //     child: Text('No search term found'),
+      //   ),
+      // );
     }
     ref.invalidate(playlistProvider);
     int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
@@ -982,16 +985,16 @@ class _RecommendationsResultScreenState
                                         ? null
                                         // : recommendations?.isEmpty ?? true
                                         //     ? null
-                                            : widget.playlistId != null
-                                                ? _followPlaylist(
-                                                    widget.playlistId!)
-                                                : _showPlaylists(
-                                                    context,
-                                                    ref,
-                                                    widget.songs ??
-                                                        recommendations ??
-                                                        [],
-                                                  );
+                                        : widget.playlistId != null
+                                            ? _followPlaylist(
+                                                widget.playlistId!)
+                                            : _showPlaylists(
+                                                context,
+                                                ref,
+                                                widget.songs ??
+                                                    recommendations ??
+                                                    [],
+                                              );
                                   },
                                 ),
                               ),
