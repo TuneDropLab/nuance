@@ -61,12 +61,12 @@ class _RecommendationsResultScreenState
   List<String> errorList = [];
   List<SongModel>? recommendations = [];
 
- @override
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     ref.invalidate(playlistProvider);
     _fetchRecommendationsOrPlaylistTracks();
-    
+
     // Listen to audio player state changes
     _audioPlayer.onPlayerStateChanged.listen((playerState) {
       if (playerState == PlayerState.playing) {
@@ -101,6 +101,7 @@ class _RecommendationsResultScreenState
       });
     }
   }
+
   Future<void> _fetchRecommendationsOrPlaylistTracks() async {
     final sessionStateFromProvider = ref.read(sessionProvider);
     setState(() {
@@ -706,13 +707,14 @@ class _RecommendationsResultScreenState
 
   @override
   Widget build(BuildContext context) {
-    if (widget.sessionState == null) {
+    final sessionData = ref.read(sessionProvider.notifier);
+    final sessionState = ref.watch(sessionProvider);
+    if (widget.sessionState == null && sessionState.value == null) {
       return const Scaffold(
         body: Center(child: Text('No search term found')),
       );
     }
     ref.invalidate(playlistProvider);
-    final sessionData = ref.read(sessionProvider.notifier);
     int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
     int uniqueArtistsCount =
         getUniqueArtistsCount(recommendations ?? widget.songs ?? []);
@@ -847,8 +849,8 @@ class _RecommendationsResultScreenState
                                         ),
                                       ],
                                       child: MusicListTile(
-                                        isPlaying:
-                                  _isPlaying && _currentSong?.id == song?.id,
+                                        isPlaying: _isPlaying &&
+                                            _currentSong?.id == song?.id,
                                         trailingOnTap: () => _togglePlay(song),
                                         recommendation: song!,
                                         onPlaybackStateChanged: (isPlaying) {
@@ -859,8 +861,8 @@ class _RecommendationsResultScreenState
                                       ),
                                     )
                                   : MusicListTile(
-                                      isPlaying:
-                                _isPlaying && _currentSong?.id == song?.id,
+                                      isPlaying: _isPlaying &&
+                                          _currentSong?.id == song?.id,
                                       trailingOnTap: () => _togglePlay(song),
                                       recommendation: song!,
                                       onPlaybackStateChanged: (isPlaying) {
@@ -978,8 +980,8 @@ class _RecommendationsResultScreenState
                                   onPressed: () {
                                     isLoading
                                         ? null
-                                        : recommendations!.isEmpty
-                                            ? null
+                                        // : recommendations?.isEmpty ?? true
+                                        //     ? null
                                             : widget.playlistId != null
                                                 ? _followPlaylist(
                                                     widget.playlistId!)

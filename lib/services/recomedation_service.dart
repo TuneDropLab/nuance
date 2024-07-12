@@ -464,12 +464,13 @@ class RecommendationsService {
   Future<void> shareRecommendation(
       BuildContext context, String playlistName, List<dynamic> songs) async {
     final url = Uri.parse('$baseURL/share/generate');
+    final recommendationData = {
+      'searchQuery': playlistName,
+      'songs': songs,
+    };
     final response = await http.post(url,
         body: jsonEncode({
-          'recommendationData': {
-            'searchQuery': playlistName,
-            'songs': songs,
-          }
+          'recommendationData': recommendationData,
         }),
         headers: {'Content-Type': 'application/json'});
 
@@ -477,23 +478,24 @@ class RecommendationsService {
       final body = jsonDecode(response.body);
       final shareLink = body['link'];
 
+      // Use regex to modify the link
+      final modifiedLink = shareLink.replaceFirst(
+          RegExp(r'^http:\/\/localhost:3000'), 'nuanceapp://');
+
       // Open the share dialog
       Share.share(
-        '$shareLink',
+        modifiedLink,
         subject: "Check out this recommendation",
         sharePositionOrigin: Rect.fromPoints(
           const Offset(2, 2),
           const Offset(3, 3),
         ),
       );
-      // Get.dialog();
     } else {
       log("status code!!!!!: ${response.statusCode}");
       CustomSnackbar().show(
         'Failed to generate share link',
       );
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(content: Text('Failed to generate share link')));
     }
   }
 
