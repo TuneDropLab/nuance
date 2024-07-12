@@ -355,47 +355,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
     print("HII HERE: ${historyItem.id}");
     // dialog then call Recommendations . delete histry item
     Get.dialog(
-      // AlertDialog(
-      //   backgroundColor: Colors.grey[900],
-      //   title: Text(
-      //     'Delete ${historyItem.searchQuery}?',
-      //     style: headingTextStyle,
-      //   ),
-      //   content: Text(
-      //     'Are you sure you want to delete this item?',
-      //     style: subtitleTextStyle,
-      //   ),
-      //   actions: [
-      //     TextButton(
-      //       child: const Text(
-      //         'Cancel',
-      //       ),
-      //       onPressed: () {
-      //         Get.back();
-      //       },
-      //     ),
-      //     TextButton(
-      //       style: TextButton.styleFrom(
-      //         foregroundColor: Colors.white,
-      //         // backgroundColor: Colors.red,
-      //       ),
-      //       onPressed: () {
-      //         Get.back();
-      //         // Remove item locally
-      //         setState(() {
-      //           _localHistory.remove(historyItem);
-      //         });
-
-      //         RecommendationsService().deleteHistory(
-      //           widget.sessionState.value?.accessToken ?? "",
-      //           historyItem.id ?? 0,
-      //         );
-      //         ref.invalidate(historyProvider);
-      //       },
-      //       child: const Text('Delete'),
-      //     ),
-      //   ],
-      // ),
       ConfirmDialog(
         heading: "Delete ${historyItem.searchQuery}?",
         subtitle: "Are you sure you want to delete this item?",

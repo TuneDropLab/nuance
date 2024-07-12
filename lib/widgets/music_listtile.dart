@@ -12,6 +12,7 @@ class MusicListTile extends ConsumerStatefulWidget {
   final Function()? leadingOnTap;
   final Function()? trailingOnTap;
   final bool isPlaying;
+  final Function(bool isPlaying)? onPlaybackStateChanged; // New callback
 
   const MusicListTile({
     Key? key,
@@ -19,6 +20,7 @@ class MusicListTile extends ConsumerStatefulWidget {
     this.leadingOnTap,
     this.trailingOnTap,
     required this.isPlaying,
+    this.onPlaybackStateChanged,
   }) : super(key: key);
 
   @override
@@ -28,8 +30,6 @@ class MusicListTile extends ConsumerStatefulWidget {
 class _MusicListTileState extends ConsumerState<MusicListTile> {
   @override
   void dispose() {
-    // TODO: implement dispose
-
     super.dispose();
   }
 
@@ -89,7 +89,6 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                       : widget.recommendation.artist ?? "",
                   style: subtitleTextStyle,
                 ),
-                // if (widget.recommendation.popularity! >= 70)
                 TextSpan(
                   text: (widget.recommendation.popularity ?? 0) >= 70
                       ? " 🔥"
@@ -100,12 +99,11 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                 ),
                 if (widget.recommendation.popularity! >= 70)
                   TextSpan(
-                      text: "${widget.recommendation.popularity}%",
-                      style: widget.recommendation.popularity! >= 70
-                          ? const TextStyle(
-                              color: Color(0xffFF581A),
-                            )
-                          : subtitleTextStyle),
+                    text: "${widget.recommendation.popularity}%",
+                    style: const TextStyle(
+                      color: Color(0xffFF581A),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -123,7 +121,6 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
               : null,
         ),
       ),
-      // onTap: () => widget.trailingOnTap?.call(),
     );
   }
 }

@@ -336,13 +336,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       // setState(() {
                                       //   // _localHistory.remove(historyItem);
                                       // });
+                                      ref.invalidate(historyProvider);
 
                                       Get.back();
 
                                       RecommendationsService().deleteAllHistory(
                                         sessionState.value?.accessToken ?? "",
                                       );
-                                      ref.invalidate(historyProvider);
                                     },
                                   ),
                                 );

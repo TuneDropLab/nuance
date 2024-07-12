@@ -159,7 +159,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // final sessionData = ref.read(sessionProvider.notifier);
     // final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
-    final historyProviderRef = ref.read(historyProvider);
+    final historyProviderRef = ref.watch(historyProvider);
     final List<HistoryModel>? historyList = historyProviderRef.value;
     String? lastGeneratedQuery = historyList != null && historyList.isNotEmpty
         ? historyList.first.searchQuery
@@ -572,37 +572,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           shrinkWrap: true,
                         ),
                       ),
-                      // loading: () => ListView.builder(
-                      //   padding: const EdgeInsets.only(top: 24),
-                      //   itemCount: 30,
-                      //   itemBuilder: (context, index) {
-                      //     return SizedBox(
-                      //       child: Shimmer.fromColors(
-                      //         baseColor: const Color.fromARGB(51, 255, 255, 255),
-                      //         highlightColor:
-                      //             const Color.fromARGB(65, 255, 255, 255),
-                      //         child: Container(
-                      //           margin:
-                      //               const EdgeInsets.symmetric(horizontal: 20),
-                      //           height: 190,
-                      //           decoration: BoxDecoration(
-                      //             color: Colors.grey,
-                      //             borderRadius: BorderRadius.circular(25),
-                      //           ),
-                      //         ).marginOnly(bottom: 25),
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // error: (error, stackTrace) => Center(
-                      //   child: Text(
-                      //     'Error loading playlists',
-                      //     style: subtitleTextStyle.copyWith(
-                      //       color: Colors.white,
-                      //     ),
-                      //   ),
-                      // ),
-                      // ,
                     ),
             ),
             Align(
