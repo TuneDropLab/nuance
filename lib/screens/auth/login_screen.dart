@@ -64,16 +64,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         } catch (error) {
           debugPrint("Error fetching user profile: $error");
-          setState(() {
-            _status = 'Error fetching user profile';
-          });
+          // setState(() {
+          //   _status = 'Error fetching user profile';
+          // });
         }
       }
     } on PlatformException catch (e) {
-      setState(() {
-        debugPrint("ERROR MESSAGE: ${e.message}");
-        _status = 'Error: ${e.message}';
-      });
+      // setState(() {
+      //   debugPrint("ERROR MESSAGE: ${e.message}");
+      //   _status = 'Error: ${e.message}';
+      // });
     }
   }
 

@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
 import 'package:nuance/main.dart';
 import 'package:nuance/models/session_data_model.dart';
@@ -912,7 +915,7 @@ class _RecommendationsResultScreenState
                         ),
                       if (widget.tagQuery != null)
                         const CustomDivider().marginOnly(bottom: 5),
-                      if (!isLoading)
+                      if (!isLoading && sessionState.value?.accessToken != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
                           child: Row(
@@ -1002,6 +1005,29 @@ class _RecommendationsResultScreenState
                             ],
                           ),
                         ),
+                      if (sessionState.value?.accessToken == null)
+                        Container(
+                          width: Get.width,
+                          margin: const EdgeInsets.symmetric(horizontal: 15),
+                          child: CupertinoButton.filled(
+                            pressedOpacity: 0.3,
+                            onPressed: () {
+                              _authenticate();
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/icon4star.svg',
+                                  width: 10,
+                                  height: 10,
+                                ),
+                                const SizedBox(width: 8),
+                                const Text('Sign in with Spotify'),
+                              ],
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -1017,5 +1043,60 @@ class _RecommendationsResultScreenState
   void dispose() {
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  late String _status;
+
+  Future<void> _authenticate() async {
+    const authUrl = '$baseURL/auth/login';
+    const callbackUrlScheme = "nuance";
+
+    try {
+      final result = await FlutterWebAuth.authenticate(
+        url: authUrl,
+        callbackUrlScheme: callbackUrlScheme,
+      );
+      _status = "Alright";
+
+      final uri = Uri.parse(result);
+      final sessionData = uri.queryParameters['session'];
+
+      log("Session data: $sessionData");
+
+      if (sessionData != null) {
+        final sessionMap = jsonDecode(sessionData);
+        final accessToken = sessionMap['access_token'];
+
+        // Fetch user profile details
+        try {
+          final profile =
+              await RecommendationsService().getUserProfile(accessToken);
+          final name = profile['user']['name'];
+          final email = profile['user']['email'];
+
+          // Update session data
+          await ref
+              .read(sessionProvider.notifier)
+              .storeSessionAndSaveToState(sessionData, name, email);
+
+          // Navigate to HomeScreen
+          await Get.to(
+            () => const HomeScreen(),
+            transition: Transition.fade,
+            curve: Curves.easeInOut,
+          );
+        } catch (error) {
+          debugPrint("Error fetching user profile: $error");
+          setState(() {
+            _status = 'Error fetching user profile';
+          });
+        }
+      }
+    } on PlatformException catch (e) {
+      setState(() {
+        debugPrint("ERROR MESSAGE: ${e.message}");
+        _status = 'Error: ${e.message}';
+      });
+    }
   }
 }

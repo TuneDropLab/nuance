@@ -750,6 +750,7 @@ Padding newMethod(AsyncValue<SessionData?> sessionState) {
             onTap: () {
               // globalKey.currentState!.openDrawer();
               // OPEN A dialog to sign them back in
+                    // Get.offAll(const LoginScreen());
               Get.dialog(
                 ConfirmDialog(
                   heading: 'Sign in',
@@ -758,7 +759,6 @@ Padding newMethod(AsyncValue<SessionData?> sessionState) {
                   confirmText: "Sign in",
                   onConfirm: () {
                     Get.back();
-                    Get.offAll(const LoginScreen());
                     // submit(); // Correctly call the submit function
                   },
                 ),
