@@ -82,6 +82,34 @@ class _RecommendationsResultScreenState
         });
       }
     });
+
+    try {
+      final service = RecommendationsService();
+      final accessToken = widget.sessionState?.value?.accessToken ?? "";
+      final providerToken = widget.sessionState?.value?.providerToken ?? "";
+
+      final result = widget.searchQuery != null || widget.tagQuery != null
+          ? await service.getRecommendations(
+              accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+          : widget.playlistId != null
+              ? await service.fetchPlaylistTracks(
+                  accessToken, providerToken, widget.playlistId ?? "")
+              : null;
+      print("HIIIIIIIII: ${result?.first}");
+      if (mounted) {
+        setState(() {
+          recommendations = result;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          errorList.add(e.toString());
+          isLoading = false;
+        });
+      }
+    }
   }
 
   void _togglePlay(SongModel song) async {
