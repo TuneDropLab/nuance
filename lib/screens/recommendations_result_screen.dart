@@ -889,32 +889,37 @@ class _RecommendationsResultScreenState
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       if (widget.tagQuery != null)
-                        Animate(
-                          child: Row(
-                            children: [
-                              IconButton(
-                                onPressed: () {
-                                  Get.back();
-                                },
-                                icon: SvgPicture.asset(
-                                  "assets/x.svg",
+                        if (!isLoading &&
+                            sessionState.value?.accessToken != null)
+                          Animate(
+                            child: Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    Get.back();
+                                  },
+                                  icon: SvgPicture.asset(
+                                    "assets/x.svg",
+                                  ),
                                 ),
-                              ),
-                              GeneralButton(
-                                text:
-                                    widget.searchQuery ?? widget.tagQuery ?? "",
-                                backgroundColor: Colors.white,
-                                icon: SvgPicture.asset(
-                                  "assets/icon4star.svg",
-                                  color: const Color(0xffFFBB00),
+                                GeneralButton(
+                                  text: widget.searchQuery ??
+                                      widget.tagQuery ??
+                                      "",
+                                  backgroundColor: Colors.white,
+                                  icon: SvgPicture.asset(
+                                    "assets/icon4star.svg",
+                                    color: const Color(0xffFFBB00),
+                                  ),
+                                  onPressed: () {},
                                 ),
-                                onPressed: () {},
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
                       if (widget.tagQuery != null)
-                        const CustomDivider().marginOnly(bottom: 5),
+                        if (!isLoading &&
+                            sessionState.value?.accessToken != null)
+                          const CustomDivider().marginOnly(bottom: 5),
                       if (!isLoading && sessionState.value?.accessToken != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 15),
