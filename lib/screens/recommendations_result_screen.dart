@@ -165,7 +165,7 @@ class _RecommendationsResultScreenState
           isLoading = false;
         });
       }
-      CustomSnackbar().show("Playlist followed successfully");
+      // CustomSnackbar().show("Playlist followed successfully");
     } catch (e) {
       log("Error: ${e.toString()}");
       CustomSnackbar().show("Error: ${e.toString()}");

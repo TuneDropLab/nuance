@@ -22,9 +22,9 @@ class CustomSnackbar {
     Widget icon = const SizedBox.shrink(),
     TextStyle? textStyle,
     Duration enterDuration = const Duration(milliseconds: 500),
-    Duration exitDuration = const Duration(milliseconds: 100),
+    Duration exitDuration = const Duration(milliseconds: 30),
     Curve enterCurve = Curves.easeOut,
-    Curve exitCurve = Curves.easeIn,
+    Curve exitCurve = Curves.easeInBack,
   }) {
     final overlayState = _navigatorKey.currentState?.overlay;
     OverlayEntry? overlayEntry;
@@ -47,7 +47,7 @@ class CustomSnackbar {
                 effects: [
                   SlideEffect(
                     duration: enterDuration,
-                    begin: const Offset(0, 1),
+                    begin: const Offset(0, 3),
                     end: const Offset(0, 0),
                     curve: enterCurve,
                   ),
