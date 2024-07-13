@@ -5,10 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
+import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/general_button.dart';
+import 'package:nuance/widgets/loader.dart';
 
 final GlobalKey<ScaffoldState> lobalKey = GlobalKey();
 
@@ -30,8 +34,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     void editName() {
       // Navigate to a new screen to edit the user's name
-      Get.to(() => EditNameScreen(sessionState: sessionState));
+      // Get.to(() => EditNameScreen(sessionState: sessionState));
     }
+
+   
+
+    var nameController = TextEditingController();
 
     return WillPopScope(
       onWillPop: () async {
@@ -85,6 +93,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 );
               }
 
+              nameController.text = data.user["user_metadata"]["full_name"];
+
               return Stack(
                 children: [
                   Padding(
@@ -94,28 +104,146 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         const SizedBox(height: 20),
                         Center(
-                          child: CachedNetworkImage(
-                            imageBuilder: (context, imageProvider) =>
-                                CircleAvatar(
-                              radius: 70,
-                              backgroundImage: imageProvider,
-                              backgroundColor: Colors.grey,
-                            ),
-                            fit: BoxFit.cover,
-                            // height: 150,
-                            imageUrl:
-                                data.user["user_metadata"]["avatar_url"] ?? "",
-                            placeholder: (context, url) => const Center(
-                              child: CupertinoActivityIndicator(
-                                  // color: AppTheme.textColor,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: sessionState.when(
+                              data: (data) {
+                                if (data == null) {
+                                  return GestureDetector(
+                                    child: Container(
+                                      width: 140.0,
+                                      height: 140.0,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.orange,
+                                            Color.fromARGB(255, 255, 222, 59),
+                                            Color.fromARGB(255, 225, 153, 47),
+                                            Colors.red,
+                                          ],
+                                        ),
+                                        color: Colors.orange,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      // globalKey.currentState!.openDrawer();
+                                      // sessionData.logout();
+                                    },
+                                  );
+                                }
+
+                                //       CachedNetworkImage(
+                                //   imageBuilder: (context, imageProvider) =>
+                                //       CircleAvatar(
+                                //     radius: 70,
+                                //     backgroundImage: imageProvider,
+                                //     backgroundColor: Colors.grey,
+                                //   ),
+                                //   fit: BoxFit.cover,
+                                //   // height: 150,
+                                //   imageUrl:
+                                //       data.user["user_metadata"]["avatar_url"] ?? "",
+                                //   placeholder: (context, url) => const Center(
+                                //     child: CupertinoActivityIndicator(
+                                //         // color: AppTheme.textColor,
+                                //         ),
+                                //   ),
+                                //   errorWidget: (context, url, error) => Container(
+                                //     width: 140.0,
+                                //     height: 140.0,
+                                //     decoration: const BoxDecoration(
+                                //       shape: BoxShape.circle,
+                                //       color: Colors.black12,
+                                //     ),
+                                //   ),
+                                // ),
+                                return CupertinoButton(
+                                  padding: const EdgeInsets.all(0),
+                                  onPressed: () {
+                                    // globalKey.currentState!.openDrawer();
+                                    // sessionData.logout();
+                                  },
+                                  child: CachedNetworkImage(
+                                    imageBuilder: (context, imageProvider) =>
+                                        CircleAvatar(
+                                      radius: 70,
+                                      backgroundImage: imageProvider,
+                                      backgroundColor: Colors.grey,
+                                    ),
+                                    fit: BoxFit.fill,
+                                    height: 150,
+                                    imageUrl: data.user["user_metadata"]
+                                            ["avatar_url"] ??
+                                        "",
+                                    placeholder: (context, url) => const Center(
+                                      child: CupertinoActivityIndicator(
+                                          color: AppTheme.textColor),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        GestureDetector(
+                                      child: Container(
+                                        // width: 40.0,
+                                        // height: 40.0,
+                                        decoration: const BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                            colors: [
+                                              Colors.orange,
+                                              Color.fromARGB(255, 255, 222, 59),
+                                              Color.fromARGB(255, 225, 153, 47),
+                                              Colors.red,
+                                            ],
+                                          ),
+                                          color: Colors.orange,
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 70,
+                                          backgroundColor: Colors.transparent,
+                                          child: Center(
+                                            child: Text(
+                                              data.user["user_metadata"]
+                                                      ["full_name"]
+                                                  .toString()
+                                                  .substring(0, 1)
+                                                  .toUpperCase(),
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 64,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      onTap: () {
+                                        // globalKey.currentState!.openDrawer();
+                                        // sessionData.logout();
+                                      },
+                                    ),
                                   ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              width: 140.0,
-                              height: 140.0,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.black12,
+                                );
+                              },
+                              loading: () => const Center(
+                                child: CupertinoActivityIndicator(
+                                    color: AppTheme.textColor),
+                              ),
+                              error: (error, stack) => GestureDetector(
+                                child: Container(
+                                  width: 70.0,
+                                  height: 70.0,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.orange,
+                                  ),
+                                ),
+                                onTap: () {
+                                  // globalKey.currentState!.openDrawer();
+                                  // sessionData.logout();
+                                },
                               ),
                             ),
                           ),
@@ -129,9 +257,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 20),
                         TextField(
-                          controller: TextEditingController(
-                            text: data.user["user_metadata"]["full_name"],
-                          ),
+                          onChanged: (value) {
+                            nameController.text = value;
+                            // nameController.selection = TextSelection.fromPosition(
+                            //     TextPosition(offset: value.length));
+                            // value = nameController.text;
+                          },
+                          controller: nameController,
+                          maxLines: 1,
                           decoration: InputDecoration(
                             labelStyle: const TextStyle(color: Colors.white),
                             border: OutlineInputBorder(
@@ -172,10 +305,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             backgroundColor:
                                 const Color.fromARGB(255, 4, 37, 6),
                             onPressed: () {
+                              sessionData.updateUserName(nameController.text);
+                              // ref.invalidate(sessionProvider);
                               // sessionData.logout();
                               // save details user has stored to their profile
                             },
                           ),
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: Get.width,
+                          // padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: GeneralButton(
+                              hasPadding: true,
+                              text: "Clear history",
+                              color: Colors.white,
+                              backgroundColor: Colors.grey.shade800,
+                              onPressed: () {
+                                // sessionData.logout();
+                                // save details user has stored to their profile
+                                // Dialog to clear history
+                                Get.dialog(
+                                  ConfirmDialog(
+                                    heading: "Delete all history",
+                                    subtitle:
+                                        "Are you sure you want to delete all history?",
+                                    confirmText: "Delete",
+                                    onConfirm: () {
+                                      // Remove item locally
+                                      // setState(() {
+                                      //   // _localHistory.remove(historyItem);
+                                      // });
+                                      ref.invalidate(historyProvider);
+
+                                      Get.back();
+
+                                      RecommendationsService().deleteAllHistory(
+                                        sessionState.value?.accessToken ?? "",
+                                      );
+                                    },
+                                  ),
+                                );
+                              }),
                         ),
                       ],
                     ),
@@ -199,8 +370,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ],
               );
             },
-            loading: () => const Center(
-              child: CupertinoActivityIndicator(color: AppTheme.textColor),
+            loading: () => Center(
+              child: SpinningSvg(
+                svgWidget: Image.asset(
+                  'assets/hdlogo.png',
+                  height: 40,
+                ),
+                textList: const [
+                  'Saving your data ...',
+                  'Just a moment ...',
+                  'Getting new data ...',
+                  'Almost done ...',
+                ],
+              ),
             ),
             error: (error, stack) => Center(
               child: Text(
@@ -209,42 +391,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class EditNameScreen extends StatelessWidget {
-  final AsyncValue<SessionData?> sessionState;
-  const EditNameScreen({super.key, required this.sessionState});
-
-  @override
-  Widget build(BuildContext context) {
-    final sessionData = sessionState.asData?.value?.user;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Name'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: TextEditingController(
-                text: sessionData?["user_metadata"]["full_name"],
-              ),
-              decoration: const InputDecoration(
-                labelText: 'Name',
-              ),
-              onSubmitted: (newName) {
-                // Update the user's name in your backend or state management
-                // ...
-                Get.back();
-              },
-            ),
-          ],
         ),
       ),
     );

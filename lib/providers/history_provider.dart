@@ -9,7 +9,7 @@ final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
     log("HISTORY PROVIDER CALLED");
     final authService = ref.read(authServiceProvider);
     final sessionData = await authService.getSessionData();
-    log("HISTORY PROVIDER SESSION DATA:!!! $sessionData");
+    // log("HISTORY PROVIDER SESSION DATA:!!! $sessionData");
 
     if (sessionData == null) {
       log("SESSION DATA IS NULL:!!! $sessionData");
@@ -54,3 +54,4 @@ final deleteAllHistoryProvider = FutureProvider<void>((ref) async {
     throw Exception('Failed to delete all history');
   }
 });
+

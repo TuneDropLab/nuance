@@ -9,7 +9,9 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/screens/settings_page.dart';
+import 'package:nuance/services/recomedation_service.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/loader.dart';
 
 class MyCustomDrawer extends ConsumerStatefulWidget {
@@ -26,6 +28,7 @@ class MyCustomDrawer extends ConsumerStatefulWidget {
 class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   String? _selectedArtist;
   final TextEditingController _searchController = TextEditingController();
+  List<HistoryModel> _localHistory = [];
 
   @override
   void dispose() {
@@ -129,11 +132,40 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           final historyAsyncValue = ref.watch(historyProvider);
                           return historyAsyncValue.when(
                             data: (history) {
+                              if (history.isEmpty) {
+                                return Center(
+                                  child: Text(
+                                    'Generate your first playlist to see history',
+                                    style: subtitleTextStyle.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                );
+                              }
+
+                              Future.microtask(() {
+                                if (mounted) {
+                                  setState(() {
+                                    _localHistory = history;
+                                  });
+                                }
+                              });
                               return ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _searchController,
                                 builder: (context, value, __) {
                                   final filteredHistory = _filterHistoryByQuery(
-                                      history, value.text);
+                                      _localHistory, value.text);
+
+                                  if (filteredHistory.isEmpty) {
+                                    return Center(
+                                      child: Text(
+                                        'No results found',
+                                        style: subtitleTextStyle.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    );
+                                  }
                                   return ListView.separated(
                                     padding: const EdgeInsets.only(
                                       bottom: 120,
@@ -148,57 +180,68 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                       final historyItem =
                                           filteredHistory[index];
                                       return ListTile(
-                                        title: Text(
-                                          historyItem.searchQuery ?? '',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          _formatRelativeTime(
-                                            historyItem.createdAt ??
-                                                DateTime.now(),
-                                          ),
-                                          style: subtitleTextStyle,
-                                        ),
-                                        // minLeadingWidth: 30,
-                                        leading: historyItem.recommendations
-                                                    ?.isNotEmpty ??
-                                                false
-                                            ? SizedBox(
-                                                height: 50,
-                                                width: 50,
-                                                child: ArtworkSwitcher(
-                                                  artworks: historyItem
-                                                      .recommendations!
-                                                      .map(
-                                                        (song) =>
-                                                            song.artworkUrl ??
-                                                            "",
-                                                      )
-                                                      .toList(),
-                                                ),
-                                              )
-                                            : const Icon(
-                                                Icons.square,
-                                                color: Colors.white,
-                                              ),
-                                        contentPadding: EdgeInsets.zero,
-                                        onTap: () {
-                                          Get.back();
-                                          Get.to(
-                                            RecommendationsResultScreen(
-                                              searchTitle:
-                                                  historyItem.searchQuery,
-                                              sessionState: widget.sessionState,
-                                              songs:
-                                                  historyItem.recommendations!,
+                                          title: Text(
+                                            historyItem.searchQuery ?? '',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                              color: Colors.white,
                                             ),
-                                          );
-                                        },
-                                      );
+                                          ),
+                                          subtitle: Text(
+                                            _formatRelativeTime(
+                                              historyItem.createdAt ??
+                                                  DateTime.now(),
+                                            ),
+                                            style: subtitleTextStyle,
+                                          ),
+                                          // minLeadingWidth: 30,
+                                          leading: historyItem.recommendations
+                                                      ?.isNotEmpty ??
+                                                  false
+                                              ? SizedBox(
+                                                  height: 50,
+                                                  width: 50,
+                                                  child: ArtworkSwitcher(
+                                                    artworks: historyItem
+                                                        .recommendations!
+                                                        .map(
+                                                          (song) =>
+                                                              song.artworkUrl ??
+                                                              "",
+                                                        )
+                                                        .toList(),
+                                                  ),
+                                                )
+                                              : const Icon(
+                                                  Icons.square,
+                                                  color: Colors.white,
+                                                ),
+                                          contentPadding: EdgeInsets.zero,
+                                          onTap: () {
+                                            // Get.back();
+                                            Get.to(
+                                              RecommendationsResultScreen(
+                                                searchTitle:
+                                                    historyItem.searchQuery,
+                                                sessionState:
+                                                    widget.sessionState,
+                                                songs: historyItem
+                                                    .recommendations!,
+                                              ),
+                                            );
+                                          },
+                                          trailing: IconButton(
+                                            icon: const Icon(
+                                              CupertinoIcons.delete,
+                                              size: 16,
+                                              color: Colors.white,
+
+                                            ),
+                                            onPressed: () {
+                                              _deleteHistoryItem(historyItem);
+                                            },
+                                          ));
                                     },
                                   );
                                 },
@@ -245,7 +288,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            Get.back();
+                            // Get.back();
                             Get.to(const SettingsScreen());
                             // Get.back(); // Navigate back
                           },
@@ -306,6 +349,31 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
       final years = difference.inDays ~/ 365;
       return '$years ${years == 1 ? 'year' : 'years'} ago';
     }
+  }
+
+  void _deleteHistoryItem(HistoryModel historyItem) {
+    print("HII HERE: ${historyItem.id}");
+    // dialog then call Recommendations . delete histry item
+    Get.dialog(
+      ConfirmDialog(
+        heading: "Delete ${historyItem.searchQuery}?",
+        subtitle: "Are you sure you want to delete this item?",
+        confirmText: "Delete",
+        onConfirm: () {
+          Get.back();
+          // Remove item locally
+          setState(() {
+            _localHistory.remove(historyItem);
+          });
+
+          RecommendationsService().deleteHistory(
+            widget.sessionState.value?.accessToken ?? "",
+            historyItem.id ?? 0,
+          );
+          ref.invalidate(historyProvider);
+        },
+      ),
+    );
   }
 }
 
@@ -380,6 +448,8 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
                 },
               )
             : Container(
+                // height: 80,
+                //     width: 80,
                 decoration: BoxDecoration(
                   color: Colors.amber,
                   borderRadius: BorderRadius.circular(20),

@@ -27,7 +27,7 @@ class GeneratePlaylistCard extends StatelessWidget {
     return Container(
       height: 200,
       // margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
@@ -52,10 +52,11 @@ class GeneratePlaylistCard extends StatelessWidget {
             message: prompt ?? "",
             child: Text(
               prompt ?? "",
-              maxLines: 2,
+              maxLines: 3,
               style: const TextStyle(
                 height: 1.2,
                 overflow: TextOverflow.ellipsis,
+                
                 fontSize: 26,
                 color: Colors.white,
                 fontWeight: FontWeight.w600,

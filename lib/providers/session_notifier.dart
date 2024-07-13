@@ -1,29 +1,29 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/services/auth_service.dart';
-import 'package:nuance/theme.dart';
-import 'package:nuance/utils/constants.dart';
+import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/widgets/custom_dialog.dart';
 
 class SessionNotifier extends AsyncNotifier<SessionData?> {
   late final AuthService authService;
+  late final RecommendationsService recommendationsService;
 
   @override
   Future<SessionData?> build() async {
     authService = ref.read(authServiceProvider);
+    recommendationsService = RecommendationsService();
     return await _loadSession();
   }
 
   Future<SessionData?> _loadSession() async {
     try {
       final sessionData = await authService.getSessionData();
-      // log("LOADING SESSION FROM SESSION NOTIFIER!!!: $sessionData");
+      log("LOADING SESSION FROM SESSION NOTIFIER: $sessionData");
       if (sessionData != null) {
         return SessionData.fromJson(sessionData);
       }
@@ -34,83 +34,91 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     return null;
   }
 
-  Future<void> loginWithSpotify(String sessionData) async {
+  Future<void> storeSessionAndSaveToState(
+      String sessionData, String name, String email) async {
     state = const AsyncLoading();
     try {
-      await authService.loginWithSpotify(sessionData);
-      state = AsyncData(SessionData.fromJson(jsonDecode(sessionData)));
+      final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
+      final updatedUser = {
+        ...sessionJson['user'] as Map<String, dynamic>,
+        'name': name,
+        'email': email,
+      };
+
+      final updatedSessionJson = {
+        ...sessionJson,
+        'user': updatedUser,
+      };
+
+      final updatedSessionData = jsonEncode(updatedSessionJson);
+
+      await authService.storeSessionData(updatedSessionData);
+
+      state = AsyncData(SessionData.fromJson(updatedSessionJson));
     } catch (e) {
-      state = AsyncError(
-        e,
-        StackTrace.current,
-      );
+      state = AsyncError(e, StackTrace.current);
+    }
+  }
+
+  Future<void> updateUserName(String name) async {
+    state = const AsyncLoading();
+    try {
+      final Map<String, dynamic>? sessionJson =
+          await authService.getSessionData();
+      if (sessionJson != null) {
+        final accessToken = sessionJson['access_token'] as String;
+        final response =
+            await recommendationsService.updateUserProfile(accessToken, name);
+        // final sessionData = await authService.getSessionData();
+        // if (sessionData != null) {
+        // final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
+        // final accessToken = sessionJson['access_token'] as String;
+        // final response = await recommendationsService.updateUserProfile(accessToken, name);
+        final userMetadata =
+            sessionJson['user']['user_metadata'] as Map<String, dynamic>;
+        final updatedUserMetadata = {
+          ...userMetadata,
+          'full_name': response['user']['name'],
+        };
+
+        final updatedUser = {
+          ...sessionJson['user'] as Map<String, dynamic>,
+          'user_metadata': updatedUserMetadata,
+        };
+
+        final updatedSessionJson = {
+          ...sessionJson,
+          'user': updatedUser,
+        };
+
+        final updatedSessionData = jsonEncode(updatedSessionJson);
+        await authService.storeSessionData(updatedSessionData);
+
+        state = AsyncData(SessionData.fromJson(updatedSessionJson));
+      }
+    } catch (e) {
+      log('Exception in updateUserName: $e');
+      state = AsyncError(e, StackTrace.current);
     }
   }
 
   Future<void> logout() async {
-    // Get.dialog
     Get.dialog(
-        // title: "Hello",
-        // content: const Text("You are logging out"),
-        // confirm: MaterialButton(
-        //   onPressed: () async {
-        //     state = const AsyncLoading();
-        //     await authService.logout();
-        //     Get.offAllNamed(LoginScreen.routeName);
-        //     state = const AsyncData(null);
-        //   },
-        //   child: const Text("OK"),
-        // ),
-        CupertinoAlertDialog(
-      title: const Text(
-        "Sign out",
-        style: TextStyle(
-          // wordSpacing: 2,
-          letterSpacing: 0.5,
-          fontSize: 18,
-        ),
+      ConfirmDialog(
+        heading: 'Sign out',
+        subtitle: "Are you sure you want to sign out?",
+        confirmText: "Okay",
+        onConfirm: () {
+          state = const AsyncLoading();
+          authService.logout();
+          Get.offAll(
+            const LoginScreen(),
+            transition: Transition.zoom,
+          );
+          state = const AsyncData(null);
+        },
       ),
-      content: Text(
-        "Are you sure you want to sign out?",
-        style: subtitleTextStyle.copyWith(
-          color: Colors.black,
-          letterSpacing: 0.1,
-        ),
-        selectionColor: CupertinoColors.systemGrey4,
-      ),
-      actions: <Widget>[
-        CupertinoDialogAction(
-          child: const Text(
-            "Cancel",
-            style: TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 20,
-            ),
-          ),
-          onPressed: () async {
-            Get.back();
-          },
-        ),
-        CupertinoDialogAction(
-          isDefaultAction: true,
-          child: const Text(
-            "Okay",
-            style: TextStyle(
-              color: AppTheme.textColor,
-              fontSize: 20,
-            ),
-          ),
-          onPressed: () async {
-            state = const AsyncLoading();
-            await authService.logout();
-            Get.offAllNamed(
-              LoginScreen.routeName,
-            );
-            state = const AsyncData(null);
-          },
-        ),
-      ],
-    ));
+    );
   }
 }
 
