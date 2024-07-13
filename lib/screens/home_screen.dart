@@ -520,7 +520,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         timeToFade: 500.ms,
                         trackBorderColor: Colors.grey,
                         controller: _scrollController,
-                        thumbVisibility: true,
+
                         interactive: true,
                         child: ListView.builder(
                           itemCount: recommendations.length + 1,
