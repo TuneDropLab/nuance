@@ -1,7 +1,5 @@
-
 import 'package:flutter/material.dart';
 import 'package:nuance/utils/constants.dart';
-import 'package:sprung/sprung.dart';
 
 class AnimatedBox extends StatefulWidget {
   const AnimatedBox({
@@ -45,14 +43,7 @@ class _AnimatedBoxState extends State<AnimatedBox> {
         opacity: widget.child != null ? 1 : 0,
         child: AnimatedContainer(
           duration: 600.millis,
-          curve: widget.child == null
-              ? Curves.easeInOut
-              : Sprung.custom(
-                  damping: 30,
-                  stiffness: 200,
-                  mass: 1.0,
-                  velocity: 0.2,
-                ),
+          curve: Curves.easeInOut,
           height: currentHeight,
           width: currentWidth,
           child: ClipRRect(
