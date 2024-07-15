@@ -83,3 +83,13 @@ const headingTextStyle = TextStyle(
 );
 
 // final GlobalKey<ScaffoldState> globalKey = GlobalKey(); 
+T identity<T>(T t) => t;
+
+extension DurationInt on int {
+  Duration get hours => Duration(hours: this);
+  Duration get minutes => Duration(minutes: this);
+  Duration get seconds => Duration(seconds: this);
+  Duration get millis => Duration(milliseconds: this);
+  Duration get days => Duration(days: this);
+  Iterable<int> get times => Iterable.generate(this, identity);
+}
