@@ -66,6 +66,7 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
+        body: jsonEncode({'songs': songs}),
       );
       log("getTrackInfo REQUEST: ${response.request.toString()}");
       log("getTrackInfo RESPONSE: ${response.body}");
@@ -119,7 +120,7 @@ class RecommendationsService {
   }
 
   Future<void> addTracksToExistingPlaylist(
-      String accessToken, String playlistId, List<String> trackIds) async {
+      String accessToken, String searchQuery, String playlistId, List<String> trackIds) async {
     try {
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists/$playlistId/add'),
@@ -127,7 +128,7 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'trackIds': trackIds}),
+        body: jsonEncode({'trackIds': trackIds, 'query': searchQuery}),
       );
 
       // log('ADD TRACKS TO PLAYLIST RESPONSE: ${response.body}');

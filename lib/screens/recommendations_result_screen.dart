@@ -294,6 +294,10 @@ class _RecommendationsResultScreenState
                                           sessionStateFromProvider
                                               .value?.accessToken ??
                                           "",
+                                  searchQuery: widget.searchQuery ??
+                                      widget.tagQuery ??
+                                      widget.searchTitle ??
+                                      "",
                                   playlistId: playlist.id ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
@@ -624,6 +628,10 @@ class _RecommendationsResultScreenState
                                     final params = AddTracksParams(
                                       accessToken: widget
                                           .sessionState!.value!.accessToken,
+                                      searchQuery: widget.searchQuery ??
+                                          widget.tagQuery ??
+                                          widget.searchTitle ??
+                                          "",
                                       playlistId: newPlaylist.id ?? "",
                                       trackIds: trackIds,
                                     );
