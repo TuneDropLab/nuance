@@ -28,6 +28,7 @@ import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
+import 'package:shimmer/shimmer.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -889,7 +890,7 @@ class _RecommendationsResultScreenState
                 });
               },
             ),
-          newMethod(ref.read(sessionProvider)),
+          // newMethod(ref.read(sessionProvider)),
         ],
       ),
       body: Container(
@@ -945,23 +946,38 @@ class _RecommendationsResultScreenState
                               if (index == recommendations!.length) {
                                 return Padding(
                                   padding: const EdgeInsets.all(16.0),
-                                  child: ElevatedButton(
-                                    onPressed: _isGeneratingMore
-                                        ? null
-                                        : _generateMore,
-                                    style: ElevatedButton.styleFrom(
-                                      foregroundColor: Colors.white,
-                                      backgroundColor: Colors.blue,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 12),
-                                    ),
-                                    child: _isGeneratingMore
-                                        ? const CupertinoActivityIndicator(
-                                            radius: 12.0,
-                                            color: Colors.white,
-                                          )
-                                        : const Text("Generate More"),
-                                  ),
+                                  child: _isGeneratingMore
+                                      ? Shimmer.fromColors(
+                                          baseColor: Colors.grey[300]!,
+                                          highlightColor: Colors.grey[100]!,
+                                          child: Column(
+                                            children: List.generate(
+                                              10,
+                                              (index) => Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 8.0),
+                                                child: Container(
+                                                  height: 50.0,
+                                                  width: double.infinity,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      : GeneralButton(
+                                          hasPadding: true,
+                                          backgroundColor:
+                                              const Color(0xffD9D9D9),
+                                          text: "Generate More",
+                                          color: Colors.black,
+                                          // icon: SvgPicture.asset(
+                                          //   "assets/sendto.svg",
+                                          //   color: Colors.black,
+                                          // ),
+                                          onPressed: _generateMore,
+                                        ),
                                 );
                               }
 
@@ -978,7 +994,7 @@ class _RecommendationsResultScreenState
                                               milliseconds:
                                                   (50 * (index % 5)).toInt()),
                                           duration:
-                                              const Duration(milliseconds: 500),
+                                              const Duration(milliseconds: 300),
                                           curve: Curves.easeInOut,
                                           begin: 0.0,
                                           end: 1.0,
