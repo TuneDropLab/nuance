@@ -38,7 +38,7 @@ dependencies:
   flutter_web_auth: ^0.5.0
   animated_hint_textfield: ^1.0.0
   # dio: ^5.4.3+1
-  logger: ^2.3.0
+  # logger: ^2.3.0
   # adaptive_theme: ^3.6.0
   sentry_flutter: ^8.2.0
   animated_gradient: ^0.0.2
