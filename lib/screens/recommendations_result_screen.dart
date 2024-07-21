@@ -943,7 +943,6 @@ class _RecommendationsResultScreenState
                                 0,
                             itemBuilder: (context, index) {
                               if (index == recommendations!.length) {
-                                // The last item (button)
                                 return Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: ElevatedButton(
@@ -976,7 +975,8 @@ class _RecommendationsResultScreenState
                                       effects: [
                                         FadeEffect(
                                           delay: Duration(
-                                              milliseconds: 100 * index),
+                                              milliseconds:
+                                                  (50 * (index % 5)).toInt()),
                                           duration:
                                               const Duration(milliseconds: 500),
                                           curve: Curves.easeInOut,
