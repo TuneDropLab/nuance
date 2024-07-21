@@ -725,7 +725,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
 Padding newMethod(AsyncValue<SessionData?> sessionState) {
   return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 15),
+    padding: const EdgeInsets.only(right: 15),
     child: sessionState.when(
       data: (data) {
         if (data == null) {

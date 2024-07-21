@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_animated_icon_button/flutter_animated_icon_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/utils/constants.dart';
@@ -12,7 +10,10 @@ class MusicListTile extends ConsumerStatefulWidget {
   final Function()? leadingOnTap;
   final Function()? trailingOnTap;
   final bool isPlaying;
-  final Function(bool isPlaying)? onPlaybackStateChanged; // New callback
+  final Function(bool isPlaying)? onPlaybackStateChanged;
+  final bool isSelected;
+  final Function()? onTap;
+  final Function()? onDismissed;
 
   const MusicListTile({
     Key? key,
@@ -21,6 +22,9 @@ class MusicListTile extends ConsumerStatefulWidget {
     this.trailingOnTap,
     required this.isPlaying,
     this.onPlaybackStateChanged,
+    required this.isSelected,
+    this.onTap,
+    this.onDismissed,
   }) : super(key: key);
 
   @override
@@ -29,97 +33,118 @@ class MusicListTile extends ConsumerStatefulWidget {
 
 class _MusicListTileState extends ConsumerState<MusicListTile> {
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: GestureDetector(
-        onTap: widget.leadingOnTap,
-        child: CachedNetworkImage(
-          height: 48,
-          width: 48,
-          imageUrl: widget.recommendation.artworkUrl ?? "",
-          imageBuilder: (context, imageProvider) {
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                image: DecorationImage(
-                  image: imageProvider,
-                ),
+    return Dismissible(
+      key: Key(widget.recommendation.id ?? ''),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) => widget.onDismissed?.call(),
+      background: Container(
+        color: Colors.red,
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      child: ListTile(
+        leading: GestureDetector(
+          onTap: widget.leadingOnTap,
+          child: Stack(
+            children: [
+              CachedNetworkImage(
+                height: 48,
+                width: 48,
+                imageUrl: widget.recommendation.artworkUrl ?? "",
+                imageBuilder: (context, imageProvider) {
+                  return Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      image: DecorationImage(
+                        image: imageProvider,
+                      ),
+                    ),
+                  );
+                },
+                placeholder: (context, url) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: const CupertinoActivityIndicator(),
+                  );
+                },
+                errorWidget: (context, url, error) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: const CupertinoActivityIndicator(),
+                  );
+                },
               ),
-            );
-          },
-          placeholder: (context, url) {
-            return Container(
-              alignment: Alignment.center,
-              child: const CupertinoActivityIndicator(),
-            );
-          },
-          errorWidget: (context, url, error) {
-            return Container(
-              alignment: Alignment.center,
-              child: const CupertinoActivityIndicator(),
-            );
-          },
-        ),
-      ),
-      title: Text(
-        (widget.recommendation.title?.length ?? 0) >= 17
-            ? "${widget.recommendation.title?.substring(0, 17)}..."
-            : widget.recommendation.title ?? "",
-        maxLines: 1,
-        style: const TextStyle(
-          color: Colors.white,
-        ),
-      ),
-      subtitle: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: (widget.recommendation.artist?.length ?? 0) >= 24
-                      ? "${widget.recommendation.artist!.substring(0, 24)}..."
-                      : widget.recommendation.artist ?? "",
-                  style: subtitleTextStyle,
-                ),
-                TextSpan(
-                  text: (widget.recommendation.popularity ?? 0) >= 70
-                      ? " 🔥"
-                      : "",
-                  style: const TextStyle(
-                    color: Color(0xffFF581A),
+              if (widget.isSelected)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Icon(Icons.check, color: Colors.white),
                   ),
                 ),
-                if (widget.recommendation.popularity! >= 70)
+            ],
+          ),
+        ),
+        title: Text(
+          (widget.recommendation.title?.length ?? 0) >= 17
+              ? "${widget.recommendation.title?.substring(0, 17)}..."
+              : widget.recommendation.title ?? "",
+          maxLines: 1,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        subtitle: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
                   TextSpan(
-                    text: "${widget.recommendation.popularity}%",
+                    text: (widget.recommendation.artist?.length ?? 0) >= 24
+                        ? "${widget.recommendation.artist!.substring(0, 24)}..."
+                        : widget.recommendation.artist ?? "",
+                    style: subtitleTextStyle,
+                  ),
+                  TextSpan(
+                    text: (widget.recommendation.popularity ?? 0) >= 70
+                        ? " 🔥"
+                        : "",
                     style: const TextStyle(
                       color: Color(0xffFF581A),
                     ),
                   ),
-              ],
+                  if (widget.recommendation.popularity! >= 70)
+                    TextSpan(
+                      text: "${widget.recommendation.popularity}%",
+                      style: const TextStyle(
+                        color: Color(0xffFF581A),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-      trailing: CircleAvatar(
-        backgroundColor: const Color(0xff191919),
-        child: IconButton(
-          icon: Icon(
-            widget.isPlaying ? Icons.pause : Icons.play_arrow_rounded,
-            color: Colors.white,
-          ),
-          onPressed: widget.recommendation.previewUrl != null
-              ? () => widget.trailingOnTap?.call()
-              : null,
+          ],
         ),
+        trailing: CircleAvatar(
+          backgroundColor: const Color(0xff191919),
+          child: IconButton(
+            icon: Icon(
+              widget.isPlaying ? Icons.pause : Icons.play_arrow_rounded,
+              color: Colors.white,
+            ),
+            onPressed: widget.recommendation.previewUrl != null
+                ? () => widget.trailingOnTap?.call()
+                : null,
+          ),
+        ),
+        onTap: widget.onTap,
       ),
     );
   }
