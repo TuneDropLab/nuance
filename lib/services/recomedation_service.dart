@@ -57,6 +57,49 @@ class RecommendationsService {
     }
   }
 
+  Future<List<SongModel>> getMoreRecommendations(
+      String accessToken, String userMessage, List<SongModel> currentSongList) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/gemini/more-recommendations'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'userMessage': userMessage, 'currentSongs': currentSongList }),
+      );
+      log("REQUEST: ${response.request.toString()}");
+      log("RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        log("RESPONSE DATA: ${response.statusCode}");
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        log("RESPONSE DATA: $data");
+
+        final List<dynamic> recommendedSongsJson =
+            data['recommendations']['songs'];
+        log("gemini songsJson DATA: $recommendedSongsJson");
+        final recommendations = recommendedSongsJson
+            .map((item) => RecommendationModel.fromJson(item))
+            .toList();
+        log("recommendations DATA: $recommendations");
+
+        // Get track information for the recommendations
+        final trackInfo = await getTrackInfo(accessToken, recommendations);
+        log("trackInfo DATA: $trackInfo");
+
+        return trackInfo;
+      } else {
+        log('Failed to load recommendations: ${response.body}');
+        throw Exception('Failed to load recommendations');
+      }
+    } catch (e) {
+      log('Exception in getRecommendations: $e');
+      rethrow;
+    }
+  }
+
   Future<List<SongModel>> getTrackInfo(
       String accessToken, List<RecommendationModel> songs) async {
     try {

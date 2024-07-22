@@ -208,9 +208,10 @@ class _RecommendationsResultScreenState
       List<SongModel>? newRecommendations;
 
       if (widget.searchQuery != null || widget.tagQuery != null) {
-        newRecommendations = await service.getRecommendations(
+        newRecommendations = await service.getMoreRecommendations(
           accessToken,
           widget.searchQuery ?? widget.tagQuery ?? "",
+          recommendations ?? [],
         );
       } else if (widget.playlistId != null) {
         newRecommendations = await service.fetchPlaylistTracks(
