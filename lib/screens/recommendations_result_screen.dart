@@ -919,145 +919,148 @@ class _RecommendationsResultScreenState
       bottomNavigationBar: Container(
         color: Colors.black,
         height: widget.tagQuery != null ? 140 : 80,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            if (widget.tagQuery != null)
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 25.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              if (widget.tagQuery != null)
+                if (!isLoading && sessionState.value?.accessToken != null)
+                  Animate(
+                    child: Row(
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Get.back();
+                          },
+                          icon: SvgPicture.asset(
+                            "assets/x.svg",
+                          ),
+                        ),
+                        GeneralButton(
+                          text: widget.searchQuery ?? widget.tagQuery ?? "",
+                          backgroundColor: Colors.white,
+                          icon: SvgPicture.asset(
+                            "assets/icon4star.svg",
+                            color: const Color(0xffFFBB00),
+                          ),
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+              if (widget.tagQuery != null)
+                if (!isLoading && sessionState.value?.accessToken != null)
+                  const CustomDivider().marginOnly(bottom: 5),
               if (!isLoading && sessionState.value?.accessToken != null)
-                Animate(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Row(
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          Get.back();
-                        },
-                        icon: SvgPicture.asset(
-                          "assets/x.svg",
+                      // if (!isLoading)
+                      Expanded(
+                        child: GeneralButton(
+                          hasPadding: true,
+                          backgroundColor: isLoading
+                              ? const Color.fromARGB(255, 166, 166, 166)
+                              : const Color(0xffD9D9D9),
+                          text: "Share",
+                          color: isLoading
+                              ? const Color.fromARGB(255, 112, 112, 112)
+                              : Colors.black,
+                          icon: SvgPicture.asset(
+                            "assets/sendto.svg",
+                            color: isLoading
+                                ? const Color.fromARGB(
+                                    255,
+                                    112,
+                                    112,
+                                    112,
+                                  )
+                                : Colors.black,
+                          ),
+                          // backgroundColor: const Color(0xffD9D9D9),
+                          onPressed: () {
+                            // print(
+                            //     "Share details: ${widget.searchQuery}");
+                            // print(
+                            //     "Share details: ${widget.songs ?? recommendations}");
+                            isLoading
+                                ? null
+                                : RecommendationsService().shareRecommendation(
+                                    context,
+                                    widget.searchQuery ??
+                                        widget.tagQuery ??
+                                        widget.searchTitle ??
+                                        "",
+                                    recommendations ?? widget.songs ?? []);
+                          },
                         ),
                       ),
-                      GeneralButton(
-                        text: widget.searchQuery ?? widget.tagQuery ?? "",
-                        backgroundColor: Colors.white,
-                        icon: SvgPicture.asset(
-                          "assets/icon4star.svg",
-                          color: const Color(0xffFFBB00),
+                      // if (!isLoading)
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      // if (!isLoading)
+                      Expanded(
+                        child: GeneralButton(
+                          backgroundColor: const Color(0xffFDAD3C),
+                          hasPadding: true,
+                          color: Colors.black,
+                          icon: SvgPicture.asset(
+                            "assets/bookmark.svg",
+                            color: isLoading
+                                ? const Color.fromARGB(
+                                    255,
+                                    112,
+                                    112,
+                                    112,
+                                  )
+                                : Colors.black,
+                          ),
+                          onPressed: () {
+                            isLoading
+                                ? null
+                                // : recommendations?.isEmpty ?? true
+                                //     ? null
+                                : widget.playlistId != null
+                                    ? _followPlaylist(widget.playlistId!)
+                                    : _showPlaylists(
+                                        context,
+                                        ref,
+                                        widget.songs ?? recommendations ?? [],
+                                      );
+                          },
                         ),
-                        onPressed: () {},
                       ),
                     ],
                   ),
                 ),
-            if (widget.tagQuery != null)
-              if (!isLoading && sessionState.value?.accessToken != null)
-                const CustomDivider().marginOnly(bottom: 5),
-            if (!isLoading && sessionState.value?.accessToken != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    // if (!isLoading)
-                    Expanded(
-                      child: GeneralButton(
-                        hasPadding: true,
-                        backgroundColor: isLoading
-                            ? const Color.fromARGB(255, 166, 166, 166)
-                            : const Color(0xffD9D9D9),
-                        text: "Share",
-                        color: isLoading
-                            ? const Color.fromARGB(255, 112, 112, 112)
-                            : Colors.black,
-                        icon: SvgPicture.asset(
-                          "assets/sendto.svg",
-                          color: isLoading
-                              ? const Color.fromARGB(
-                                  255,
-                                  112,
-                                  112,
-                                  112,
-                                )
-                              : Colors.black,
+              if (sessionState.value?.accessToken == null)
+                Container(
+                  width: Get.width,
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  child: CupertinoButton.filled(
+                    pressedOpacity: 0.3,
+                    onPressed: () {
+                      _authenticate();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          'assets/icon4star.svg',
+                          width: 10,
+                          height: 10,
                         ),
-                        // backgroundColor: const Color(0xffD9D9D9),
-                        onPressed: () {
-                          // print(
-                          //     "Share details: ${widget.searchQuery}");
-                          // print(
-                          //     "Share details: ${widget.songs ?? recommendations}");
-                          isLoading
-                              ? null
-                              : RecommendationsService().shareRecommendation(
-                                  context,
-                                  widget.searchQuery ??
-                                      widget.tagQuery ??
-                                      widget.searchTitle ??
-                                      "",
-                                  recommendations ?? widget.songs ?? []);
-                        },
-                      ),
+                        const SizedBox(width: 8),
+                        const Text('Sign in with Spotify'),
+                      ],
                     ),
-                    // if (!isLoading)
-                    const SizedBox(
-                      width: 5,
-                    ),
-                    // if (!isLoading)
-                    Expanded(
-                      child: GeneralButton(
-                        backgroundColor: const Color(0xffFDAD3C),
-                        hasPadding: true,
-                        color: Colors.black,
-                        icon: SvgPicture.asset(
-                          "assets/bookmark.svg",
-                          color: isLoading
-                              ? const Color.fromARGB(
-                                  255,
-                                  112,
-                                  112,
-                                  112,
-                                )
-                              : Colors.black,
-                        ),
-                        onPressed: () {
-                          isLoading
-                              ? null
-                              // : recommendations?.isEmpty ?? true
-                              //     ? null
-                              : widget.playlistId != null
-                                  ? _followPlaylist(widget.playlistId!)
-                                  : _showPlaylists(
-                                      context,
-                                      ref,
-                                      widget.songs ?? recommendations ?? [],
-                                    );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (sessionState.value?.accessToken == null)
-              Container(
-                width: Get.width,
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                child: CupertinoButton.filled(
-                  pressedOpacity: 0.3,
-                  onPressed: () {
-                    _authenticate();
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SvgPicture.asset(
-                        'assets/icon4star.svg',
-                        width: 10,
-                        height: 10,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text('Sign in with Spotify'),
-                    ],
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
 
