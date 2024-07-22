@@ -64,6 +64,7 @@ class _RecommendationsResultScreenState
   bool isLoading = true;
   List<String> errorList = [];
   List<SongModel>? recommendations = [];
+  String? generatedImage;
 
   @override
   void didChangeDependencies() {
@@ -121,6 +122,12 @@ class _RecommendationsResultScreenState
       final providerToken = widget.sessionState?.value?.providerToken ??
           sessionStateFromProvider.value?.providerToken ??
           "";
+
+      generatedImage = await RecommendationsService().getGeneratedImage(
+          accessToken,
+          widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
+
+      log("CACHED GENERATED IMAGE generatedImage: $generatedImage");
 
       final result = widget.searchQuery != null || widget.tagQuery != null
           ? await service.getRecommendations(
@@ -791,6 +798,8 @@ class _RecommendationsResultScreenState
     return uniqueArtists.length;
   }
 
+  final bool _stretch = true;
+
   @override
   Widget build(BuildContext context) {
     final sessionData = ref.read(sessionProvider.notifier);
@@ -812,112 +821,501 @@ class _RecommendationsResultScreenState
 
     return Scaffold(
       // key: globalKey,
-      appBar: AppBar(
-        leading: _isSelectionMode
-            ? IconButton(
-                icon: const Icon(
-                  CupertinoIcons.xmark,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _selectedItems.clear();
-                    _isSelectionMode = false;
-                  });
-                },
-              )
-            : GestureDetector(
-                onTap: () {
-                  Get.back();
-                },
-                child: CircleAvatar(
-                  backgroundColor: Colors.transparent,
-                  radius: 10.0,
-                  child: Image.asset(
-                    "assets/backbtn.png",
-                    height: 40.0,
-                    width: 40.0,
-                    fit: BoxFit.fill,
+//       appBar: AppBar(
+//         leading: _isSelectionMode
+//             ? IconButton(
+//                 icon: const Icon(
+//                   CupertinoIcons.xmark,
+//                   color: Colors.white,
+//                 ),
+//                 onPressed: () {
+//                   setState(() {
+//                     _selectedItems.clear();
+//                     _isSelectionMode = false;
+//                   });
+//                 },
+//               )
+//             : GestureDetector(
+//                 onTap: () {
+//                   Get.back();
+//                 },
+//                 child: CircleAvatar(
+//                   backgroundColor: Colors.transparent,
+//                   radius: 10.0,
+//                   child: Image.asset(
+//                     "assets/backbtn.png",
+//                     height: 40.0,
+//                     width: 40.0,
+//                     fit: BoxFit.fill,
+//                   ),
+//                 ),
+//               ),
+//         backgroundColor: Colors.black,
+//         title: _isSelectionMode
+//             ? Text(
+//                 "${_selectedItems.length} selected",
+//                 style: headingTextStyle,
+//               )
+//             : Column(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Tooltip(
+//                     message: widget.searchQuery ??
+//                         widget.tagQuery ??
+//                         widget.searchTitle ??
+//                         "",
+//                     child: Text(
+//                       capitalizeFirst(widget.searchQuery ??
+//                           widget.tagQuery ??
+//                           widget.searchTitle ??
+//                           ""),
+//                       style: headingTextStyle,
+//                     ),
+//                   ),
+//                   isLoading
+//                       ? const SizedBox.shrink()
+//                       : errorList.isNotEmpty
+//                           ? Text(
+//                               'Error  loading  details',
+//                               style: subtitleTextStyle,
+//                             )
+//                           : Text(
+//                               '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
+//                               style: subtitleTextStyle,
+//                             ),
+//                 ],
+//               ),
+//         actions: [
+//           if (_isSelectionMode)
+//             IconButton(
+//               icon: const Icon(
+//                 CupertinoIcons.delete,
+//                 size: 18,
+//                 color: Colors.white,
+//               ),
+//               onPressed: _deleteSelected,
+//             )
+//           else
+//             IconButton(
+//               icon: const Icon(
+//                 CupertinoIcons.delete,
+//                 size: 18,
+//               ),
+//               onPressed: () {
+//                 setState(() {
+//                   _isSelectionMode = true;
+//                 });
+//               },
+//             ),
+// //TODO: REMOVE AND USE IMAGE AS PARALLAX BG FOR APPBAR TESTING IMAGE
+//           CachedNetworkImage(
+//             imageUrl: generatedImage ?? "",
+//             height: 50,
+//             width: 50,
+//           )
+//           // newMethod(ref.read(sessionProvider)),
+//         ],
+//       ),
+      bottomNavigationBar: Container(
+        color: Colors.black,
+        height: widget.tagQuery != null ? 140 : 80,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            if (widget.tagQuery != null)
+              if (!isLoading && sessionState.value?.accessToken != null)
+                Animate(
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Get.back();
+                        },
+                        icon: SvgPicture.asset(
+                          "assets/x.svg",
+                        ),
+                      ),
+                      GeneralButton(
+                        text: widget.searchQuery ?? widget.tagQuery ?? "",
+                        backgroundColor: Colors.white,
+                        icon: SvgPicture.asset(
+                          "assets/icon4star.svg",
+                          color: const Color(0xffFFBB00),
+                        ),
+                        onPressed: () {},
+                      ),
+                    ],
                   ),
                 ),
-              ),
-        backgroundColor: Colors.black,
-        title: _isSelectionMode
-            ? Text(
-                "${_selectedItems.length} selected",
-                style: headingTextStyle,
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Tooltip(
-                    message: widget.searchQuery ??
-                        widget.tagQuery ??
-                        widget.searchTitle ??
-                        "",
-                    child: Text(
-                      capitalizeFirst(widget.searchQuery ??
-                          widget.tagQuery ??
-                          widget.searchTitle ??
-                          ""),
-                      style: headingTextStyle,
+            if (widget.tagQuery != null)
+              if (!isLoading && sessionState.value?.accessToken != null)
+                const CustomDivider().marginOnly(bottom: 5),
+            if (!isLoading && sessionState.value?.accessToken != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                child: Row(
+                  children: [
+                    // if (!isLoading)
+                    Expanded(
+                      child: GeneralButton(
+                        hasPadding: true,
+                        backgroundColor: isLoading
+                            ? const Color.fromARGB(255, 166, 166, 166)
+                            : const Color(0xffD9D9D9),
+                        text: "Share",
+                        color: isLoading
+                            ? const Color.fromARGB(255, 112, 112, 112)
+                            : Colors.black,
+                        icon: SvgPicture.asset(
+                          "assets/sendto.svg",
+                          color: isLoading
+                              ? const Color.fromARGB(
+                                  255,
+                                  112,
+                                  112,
+                                  112,
+                                )
+                              : Colors.black,
+                        ),
+                        // backgroundColor: const Color(0xffD9D9D9),
+                        onPressed: () {
+                          // print(
+                          //     "Share details: ${widget.searchQuery}");
+                          // print(
+                          //     "Share details: ${widget.songs ?? recommendations}");
+                          isLoading
+                              ? null
+                              : RecommendationsService().shareRecommendation(
+                                  context,
+                                  widget.searchQuery ??
+                                      widget.tagQuery ??
+                                      widget.searchTitle ??
+                                      "",
+                                  recommendations ?? widget.songs ?? []);
+                        },
+                      ),
                     ),
+                    // if (!isLoading)
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    // if (!isLoading)
+                    Expanded(
+                      child: GeneralButton(
+                        backgroundColor: const Color(0xffFDAD3C),
+                        hasPadding: true,
+                        color: Colors.black,
+                        icon: SvgPicture.asset(
+                          "assets/bookmark.svg",
+                          color: isLoading
+                              ? const Color.fromARGB(
+                                  255,
+                                  112,
+                                  112,
+                                  112,
+                                )
+                              : Colors.black,
+                        ),
+                        onPressed: () {
+                          isLoading
+                              ? null
+                              // : recommendations?.isEmpty ?? true
+                              //     ? null
+                              : widget.playlistId != null
+                                  ? _followPlaylist(widget.playlistId!)
+                                  : _showPlaylists(
+                                      context,
+                                      ref,
+                                      widget.songs ?? recommendations ?? [],
+                                    );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (sessionState.value?.accessToken == null)
+              Container(
+                width: Get.width,
+                margin: const EdgeInsets.symmetric(horizontal: 15),
+                child: CupertinoButton.filled(
+                  pressedOpacity: 0.3,
+                  onPressed: () {
+                    _authenticate();
+                  },
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icon4star.svg',
+                        width: 10,
+                        height: 10,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text('Sign in with Spotify'),
+                    ],
                   ),
-                  isLoading
-                      ? const SizedBox.shrink()
-                      : errorList.isNotEmpty
-                          ? Text(
-                              'Error  loading  details',
-                              style: subtitleTextStyle,
-                            )
-                          : Text(
-                              '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
-                              style: subtitleTextStyle,
-                            ),
-                ],
+                ),
               ),
-        actions: [
-          if (_isSelectionMode)
-            IconButton(
-              icon: const Icon(
-                CupertinoIcons.delete,
-                size: 18,
-                color: Colors.white,
-              ),
-              onPressed: _deleteSelected,
-            )
-          else
-            IconButton(
-              icon: const Icon(
-                CupertinoIcons.delete,
-                size: 18,
-              ),
-              onPressed: () {
-                setState(() {
-                  _isSelectionMode = true;
-                });
-              },
-            ),
-          // newMethod(ref.read(sessionProvider)),
-        ],
+          ],
+        ),
       ),
+
       body: Container(
         color: Colors.black,
-        child: SafeArea(
-          child: Stack(
-            children: [
-              Container(
-                color: Colors.black,
-                child: isLoading
-                    ? Center(
+        child: CustomScrollView(
+          slivers: <Widget>[
+            if (!isLoading)
+              SliverAppBar(
+                stretch: true,
+                // snap: true,
+                automaticallyImplyLeading: false,
+                centerTitle: false,
+                backgroundColor: Colors.black,
+                leading: _isSelectionMode
+                    ? IconButton(
+                        icon: const Icon(
+                          CupertinoIcons.xmark,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _selectedItems.clear();
+                            _isSelectionMode = false;
+                          });
+                        },
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 10.0,
+                          child: Image.asset(
+                            "assets/backbtn.png",
+                            height: 40.0,
+                            width: 40.0,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                actions: [
+                  if (_isSelectionMode)
+                    IconButton(
+                      icon: const Icon(
+                        CupertinoIcons.delete,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      onPressed: _deleteSelected,
+                    )
+                  else
+                    IconButton(
+                      icon: const Icon(
+                        CupertinoIcons.delete,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isSelectionMode = true;
+                        });
+                      },
+                    ),
+                ],
+                expandedHeight: 280.0,
+                floating: true,
+                pinned: true,
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final double shrinkOffset =
+                        constraints.maxHeight - kToolbarHeight;
+                    const double maxExtent =
+                        280.0; // Should match expandedHeight
+                    const double fadeStart = maxExtent - kToolbarHeight * 2;
+                    const double fadeEnd = maxExtent - kToolbarHeight;
+
+                    // Calculate the opacity of the title based on the shrinkOffset
+                    // final double titleOpacity = 1.0 -
+                    //     ((shrinkOffset - fadeStart) / (fadeStart - fadeEnd))
+                    //         .clamp(0.0, 1.0);
+
+                    // Calculate the shift value for title alignment
+                    final double titleAlignmentShift = 60.0 -
+                        (41.0 *
+                            ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
+                                .clamp(0.0, 1.0));
+
+                    // Calculate the opacity for the app bar background color
+                    final double appBarOpacity =
+                        1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
+
+                    return Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Container(
+                          color: Colors.black.withOpacity(0.5),
+                          child: CachedNetworkImage(
+                            imageUrl: generatedImage ?? "",
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) {
+                              return const SizedBox.shrink();
+                            },
+                            placeholder: (context, url) {
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                        Container(
+                          color: Colors.black.withOpacity(
+                              appBarOpacity), // This ensures it becomes fully black.
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.5),
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.5),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0.0 +
+                              ((shrinkOffset / maxExtent) * maxExtent)
+                                  .clamp(0.0, maxExtent - 6),
+                          left: titleAlignmentShift,
+                          child: _isSelectionMode
+                              ? Text(
+                                  "${_selectedItems.length} selected",
+                                  style: headingTextStyle,
+                                )
+                              : Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Tooltip(
+                                      message: widget.searchQuery ??
+                                          widget.tagQuery ??
+                                          widget.searchTitle ??
+                                          "",
+                                      child: Text(
+                                        capitalizeFirst(widget.searchQuery ??
+                                            widget.tagQuery ??
+                                            widget.searchTitle ??
+                                            ""),
+                                        style: headingTextStyle,
+                                      ),
+                                    ),
+                                    isLoading
+                                        ? const SizedBox.shrink()
+                                        : errorList.isNotEmpty
+                                            ? Text(
+                                                'Error loading details',
+                                                style:
+                                                    subtitleTextStyle.copyWith(
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : Text(
+                                                '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                                style:
+                                                    subtitleTextStyle.copyWith(
+                                                  color: Colors.grey.shade300,
+                                                ),
+                                              ),
+                                  ],
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            // appbar to show when loading is true
+            if (isLoading)
+              SliverAppBar(
+                backgroundColor: Colors.black,
+                centerTitle: false,
+                leading: GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    radius: 10.0,
+                    child: Image.asset(
+                      "assets/backbtn.png",
+                      height: 40.0,
+                      width: 40.0,
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+                title: Container(
+                  // color: Colors.black,
+                  // top: 0.0 +
+                  //     ((shrinkOffset / maxExtent) * maxExtent)
+                  //         .clamp(0.0, 280.0),
+                  // left: titleAlignmentShift,
+                  child: _isSelectionMode
+                      ? Text(
+                          "${_selectedItems.length} selected",
+                          style: headingTextStyle,
+                        )
+                      : Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Tooltip(
+                              message: widget.searchQuery ??
+                                  widget.tagQuery ??
+                                  widget.searchTitle ??
+                                  "",
+                              child: Text(
+                                capitalizeFirst(widget.searchQuery ??
+                                    widget.tagQuery ??
+                                    widget.searchTitle ??
+                                    ""),
+                                style: headingTextStyle,
+                              ),
+                            ),
+                            isLoading
+                                ? const SizedBox.shrink()
+                                : errorList.isNotEmpty
+                                    ? Text(
+                                        'Error loading details',
+                                        style: subtitleTextStyle,
+                                      )
+                                    : Text(
+                                        '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                        style: subtitleTextStyle,
+                                      ),
+                          ],
+                        ),
+                ),
+              ),
+            SliverPadding(
+              padding: const EdgeInsets.only(
+                top: 32,
+                bottom: 100,
+              ),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    if (isLoading) {
+                      return Container(
+                        height: Get.height * 0.75,
+                        alignment: Alignment.bottomCenter,
                         child: SpinningSvg(
-                          svgWidget:
-                              // SvgPicture.asset('assets/images/your_svg.svg'),
-                              Image.asset(
+                          svgWidget: Image.asset(
                             'assets/hdlogo.png',
                             height: 40,
                           ),
-                          // size: 10.0,
                           textList: [
                             widget.searchQuery != null
                                 ? 'Searching for songs...'
@@ -931,298 +1329,411 @@ class _RecommendationsResultScreenState
                             'Almost done...',
                           ],
                         ),
-                      )
-                    : errorList.isNotEmpty
-                        ? const Center(
-                            child: Text(
-                              'Error loading playlist songs',
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: EdgeInsets.only(
-                              top: 24,
-                              bottom: widget.tagQuery != null ? 190 : 120,
-                            ),
-                            itemCount: (recommendations?.length ??
-                                        widget.songs?.length)! +
-                                    1 ??
-                                0,
-                            itemBuilder: (context, index) {
-                              if (index == recommendations!.length) {
-                                return Padding(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: _isGeneratingMore
-                                      ? Shimmer.fromColors(
-                                          baseColor: Colors.grey[300]!,
-                                          highlightColor: Colors.grey[100]!,
-                                          child: Column(
-                                            children: List.generate(
-                                              10,
-                                              (index) => Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 8.0),
-                                                child: Container(
-                                                  height: 50.0,
-                                                  width: double.infinity,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : GeneralButton(
-                                          hasPadding: true,
-                                          backgroundColor:
-                                              const Color(0xffD9D9D9),
-                                          text: "Generate More",
-                                          color: Colors.black,
-                                          // icon: SvgPicture.asset(
-                                          //   "assets/sendto.svg",
-                                          //   color: Colors.black,
-                                          // ),
-                                          onPressed: _generateMore,
-                                        ),
-                                );
-                              }
+                      );
+                    }
 
-                              final song = recommendations?[index] ??
-                                  widget.songs?[index];
+                    if (errorList.isNotEmpty) {
+                      return const Center(
+                        child: Text(
+                          'Error loading playlist songs',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    }
 
-                              return widget.playlistId != null ||
-                                      widget.searchQuery != null ||
-                                      widget.tagQuery != null
-                                  ? Animate(
-                                      effects: [
-                                        FadeEffect(
-                                          delay: Duration(
-                                              milliseconds:
-                                                  (50 * (index % 5)).toInt()),
-                                          duration:
-                                              const Duration(milliseconds: 300),
-                                          curve: Curves.easeInOut,
-                                          begin: 0.0,
-                                          end: 1.0,
-                                        ),
-                                      ],
-                                      child: MusicListTile(
-                                        isPlaying: _isPlaying &&
-                                            _currentSong?.id == song?.id,
-                                        trailingOnTap: () => _togglePlay(song),
-                                        recommendation: song!,
-                                        onPlaybackStateChanged: (isPlaying) {
-                                          setState(() {
-                                            _isPlaying = isPlaying;
-                                          });
-                                        },
-                                        isSelected:
-                                            _selectedItems.contains(song.id),
-                                        onTap: () {
-                                          if (_isSelectionMode) {
-                                            _toggleSelection(song.id ?? '');
-                                          } else {
-                                            _togglePlay(song);
-                                          }
-                                        },
-                                        onDismissed: () {
-                                          setState(() {
-                                            recommendations?.removeWhere(
-                                                (s) => s.id == song.id);
-                                          });
-                                        },
-                                      ),
-                                    )
-                                  : MusicListTile(
-                                      isPlaying: _isPlaying &&
-                                          _currentSong?.id == song?.id,
-                                      trailingOnTap: () => _togglePlay(song),
-                                      recommendation: song!,
-                                      onPlaybackStateChanged: (isPlaying) {
-                                        setState(() {
-                                          _isPlaying = isPlaying;
-                                        });
-                                      },
-                                      isSelected:
-                                          _selectedItems.contains(song.id),
-                                      onTap: () {
-                                        if (_isSelectionMode) {
-                                          _toggleSelection(song.id ?? '');
-                                        } else {
-                                          _togglePlay(song);
-                                        }
-                                      },
-                                      onDismissed: () {
-                                        setState(() {
-                                          recommendations?.removeWhere(
-                                              (s) => s.id == song.id);
-                                        });
-                                      },
-                                    );
-                            },
-                          ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  color: Colors.black,
-                  height: widget.tagQuery != null ? 140 : 80,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      if (widget.tagQuery != null)
-                        if (!isLoading &&
-                            sessionState.value?.accessToken != null)
-                          Animate(
-                            child: Row(
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    Get.back();
-                                  },
-                                  icon: SvgPicture.asset(
-                                    "assets/x.svg",
-                                  ),
+                    if (index ==
+                        (recommendations?.length ?? widget.songs?.length)) {
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: _isGeneratingMore
+                            ? const SizedBox(
+                                height: 50,
+                                child: CupertinoActivityIndicator(
+                                  color: Colors.white,
+                                  radius: 10,
                                 ),
-                                GeneralButton(
-                                  text: widget.searchQuery ??
-                                      widget.tagQuery ??
-                                      "",
-                                  backgroundColor: Colors.white,
-                                  icon: SvgPicture.asset(
-                                    "assets/icon4star.svg",
-                                    color: const Color(0xffFFBB00),
+                              )
+                            : Center(
+                                child: SizedBox(
+                                  width: 190,
+                                  child: GeneralButton(
+                                    hasPadding: true,
+                                    backgroundColor: const Color(0xffD9D9D9),
+                                    text: "Generate More",
+                                    color: Colors.black,
+                                    onPressed: _generateMore,
                                   ),
-                                  onPressed: () {},
-                                ),
-                              ],
-                            ),
-                          ),
-                      if (widget.tagQuery != null)
-                        if (!isLoading &&
-                            sessionState.value?.accessToken != null)
-                          const CustomDivider().marginOnly(bottom: 5),
-                      if (!isLoading && sessionState.value?.accessToken != null)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 15),
-                          child: Row(
-                            children: [
-                              // if (!isLoading)
-                              Expanded(
-                                child: GeneralButton(
-                                  hasPadding: true,
-                                  backgroundColor: isLoading
-                                      ? const Color.fromARGB(255, 166, 166, 166)
-                                      : const Color(0xffD9D9D9),
-                                  text: "Share",
-                                  color: isLoading
-                                      ? const Color.fromARGB(255, 112, 112, 112)
-                                      : Colors.black,
-                                  icon: SvgPicture.asset(
-                                    "assets/sendto.svg",
-                                    color: isLoading
-                                        ? const Color.fromARGB(
-                                            255,
-                                            112,
-                                            112,
-                                            112,
-                                          )
-                                        : Colors.black,
-                                  ),
-                                  // backgroundColor: const Color(0xffD9D9D9),
-                                  onPressed: () {
-                                    // print(
-                                    //     "Share details: ${widget.searchQuery}");
-                                    // print(
-                                    //     "Share details: ${widget.songs ?? recommendations}");
-                                    isLoading
-                                        ? null
-                                        : RecommendationsService()
-                                            .shareRecommendation(
-                                                context,
-                                                widget.searchQuery ??
-                                                    widget.tagQuery ??
-                                                    widget.searchTitle ??
-                                                    "",
-                                                recommendations ??
-                                                    widget.songs ??
-                                                    []);
-                                  },
                                 ),
                               ),
-                              // if (!isLoading)
-                              const SizedBox(
-                                width: 5,
-                              ),
-                              // if (!isLoading)
-                              Expanded(
-                                child: GeneralButton(
-                                  backgroundColor: const Color(0xffFDAD3C),
-                                  hasPadding: true,
-                                  color: Colors.black,
-                                  icon: SvgPicture.asset(
-                                    "assets/bookmark.svg",
-                                    color: isLoading
-                                        ? const Color.fromARGB(
-                                            255,
-                                            112,
-                                            112,
-                                            112,
-                                          )
-                                        : Colors.black,
-                                  ),
-                                  onPressed: () {
-                                    isLoading
-                                        ? null
-                                        // : recommendations?.isEmpty ?? true
-                                        //     ? null
-                                        : widget.playlistId != null
-                                            ? _followPlaylist(
-                                                widget.playlistId!)
-                                            : _showPlaylists(
-                                                context,
-                                                ref,
-                                                widget.songs ??
-                                                    recommendations ??
-                                                    [],
-                                              );
-                                  },
-                                ),
+                      );
+                    }
+
+                    final song =
+                        recommendations?[index] ?? widget.songs![index];
+
+                    return widget.playlistId != null ||
+                            widget.searchQuery != null ||
+                            widget.tagQuery != null
+                        ? Animate(
+                            effects: [
+                              FadeEffect(
+                                delay: Duration(
+                                    milliseconds: (50 * (index % 5)).toInt()),
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                                begin: 0.0,
+                                end: 1.0,
                               ),
                             ],
-                          ),
-                        ),
-                      if (sessionState.value?.accessToken == null)
-                        Container(
-                          width: Get.width,
-                          margin: const EdgeInsets.symmetric(horizontal: 15),
-                          child: CupertinoButton.filled(
-                            pressedOpacity: 0.3,
-                            onPressed: () {
-                              _authenticate();
-                            },
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icon4star.svg',
-                                  width: 10,
-                                  height: 10,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text('Sign in with Spotify'),
-                              ],
+                            child: MusicListTile(
+                              isPlaying:
+                                  _isPlaying && _currentSong?.id == song.id,
+                              trailingOnTap: () => _togglePlay(song),
+                              recommendation: song,
+                              onPlaybackStateChanged: (isPlaying) {
+                                setState(() {
+                                  _isPlaying = isPlaying;
+                                });
+                              },
+                              isSelected: _selectedItems.contains(song.id),
+                              onTap: () {
+                                if (_isSelectionMode) {
+                                  _toggleSelection(song.id ?? '');
+                                } else {
+                                  _togglePlay(song);
+                                }
+                              },
+                              onDismissed: () {
+                                setState(() {
+                                  recommendations
+                                      ?.removeWhere((s) => s.id == song.id);
+                                });
+                              },
                             ),
-                          ),
-                        ),
-                    ],
-                  ),
+                          )
+                        : MusicListTile(
+                            isPlaying:
+                                _isPlaying && _currentSong?.id == song.id,
+                            trailingOnTap: () => _togglePlay(song),
+                            recommendation: song,
+                            onPlaybackStateChanged: (isPlaying) {
+                              setState(() {
+                                _isPlaying = isPlaying;
+                              });
+                            },
+                            isSelected: _selectedItems.contains(song.id),
+                            onTap: () {
+                              if (_isSelectionMode) {
+                                _toggleSelection(song.id ?? '');
+                              } else {
+                                _togglePlay(song);
+                              }
+                            },
+                            onDismissed: () {
+                              setState(() {
+                                recommendations
+                                    ?.removeWhere((s) => s.id == song.id);
+                              });
+                            },
+                          );
+                  },
+                  childCount: isLoading
+                      ? 1
+                      : (recommendations?.length ?? widget.songs?.length ?? 0) +
+                          1,
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Scaffold(
+            //   backgroundColor: Colors.black,
+            //   body: Container(
+            //     color: Colors.black,
+            //     child: CustomScrollView(
+            //       slivers: <Widget>[
+            //         SliverAppBar(
+            //           leading: _isSelectionMode
+            //               ? IconButton(
+            //                   icon: const Icon(
+            //                     CupertinoIcons.xmark,
+            //                     color: Colors.white,
+            //                   ),
+            //                   onPressed: () {
+            //                     setState(() {
+            //                       _selectedItems.clear();
+            //                       _isSelectionMode = false;
+            //                     });
+            //                   },
+            //                 )
+            //               : GestureDetector(
+            //                   onTap: () {
+            //                     Navigator.of(context).pop();
+            //                   },
+            //                   child: CircleAvatar(
+            //                     backgroundColor: Colors.transparent,
+            //                     radius: 10.0,
+            //                     child: Image.asset(
+            //                       "assets/backbtn.png",
+            //                       height: 40.0,
+            //                       width: 40.0,
+            //                       fit: BoxFit.fill,
+            //                     ),
+            //                   ),
+            //                 ),
+            //           backgroundColor: Colors.black,
+            //           title: _isSelectionMode
+            //               ? Text(
+            //                   "${_selectedItems.length} selected",
+            //                   style: headingTextStyle,
+            //                 )
+            //               : Column(
+            //                   crossAxisAlignment: CrossAxisAlignment.start,
+            //                   children: [
+            //                     Tooltip(
+            //                       message: widget.searchQuery ??
+            //                           widget.tagQuery ??
+            //                           widget.searchTitle ??
+            //                           "",
+            //                       child: Text(
+            //                         capitalizeFirst(widget.searchQuery ??
+            //                             widget.tagQuery ??
+            //                             widget.searchTitle ??
+            //                             ""),
+            //                         style: headingTextStyle,
+            //                       ),
+            //                     ),
+            //                     isLoading
+            //                         ? const SizedBox.shrink()
+            //                         : errorList.isNotEmpty
+            //                             ? Text(
+            //                                 'Error loading details',
+            //                                 style: subtitleTextStyle,
+            //                               )
+            //                             : Text(
+            //                                 '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
+            //                                 style: subtitleTextStyle,
+            //                               ),
+            //                   ],
+            //                 ),
+            //           actions: [
+            //             if (_isSelectionMode)
+            //               IconButton(
+            //                 icon: const Icon(
+            //                   CupertinoIcons.delete,
+            //                   size: 18,
+            //                   color: Colors.white,
+            //                 ),
+            //                 onPressed: _deleteSelected,
+            //               )
+            //             else
+            //               IconButton(
+            //                 icon: const Icon(
+            //                   CupertinoIcons.delete,
+            //                   size: 18,
+            //                 ),
+            //                 onPressed: () {
+            //                   setState(() {
+            //                     _isSelectionMode = true;
+            //                   });
+            //                 },
+            //               ),
+            //             CachedNetworkImage(
+            //               imageUrl: generatedImage ?? "",
+            //               height: 50,
+            //               width: 50,
+            //             ),
+            //           ],
+            //           expandedHeight: 150.0,
+            //           floating: true,
+            //           pinned: true,
+            //           flexibleSpace: FlexibleSpaceBar(
+            //             background: Container(
+            //               color: Colors.black,
+            //               child: Center(
+            //                 child: CachedNetworkImage(
+            //                   imageUrl: generatedImage ?? "",
+            //                   fit: BoxFit.cover,
+            //                 ),
+            //               ),
+            //             ),
+            //           ),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+
+            // SliverList(
+            //   delegate: SliverChildBuilderDelegate(
+            //     (BuildContext context, int index) {
+            //       return Container(
+            //         // color: index.isOdd ? Colors.white : Colors.black12,
+            //         // height: 100.0,
+            //         child: Center(
+            //           child: Text('$index',
+            //               textScaler: const TextScaler.linear(5.0)),
+            //         ),
+            //       );
+            //     },
+            //     childCount: 20,
+            //   ),
+            // ),
+
+            // SliverList
+            // Container(
+            //   color: Colors.black,
+            //   child: isLoading
+            //       ? Center(
+            //           child: SpinningSvg(
+            //             svgWidget:
+            //                 // SvgPicture.asset('assets/images/your_svg.svg'),
+            //                 Image.asset(
+            //               'assets/hdlogo.png',
+            //               height: 40,
+            //             ),
+            //             // size: 10.0,
+            //             textList: [
+            //               widget.searchQuery != null
+            //                   ? 'Searching for songs...'
+            //                   : widget.tagQuery != null
+            //                       ? 'Generating playlist songs...'
+            //                       : widget.searchTitle != null
+            //                           ? 'Getting playlist songs...'
+            //                           : 'Loading playlist songs...',
+            //               'Just a moment...',
+            //               'Getting playlist songs...',
+            //               'Almost done...',
+            //             ],
+            //           ),
+            //         )
+            //       : errorList.isNotEmpty
+            //           ? const Center(
+            //               child: Text(
+            //                 'Error loading playlist songs',
+            //                 style: TextStyle(
+            //                   color: Colors.white,
+            //                 ),
+            //               ),
+            //             )
+            //           : ListView.builder(
+            //               padding: EdgeInsets.only(
+            //                 top: 24,
+            //                 bottom: widget.tagQuery != null ? 190 : 120,
+            //               ),
+            //               itemCount:
+            //                   (recommendations?.length ?? widget.songs?.length)! +
+            //                           1 ??
+            //                       0,
+            //               itemBuilder: (context, index) {
+            //                 if (index == recommendations!.length) {
+            //                   return Padding(
+            //                     padding: const EdgeInsets.all(16.0),
+            //                     child: _isGeneratingMore
+            //                         ? const SizedBox(
+            //                             height: 50,
+            //                             child: CupertinoActivityIndicator(
+            //                               color: Colors.white,
+            //                               radius: 10,
+            //                             ),
+            //                           )
+            //                         : Center(
+            //                             child: SizedBox(
+            //                               width: 190,
+            //                               child: GeneralButton(
+            //                                 hasPadding: true,
+            //                                 backgroundColor:
+            //                                     const Color(0xffD9D9D9),
+            //                                 text: "Generate More",
+            //                                 color: Colors.black,
+            //                                 // icon: const Icon(
+            //                                 //   Icons.blur_on_sharp,
+            //                                 //   color: Colors.black,
+            //                                 //   // size: 40,
+            //                                 // ),
+            //                                 onPressed: _generateMore,
+            //                               ),
+            //                             ),
+            //                           ),
+            //                   );
+            //                 }
+
+            //                 final song =
+            //                     recommendations?[index] ?? widget.songs?[index];
+
+            //                 return widget.playlistId != null ||
+            //                         widget.searchQuery != null ||
+            //                         widget.tagQuery != null
+            //                     ? Animate(
+            //                         effects: [
+            //                           FadeEffect(
+            //                             delay: Duration(
+            //                                 milliseconds:
+            //                                     (50 * (index % 5)).toInt()),
+            //                             duration:
+            //                                 const Duration(milliseconds: 300),
+            //                             curve: Curves.easeInOut,
+            //                             begin: 0.0,
+            //                             end: 1.0,
+            //                           ),
+            //                         ],
+            //                         child: MusicListTile(
+            //                           isPlaying: _isPlaying &&
+            //                               _currentSong?.id == song?.id,
+            //                           trailingOnTap: () => _togglePlay(song),
+            //                           recommendation: song!,
+            //                           onPlaybackStateChanged: (isPlaying) {
+            //                             setState(() {
+            //                               _isPlaying = isPlaying;
+            //                             });
+            //                           },
+            //                           isSelected:
+            //                               _selectedItems.contains(song.id),
+            //                           onTap: () {
+            //                             if (_isSelectionMode) {
+            //                               _toggleSelection(song.id ?? '');
+            //                             } else {
+            //                               _togglePlay(song);
+            //                             }
+            //                           },
+            //                           onDismissed: () {
+            //                             setState(() {
+            //                               recommendations?.removeWhere(
+            //                                   (s) => s.id == song.id);
+            //                             });
+            //                           },
+            //                         ),
+            //                       )
+            //                     : MusicListTile(
+            //                         isPlaying: _isPlaying &&
+            //                             _currentSong?.id == song?.id,
+            //                         trailingOnTap: () => _togglePlay(song),
+            //                         recommendation: song!,
+            //                         onPlaybackStateChanged: (isPlaying) {
+            //                           setState(() {
+            //                             _isPlaying = isPlaying;
+            //                           });
+            //                         },
+            //                         isSelected: _selectedItems.contains(song.id),
+            //                         onTap: () {
+            //                           if (_isSelectionMode) {
+            //                             _toggleSelection(song.id ?? '');
+            //                           } else {
+            //                             _togglePlay(song);
+            //                           }
+            //                         },
+            //                         onDismissed: () {
+            //                           setState(() {
+            //                             recommendations
+            //                                 ?.removeWhere((s) => s.id == song.id);
+            //                           });
+            //                         },
+            //                       );
+            //               },
+            //             ),
+            // ),
+          ],
         ),
       ),
     );

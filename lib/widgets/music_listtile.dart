@@ -39,10 +39,14 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
       direction: DismissDirection.endToStart,
       onDismissed: (_) => widget.onDismissed?.call(),
       background: Container(
-        color: Colors.red,
+        color: const Color.fromARGB(255, 199, 50, 40),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: const Icon(
+          CupertinoIcons.delete,
+          color: Colors.white,
+          size: 18,
+        ),
       ),
       child: ListTile(
         leading: GestureDetector(

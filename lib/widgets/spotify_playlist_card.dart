@@ -110,7 +110,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
     }
 
     const pastelColors = [
-      Color.fromARGB(255, 164, 136, 126),
+      // Color.fromARGB(255, 164, 136, 126),
       Color.fromARGB(255, 239, 212, 130),
       Color.fromARGB(255, 151, 253, 234),
       Color.fromARGB(255, 147, 192, 237),

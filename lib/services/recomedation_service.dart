@@ -119,8 +119,8 @@ class RecommendationsService {
     }
   }
 
-  Future<void> addTracksToExistingPlaylist(
-      String accessToken, String searchQuery, String playlistId, List<String> trackIds) async {
+  Future<void> addTracksToExistingPlaylist(String accessToken,
+      String searchQuery, String playlistId, List<String> trackIds) async {
     try {
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists/$playlistId/add'),
@@ -153,10 +153,10 @@ class RecommendationsService {
     String userId,
     String name,
     String description,
-    // String imageUrl,
+    String imageUrl,
   ) async {
     try {
-      // print("IMAGE STRING $imageUrl");
+      print("IMAGE STRING $imageUrl");
 
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists'),
@@ -179,7 +179,7 @@ class RecommendationsService {
         debugPrint("created playlist data: $data");
 
         // Get the playlist image from gemini
-        final imageUrl = await getGeneratedImage(accessToken, name);
+        // final imageUrl = await getGeneratedImage(accessToken, name);
         log("imageResponse!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: $imageUrl");
 
         // Set the playlist cover image

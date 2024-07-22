@@ -25,14 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.4.1"
-  animated_gradient:
-    dependency: "direct main"
-    description:
-      name: animated_gradient
-      sha256: "472473a6f3b9e54979169b24bff53394e49bcad5552d79db8e2cca60f6fd086f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.3"
   animated_hint_textfield:
     dependency: "direct main"
     description:
@@ -281,6 +273,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.1"
+  draggable_home:
+    dependency: "direct main"
+    description:
+      name: draggable_home
+      sha256: c89a1faa702712b2db4ef5c6615b6a7819aa0aa0b03c0ba79c7e17d042880b2a
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
   fake_async:
     dependency: transitive
     description:
@@ -390,6 +390,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.2"
+  flutter_hooks:
+    dependency: transitive
+    description:
+      name: flutter_hooks
+      sha256: "6a126f703b89499818d73305e4ce1e3de33b4ae1c5512e3b8eab4b986f46774c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.6"
   flutter_launcher_icons:
     dependency: "direct main"
     description:
@@ -989,6 +997,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  sliver_snap:
+    dependency: "direct main"
+    description:
+      name: sliver_snap
+      sha256: "67d42231e1da694bb035d09b184cb8ba26f0b78f40cb3794b96f7b1cb3b72014"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   sliver_tools:
     dependency: transitive
     description:

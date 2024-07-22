@@ -87,8 +87,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isLoading = true;
     });
     try {
+
+      
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
+
+      // final service = RecommendationsService().getGeneratedImage(accessToken, promptMessage),
+
       setState(() {
         recommendations = List.from(
             newRecommendations); // Initialize with new recommendations
@@ -113,14 +118,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
+        // final imageUrl = await getGeneratedImage(accessToken, name);
+
       final authService = ref.read(authServiceProvider);
       final sessionData = await authService.getSessionData();
+
+
 
       if (sessionData == null) {
         throw Exception('User not authenticated');
       }
 
+
+
       final accessToken = sessionData['access_token'];
+
+
+
       final newRecommendations = await RecommendationsService()
           .getSpotifyHomeRecommendations(accessToken);
 
@@ -292,7 +306,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: Colors.black,
             title: sessionState.when(
               data: (data) {
-                print("data is this !!!!: ${data?.accessToken} ");
+                // print("data is this !!!!: ${data?.accessToken} ");
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
