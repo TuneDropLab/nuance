@@ -699,6 +699,7 @@ class _RecommendationsResultScreenState
                                   'description': description.isEmpty
                                       ? "Powered by Nuance"
                                       : description,
+                                    'image': generatedImage ?? "",
                                 };
                                 ref
                                     .read(createPlaylistProvider(data).future)
