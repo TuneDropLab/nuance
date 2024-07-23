@@ -18,7 +18,7 @@ final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
 
     final history =
         await RecommendationsService().getHistory(sessionData['access_token']);
-    log("HISTORY RETURNED:!!! ${history[0].imageUrl}");
+    log("HISTORY RETURNED:!!! $history");
     return history.reversed.toList();
   } catch (e) {
     log("HISTORY PROVIDER ERROR: $e");

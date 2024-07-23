@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as math;
 
+
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -87,8 +88,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isLoading = true;
     });
     try {
-
-      
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
 
@@ -118,22 +117,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-        // final imageUrl = await getGeneratedImage(accessToken, name);
+      // final imageUrl = await getGeneratedImage(accessToken, name);
 
       final authService = ref.read(authServiceProvider);
       final sessionData = await authService.getSessionData();
-
-
 
       if (sessionData == null) {
         throw Exception('User not authenticated');
       }
 
-
-
       final accessToken = sessionData['access_token'];
-
-
 
       final newRecommendations = await RecommendationsService()
           .getSpotifyHomeRecommendations(accessToken);
@@ -180,6 +173,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? historyList.first.searchQuery
         : '';
 
+    final List<LinearGradient> cardGradients = List.generate(
+      recommendations.length,
+      (index) => gradients[math.Random().nextInt(gradients.length)],
+    );
     // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
     void submit(String type) {
@@ -534,7 +531,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         timeToFade: 500.ms,
                         trackBorderColor: Colors.grey,
                         controller: _scrollController,
-
                         interactive: true,
                         child: ListView.builder(
                           itemCount: recommendations.length + 1,
@@ -560,6 +556,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 return GeneratePlaylistCard(
                                   prompt: recommendation['text'],
                                   image: recommendation['image'],
+                                  gradient: cardGradients[index],
                                   onClick: () {
                                     _generatedRecQuery.text =
                                         recommendation['text'];
@@ -764,7 +761,7 @@ Padding newMethod(AsyncValue<SessionData?> sessionState) {
             onTap: () {
               // globalKey.currentState!.openDrawer();
               // OPEN A dialog to sign them back in
-                    // Get.offAll(const LoginScreen());
+              // Get.offAll(const LoginScreen());
               Get.dialog(
                 ConfirmDialog(
                   heading: 'Sign in',
