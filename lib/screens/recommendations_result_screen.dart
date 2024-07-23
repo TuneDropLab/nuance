@@ -1372,29 +1372,34 @@ class _RecommendationsResultScreenState
 
                     if (index ==
                         (recommendations?.length ?? widget.songs?.length)) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: _isGeneratingMore
-                            ? const SizedBox(
-                                height: 50,
-                                child: CupertinoActivityIndicator(
-                                  color: Colors.white,
-                                  radius: 10,
-                                ),
-                              )
-                            : Center(
-                                child: SizedBox(
-                                  width: 190,
-                                  child: GeneralButton(
-                                    hasPadding: true,
-                                    backgroundColor: const Color(0xffD9D9D9),
-                                    text: "Generate More",
-                                    color: Colors.black,
-                                    onPressed: _generateMore,
+                      if (widget.imageUrl == null) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: _isGeneratingMore
+                              ? const SizedBox(
+                                  height: 50,
+                                  child: CupertinoActivityIndicator(
+                                    color: Colors.white,
+                                    radius: 10,
+                                  ),
+                                )
+                              : Center(
+                                  child: SizedBox(
+                                    width: 190,
+                                    child: GeneralButton(
+                                      hasPadding: true,
+                                      backgroundColor: const Color(0xffD9D9D9),
+                                      text: "Generate More",
+                                      color: Colors.black,
+                                      onPressed: _generateMore,
+                                    ),
                                   ),
                                 ),
-                              ),
-                      );
+                        );
+                      } else {
+                        return const SizedBox
+                            .shrink(); // Return an empty widget if imageUrl is not null
+                      }
                     }
 
                     final song =
