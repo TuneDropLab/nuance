@@ -57,8 +57,8 @@ class RecommendationsService {
     }
   }
 
-  Future<List<SongModel>> getMoreRecommendations(
-      String accessToken, String userMessage, List<SongModel> currentSongList) async {
+  Future<List<SongModel>> getMoreRecommendations(String accessToken,
+      String userMessage, List<SongModel> currentSongList) async {
     try {
       final response = await http.post(
         Uri.parse('$baseURL/gemini/more-recommendations'),
@@ -66,7 +66,8 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'userMessage': userMessage, 'currentSongs': currentSongList }),
+        body: jsonEncode(
+            {'userMessage': userMessage, 'currentSongs': currentSongList}),
       );
       log("REQUEST: ${response.request.toString()}");
       log("RESPONSE: ${response.body}");
@@ -86,7 +87,11 @@ class RecommendationsService {
         log("recommendations DATA: $recommendations");
 
         // Get track information for the recommendations
-        final trackInfo = await getTrackInfo(accessToken, recommendations);
+        final trackInfo = await getTrackInfo(
+          accessToken, 
+          recommendations, 
+          currentSongList: currentSongList  // Use named parameter here
+        );
         log("trackInfo DATA: $trackInfo");
 
         return trackInfo;
@@ -101,22 +106,32 @@ class RecommendationsService {
   }
 
   Future<List<SongModel>> getTrackInfo(
-      String accessToken, List<RecommendationModel> songs) async {
+      String accessToken, List<RecommendationModel> songs,
+      {List<SongModel>? currentSongList}) async {
     try {
+      final Map<String, dynamic> requestBody = {
+        'songs': songs,
+      };
+
+      if (currentSongList != null) {
+        requestBody['currentSongs'] = currentSongList;
+        log("currentSongList: $currentSongList");
+      }
+
       final response = await http.post(
         Uri.parse('$baseURL/spotify/tracks'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'songs': songs}),
+        body: jsonEncode(requestBody),
       );
+
       log("getTrackInfo REQUEST: ${response.request.toString()}");
       log("getTrackInfo RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         final List<dynamic> trackData = jsonDecode(response.body)['trackInfo'];
-        // log("spotify trackData: ${trackData[0]}");
         return trackData.map((item) => SongModel.fromJson(item)).toList();
       } else {
         log('Failed to load track info: ${response.body}');
@@ -163,7 +178,7 @@ class RecommendationsService {
   }
 
   Future<void> addTracksToExistingPlaylist(String accessToken,
-      String searchQuery, String playlistId, List<String> trackIds) async {
+      String searchQuery, String playlistId, String image,  List<String> trackIds) async {
     try {
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists/$playlistId/add'),
@@ -171,7 +186,7 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'trackIds': trackIds, 'query': searchQuery}),
+        body: jsonEncode({'trackIds': trackIds, 'query': searchQuery, 'imageUrl': image}),
       );
 
       // log('ADD TRACKS TO PLAYLIST RESPONSE: ${response.body}');

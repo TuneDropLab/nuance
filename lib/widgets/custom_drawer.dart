@@ -228,6 +228,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                                     widget.sessionState,
                                                 songs: historyItem
                                                     .recommendations!,
+                                                imageUrl: historyItem.imageUrl,
                                               ),
                                             );
                                           },
