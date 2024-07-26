@@ -791,7 +791,9 @@ class _RecommendationsResultScreenState
 
   String capitalizeFirst(String s) {
     if (s.isEmpty) return s;
-    return s[0].toUpperCase() + s.substring(1);
+    return s.length > 30
+        ? ("${s[0].toUpperCase()}${s.substring(1, 30)}...")
+        : s[0].toUpperCase() + s.substring(1);
   }
 
   int? currentlyPlayingSongId;
@@ -1196,8 +1198,10 @@ class _RecommendationsResultScreenState
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.black.withOpacity(0.5),
-                                Colors.transparent,
+                                // Colors.transparent,
                                 Colors.black.withOpacity(0.5),
+                                Colors.black.withOpacity(0.5),
+                                Colors.black.withOpacity(0.8),
                               ],
                             ),
                           ),
@@ -1299,6 +1303,9 @@ class _RecommendationsResultScreenState
                                     widget.tagQuery ??
                                     widget.searchTitle ??
                                     ""),
+                                //                          (widget.recommendation.title?.length ?? 0) >= 26
+                                // ? "${widget.recommendation.title?.substring(0, 24)}..."
+                                // : widget.recommendation.title ?? "",
                                 style: headingTextStyle,
                               ),
                             ),
