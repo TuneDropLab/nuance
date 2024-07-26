@@ -65,6 +65,7 @@ class _RecommendationsResultScreenState
   List<String> errorList = [];
   List<SongModel>? recommendations = [];
   String? generatedImage;
+  String? playlistImage;
 
   @override
   void didChangeDependencies() {
@@ -136,9 +137,19 @@ class _RecommendationsResultScreenState
               ? await service.fetchPlaylistTracks(
                   accessToken, providerToken, widget.playlistId ?? "")
               : null;
+
       if (mounted) {
         setState(() {
-          recommendations = result;
+          if (result != null) {
+            if (result is List<SongModel>) {
+              recommendations = result;
+            } else if (result is Map<String, dynamic>) {
+              playlistImage = result['playlistImage'] as String?;
+              recommendations = result['playlistTracks'] as List<SongModel>;
+              print("playlistImage playlistImage!!!! $playlistImage");
+              print("playlistImage result!!!! $result");
+            }
+          }
           isLoading = false;
         });
       }
@@ -212,13 +223,14 @@ class _RecommendationsResultScreenState
           accessToken,
           widget.searchQuery ?? widget.tagQuery ?? "",
         );
-      } else if (widget.playlistId != null) {
-        newRecommendations = await service.fetchPlaylistTracks(
-          accessToken,
-          providerToken,
-          widget.playlistId ?? "",
-        );
       }
+      // else if (widget.playlistId != null) {
+      //   newRecommendations = await service.fetchPlaylistTracks(
+      //     accessToken,
+      //     providerToken,
+      //     widget.playlistId ?? "",
+      //   );
+      // }
 
       if (mounted && newRecommendations != null) {
         setState(() {
@@ -1160,7 +1172,10 @@ class _RecommendationsResultScreenState
                         Container(
                           color: Colors.black.withOpacity(0.5),
                           child: CachedNetworkImage(
-                            imageUrl: generatedImage ?? "",
+                            imageUrl: widget.playlistId != null
+                                // if we pass playlist id we dont use the genrate image we just use the spotify image
+                                ? playlistImage ?? ""
+                                : generatedImage ?? "",
                             fit: BoxFit.cover,
                             errorWidget: (context, url, error) {
                               return const SizedBox.shrink();

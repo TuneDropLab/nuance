@@ -95,8 +95,8 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
           ),
         ),
         title: Text(
-          (widget.recommendation.title?.length ?? 0) >= 17
-              ? "${widget.recommendation.title?.substring(0, 17)}..."
+          (widget.recommendation.title?.length ?? 0) >= 26
+              ? "${widget.recommendation.title?.substring(0, 24)}..."
               : widget.recommendation.title ?? "",
           maxLines: 1,
           style: const TextStyle(
@@ -112,7 +112,7 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                 children: [
                   TextSpan(
                     text: (widget.recommendation.artist?.length ?? 0) >= 24
-                        ? "${widget.recommendation.artist!.substring(0, 24)}..."
+                        ? "${widget.recommendation.artist!.substring(0, 22)}..."
                         : widget.recommendation.artist ?? "",
                     style: subtitleTextStyle,
                   ),

@@ -429,38 +429,83 @@ class RecommendationsService {
   //   );
   // }
 
-  Future<List<SongModel>> fetchPlaylistTracks(
-      String accessToken, String providerId, String playlistId) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseURL/spotify/playlist-tracks'),
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'playlistId': playlistId,
-          'userId': providerId,
-        }),
-      );
+  // Future<List<SongModel>> fetchPlaylistTracks(
+  //     String accessToken, String providerId, String playlistId) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse('$baseURL/spotify/playlist-tracks'),
+  //       headers: {
+  //         'Authorization': 'Bearer $accessToken',
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: jsonEncode({
+  //         'playlistId': playlistId,
+  //         'userId': providerId,
+  //       }),
+  //     );
 
-      final data = jsonDecode(response.body);
-      log("Playlist Tracks Data: $data");
-      if (response.statusCode == 200) {
-        return (data['playlistTracks'] as List)
-            .map((e) => SongModel.fromJson(e))
-            .toList();
-      } else {
-        _customSnackbar.show('Failed to get playlist songs');
-        throw Exception('Failed to load playlist songs');
-      }
-    } catch (e) {
+  //     print("Body!!!!!! ${response.body}");
+
+  //     final data = jsonDecode(response.body);
+  //     log("Playlist Tracks Data: $data");
+  //     if (response.statusCode == 200) {
+  //       return (data['playlistTracks'] as List)
+  //           .map((e) => SongModel.fromJson(e))
+  //           .toList();
+  //     } else {
+  //       _customSnackbar.show('Failed to get playlist songs');
+  //       throw Exception('Failed to load playlist songs');
+  //     }
+  //   } catch (e) {
+  //     _customSnackbar.show('Failed to get playlist songs');
+
+  //     print('Error fetching playlist tracks: $e');
+  //     throw Exception('Failed to fetch playlist tracks');
+  //   }
+  // }
+
+ Future<Map<String, dynamic>> fetchPlaylistTracks(
+    String accessToken, String providerId, String playlistId) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$baseURL/spotify/playlist-tracks'),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'playlistId': playlistId,
+        'userId': providerId,
+      }),
+    );
+
+    print("Body!!!!!! ${response.body}");
+
+    final data = jsonDecode(response.body);
+    log("Playlist Tracks Data: $data");
+    if (response.statusCode == 200) {
+      final playlistImage = data['playlistImage'];
+      final tracks = (data['playlistTracks'] as List)
+          .map((e) => SongModel.fromJson(e))
+          .toList();
+
+      return {
+        'playlistImage': playlistImage,
+        'playlistTracks': tracks,
+      };
+    } else {
       _customSnackbar.show('Failed to get playlist songs');
-
-      print('Error fetching playlist tracks: $e');
-      throw Exception('Failed to fetch playlist tracks');
+      throw Exception('Failed to load playlist songs');
     }
+  } catch (e) {
+    _customSnackbar.show('Failed to get playlist songs');
+
+    print('Error fetching playlist tracks: $e');
+    throw Exception('Failed to fetch playlist tracks');
   }
+}
+
+
 
   Future<void> shareRecommendation(
       BuildContext context, String playlistName, List<dynamic> songs) async {

@@ -87,8 +87,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isLoading = true;
     });
     try {
-
-      
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
 
@@ -118,22 +116,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-        // final imageUrl = await getGeneratedImage(accessToken, name);
+      // final imageUrl = await getGeneratedImage(accessToken, name);
 
       final authService = ref.read(authServiceProvider);
       final sessionData = await authService.getSessionData();
-
-
 
       if (sessionData == null) {
         throw Exception('User not authenticated');
       }
 
-
-
       final accessToken = sessionData['access_token'];
-
-
 
       final newRecommendations = await RecommendationsService()
           .getSpotifyHomeRecommendations(accessToken);
@@ -534,7 +526,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         timeToFade: 500.ms,
                         trackBorderColor: Colors.grey,
                         controller: _scrollController,
-
                         interactive: true,
                         child: ListView.builder(
                           itemCount: recommendations.length + 1,
@@ -542,6 +533,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             if (index < recommendations.length) {
                               final recommendation = recommendations[index];
                               if (recommendation['type'] == 'playlist') {
+                                // pass
                                 return SpotifyPlaylistCard(
                                   trackListHref: recommendation['tracks']
                                       ['href'],
@@ -549,11 +541,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   playlistName: recommendation['name'],
                                   artistNames: recommendation['description'],
                                   onClick: () {
-                                    Get.to(RecommendationsResultScreen(
-                                      sessionState: sessionState,
-                                      searchTitle: recommendation['name'],
-                                      playlistId: recommendation['id'],
-                                    ));
+                                    // pass playlist id and search title if its a spotfiy playlist card
+                                    // this means if we pass laylist id it is a spotify playlist card
+                                    Get.to(
+                                      RecommendationsResultScreen(
+                                        sessionState: sessionState,
+                                        searchTitle: recommendation['name'],
+                                        playlistId: recommendation['id'],
+                                      ),
+                                    );
                                   },
                                 ).marginOnly(bottom: 25);
                               } else {
@@ -561,10 +557,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   prompt: recommendation['text'],
                                   image: recommendation['image'],
                                   onClick: () {
+                                    // pass only recommendation['text'] if its a genrate playlist card
+                                    // with submit type submit('generatedRecQuery');
                                     _generatedRecQuery.text =
                                         recommendation['text'];
-                                    // _imageController.text =
-                                    //     recommendation['image'];
                                     submit('generatedRecQuery');
                                   },
                                 ).marginOnly(bottom: 25);
@@ -764,7 +760,7 @@ Padding newMethod(AsyncValue<SessionData?> sessionState) {
             onTap: () {
               // globalKey.currentState!.openDrawer();
               // OPEN A dialog to sign them back in
-                    // Get.offAll(const LoginScreen());
+              // Get.offAll(const LoginScreen());
               Get.dialog(
                 ConfirmDialog(
                   heading: 'Sign in',
