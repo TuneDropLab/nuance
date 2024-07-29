@@ -4,12 +4,14 @@ class HistoryModel {
   final int? id;
   final String? searchQuery;
   final List<SongModel>? recommendations;
+  final String? imageUrl;
   final DateTime? createdAt;
 
   HistoryModel({
     this.searchQuery,
     this.id,
     this.recommendations,
+    this.imageUrl,
     this.createdAt,
   });
 
@@ -19,6 +21,7 @@ class HistoryModel {
       searchQuery: json['searchQuery'],
       recommendations: List<SongModel>.from(
           json['recommendations'].map((x) => SongModel.fromJson(x))),
+      imageUrl: json['image'],
       createdAt: DateTime.parse(json['createdAt']),
     );
   }

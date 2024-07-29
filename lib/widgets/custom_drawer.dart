@@ -66,7 +66,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'History',
+                            'Saved',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium!
@@ -135,7 +135,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                               if (history.isEmpty) {
                                 return Center(
                                   child: Text(
-                                    'Generate your first playlist to see history',
+                                    'Save your first playlist to see history',
                                     style: subtitleTextStyle.copyWith(
                                       color: Colors.white,
                                     ),
@@ -228,6 +228,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                                     widget.sessionState,
                                                 songs: historyItem
                                                     .recommendations!,
+                                                imageUrl: historyItem.imageUrl,
                                               ),
                                             );
                                           },

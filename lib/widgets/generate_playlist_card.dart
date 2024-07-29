@@ -10,19 +10,20 @@ import 'dart:math';
 class GeneratePlaylistCard extends StatelessWidget {
   final String? prompt;
   final String? image;
+  final LinearGradient gradient; 
   final VoidCallback onClick;
 
   const GeneratePlaylistCard({
     required this.prompt,
     this.image,
+    required this.gradient,
     required this.onClick,
     Key? key,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final LinearGradient selectedGradient =
-        gradients[Random().nextInt(gradients.length)];
+    
 
     return Container(
       height: 200,
@@ -43,7 +44,7 @@ class GeneratePlaylistCard extends StatelessWidget {
           style: BorderStyle.solid,
           color: Colors.transparent,
         ),
-        gradient: selectedGradient,
+        gradient: gradient,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
