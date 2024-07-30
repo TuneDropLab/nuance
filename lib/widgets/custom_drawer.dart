@@ -220,7 +220,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           contentPadding: EdgeInsets.zero,
                                           onTap: () {
                                             // Get.back();
-                                            Get.to(
+                                            Get.to(() => 
                                               RecommendationsResultScreen(
                                                 searchTitle:
                                                     historyItem.searchQuery,

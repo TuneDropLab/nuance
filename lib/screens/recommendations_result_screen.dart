@@ -134,13 +134,15 @@ class _RecommendationsResultScreenState
 
       log("CACHED GENERATED IMAGE generatedImage: $generatedImage");
 
-      final result = widget.searchQuery != null || widget.tagQuery != null
-          ? await service.getRecommendations(
-              accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
-          : widget.playlistId != null
-              ? await service.fetchPlaylistTracks(
-                  accessToken, providerToken, widget.playlistId ?? "")
-              : null;
+      final result = widget.songs != null
+          ? widget.songs!
+          : widget.searchQuery != null || widget.tagQuery != null
+              ? await service.getRecommendations(
+                  accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+              : widget.playlistId != null
+                  ? await service.fetchPlaylistTracks(
+                      accessToken, providerToken, widget.playlistId ?? "")
+                  : null;
 
       if (mounted) {
         setState(() {
@@ -1186,10 +1188,12 @@ class _RecommendationsResultScreenState
                         Container(
                           color: Colors.black.withOpacity(0.5),
                           child: CachedNetworkImage(
-                            imageUrl: widget.playlistId != null
-                                // if we pass playlist id we dont use the genrate image we just use the spotify image
-                                ? playlistImage ?? ""
-                                : generatedImage ?? "",
+                            imageUrl: widget.imageUrl != null
+                                ? widget.imageUrl!
+                                : widget.playlistId != null
+                                    // if we pass playlist id we dont use the genrate image we just use the spotify image
+                                    ? playlistImage ?? ""
+                                    : generatedImage ?? "",
                             fit: BoxFit.cover,
                             errorWidget: (context, url, error) {
                               return const SizedBox.shrink();
