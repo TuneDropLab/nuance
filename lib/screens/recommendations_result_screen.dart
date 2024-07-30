@@ -1132,7 +1132,9 @@ class _RecommendationsResultScreenState
                         ),
                       ),
                 actions: [
+                  
                   if (_isSelectionMode)
+                  widget.playlistId == null ? 
                     IconButton(
                       icon: const Icon(
                         CupertinoIcons.delete,
@@ -1141,7 +1143,9 @@ class _RecommendationsResultScreenState
                       ),
                       onPressed: _deleteSelected,
                     )
+                    : const SizedBox.shrink()
                   else
+                  widget.playlistId == null ? 
                     IconButton(
                       icon: const Icon(
                         CupertinoIcons.delete,
@@ -1153,7 +1157,8 @@ class _RecommendationsResultScreenState
                           _isSelectionMode = true;
                         });
                       },
-                    ),
+                    )
+                    : const SizedBox.shrink(),
                 ],
                 expandedHeight: 280.0,
                 floating: true,
@@ -1398,7 +1403,7 @@ class _RecommendationsResultScreenState
 
                     if (index ==
                         (recommendations?.length ?? widget.songs?.length)) {
-                      if (widget.imageUrl == null) {
+                      if (widget.imageUrl == null && widget.playlistId == null) {
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: _isGeneratingMore
@@ -1446,6 +1451,7 @@ class _RecommendationsResultScreenState
                               ),
                             ],
                             child: MusicListTile(
+                              isFromSpotifyPlaylistCard: widget.playlistId != null,
                               isPlaying:
                                   _isPlaying && _currentSong?.id == song.id,
                               trailingOnTap: () => _togglePlay(song),
@@ -1472,6 +1478,7 @@ class _RecommendationsResultScreenState
                             ),
                           )
                         : MusicListTile(
+                            isFromSpotifyPlaylistCard: widget.playlistId != null,
                             isPlaying:
                                 _isPlaying && _currentSong?.id == song.id,
                             trailingOnTap: () => _togglePlay(song),

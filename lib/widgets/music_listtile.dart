@@ -12,6 +12,7 @@ class MusicListTile extends ConsumerStatefulWidget {
   final bool isPlaying;
   final Function(bool isPlaying)? onPlaybackStateChanged;
   final bool isSelected;
+  final bool isFromSpotifyPlaylistCard;
   final Function()? onTap;
   final Function()? onDismissed;
 
@@ -25,6 +26,7 @@ class MusicListTile extends ConsumerStatefulWidget {
     required this.isSelected,
     this.onTap,
     this.onDismissed,
+    this.isFromSpotifyPlaylistCard = false,
   }) : super(key: key);
 
   @override
@@ -34,7 +36,108 @@ class MusicListTile extends ConsumerStatefulWidget {
 class _MusicListTileState extends ConsumerState<MusicListTile> {
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
+    return widget.isFromSpotifyPlaylistCard ? ListTile(
+        leading: GestureDetector(
+          onTap: widget.leadingOnTap,
+          child: Stack(
+            children: [
+              CachedNetworkImage(
+                height: 48,
+                width: 48,
+                imageUrl: widget.recommendation.artworkUrl ?? "",
+                imageBuilder: (context, imageProvider) {
+                  return Container(
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      image: DecorationImage(
+                        image: imageProvider,
+                      ),
+                    ),
+                  );
+                },
+                placeholder: (context, url) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: const CupertinoActivityIndicator(),
+                  );
+                },
+                errorWidget: (context, url, error) {
+                  return Container(
+                    alignment: Alignment.center,
+                    child: const CupertinoActivityIndicator(),
+                  );
+                },
+              ),
+              if (widget.isSelected)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: const Icon(Icons.check, color: Colors.white),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        title: Text(
+          (widget.recommendation.title?.length ?? 0) >= 26
+              ? "${widget.recommendation.title?.substring(0, 24)}..."
+              : widget.recommendation.title ?? "",
+          maxLines: 1,
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        subtitle: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: (widget.recommendation.artist?.length ?? 0) >= 24
+                        ? "${widget.recommendation.artist!.substring(0, 22)}..."
+                        : widget.recommendation.artist ?? "",
+                    style: subtitleTextStyle,
+                  ),
+                  TextSpan(
+                    text: (widget.recommendation.popularity ?? 0) >= 70
+                        ? " 🔥"
+                        : "",
+                    style: const TextStyle(
+                      color: Color(0xffFF581A),
+                    ),
+                  ),
+                  if (widget.recommendation.popularity! >= 70)
+                    TextSpan(
+                      text: "${widget.recommendation.popularity}%",
+                      style: const TextStyle(
+                        color: Color(0xffFF581A),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        trailing: CircleAvatar(
+          backgroundColor: const Color(0xff191919),
+          child: IconButton(
+            icon: Icon(
+              widget.isPlaying ? Icons.pause : Icons.play_arrow_rounded,
+              color: Colors.white,
+            ),
+            onPressed: widget.recommendation.previewUrl != null
+                ? () => widget.trailingOnTap?.call()
+                : null,
+          ),
+        ),
+        onTap: widget.onTap,
+      ) :  Dismissible(
       key: Key(widget.recommendation.id ?? ''),
       direction: DismissDirection.endToStart,
       onDismissed: (_) => widget.onDismissed?.call(),
