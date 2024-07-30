@@ -87,11 +87,9 @@ class RecommendationsService {
         log("recommendations DATA: $recommendations");
 
         // Get track information for the recommendations
-        final trackInfo = await getTrackInfo(
-          accessToken, 
-          recommendations, 
-          currentSongList: currentSongList  // Use named parameter here
-        );
+        final trackInfo = await getTrackInfo(accessToken, recommendations,
+            currentSongList: currentSongList // Use named parameter here
+            );
         log("trackInfo DATA: $trackInfo");
 
         return trackInfo;
@@ -177,8 +175,12 @@ class RecommendationsService {
     }
   }
 
-  Future<void> addTracksToExistingPlaylist(String accessToken,
-      String searchQuery, String playlistId, String image,  List<String> trackIds) async {
+  Future<void> addTracksToExistingPlaylist(
+      String accessToken,
+      String searchQuery,
+      String playlistId,
+      String image,
+      List<String> trackIds) async {
     try {
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists/$playlistId/add'),
@@ -186,7 +188,8 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({'trackIds': trackIds, 'query': searchQuery, 'imageUrl': image}),
+        body: jsonEncode(
+            {'trackIds': trackIds, 'query': searchQuery, 'imageUrl': image}),
       );
 
       // log('ADD TRACKS TO PLAYLIST RESPONSE: ${response.body}');
@@ -522,55 +525,54 @@ class RecommendationsService {
   //   }
   // }
 
- Future<Map<String, dynamic>> fetchPlaylistTracks(
-    String accessToken, String providerId, String playlistId) async {
-  try {
-    final response = await http.post(
-      Uri.parse('$baseURL/spotify/playlist-tracks'),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'playlistId': playlistId,
-        'userId': providerId,
-      }),
-    );
+  Future<Map<String, dynamic>> fetchPlaylistTracks(
+      String accessToken, String providerId, String playlistId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseURL/spotify/playlist-tracks'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'playlistId': playlistId,
+          'userId': providerId,
+        }),
+      );
 
-    print("Body!!!!!! ${response.body}");
+      print("Body!!!!!! ${response.body}");
 
-    final data = jsonDecode(response.body);
-    log("Playlist Tracks Data: $data");
-    if (response.statusCode == 200) {
-      final playlistImage = data['playlistImage'];
-      final tracks = (data['playlistTracks'] as List)
-          .map((e) => SongModel.fromJson(e))
-          .toList();
+      final data = jsonDecode(response.body);
+      log("Playlist Tracks Data: $data");
+      if (response.statusCode == 200) {
+        final playlistImage = data['playlistImage'];
+        final tracks = (data['playlistTracks'] as List)
+            .map((e) => SongModel.fromJson(e))
+            .toList();
 
-      return {
-        'playlistImage': playlistImage,
-        'playlistTracks': tracks,
-      };
-    } else {
+        return {
+          'playlistImage': playlistImage,
+          'playlistTracks': tracks,
+        };
+      } else {
+        _customSnackbar.show('Failed to get playlist songs');
+        throw Exception('Failed to load playlist songs');
+      }
+    } catch (e) {
       _customSnackbar.show('Failed to get playlist songs');
-      throw Exception('Failed to load playlist songs');
+
+      print('Error fetching playlist tracks: $e');
+      throw Exception('Failed to fetch playlist tracks');
     }
-  } catch (e) {
-    _customSnackbar.show('Failed to get playlist songs');
-
-    print('Error fetching playlist tracks: $e');
-    throw Exception('Failed to fetch playlist tracks');
   }
-}
-
-
 
   Future<void> shareRecommendation(
-      BuildContext context, String playlistName, List<dynamic> songs) async {
+      BuildContext context, String playlistName, List<dynamic> songs, String playlistImageUrl) async {
     final url = Uri.parse('$baseURL/share/generate');
     final recommendationData = {
       'searchQuery': playlistName,
       'songs': songs,
+      'image': playlistImageUrl,
     };
     final response = await http.post(url,
         body: jsonEncode({
@@ -600,6 +602,25 @@ class RecommendationsService {
       CustomSnackbar().show(
         'Failed to generate share link',
       );
+    }
+  }
+
+  Future<Map<String, dynamic>> getSharedRecommendation(String shareId) async {
+    final url = Uri.parse('$baseURL/share/$shareId');
+
+    final response =
+        await http.get(url, headers: {'Content-Type': 'application/json'});
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      final recommendationData = body;
+
+      // Return the recommendation data 
+      return recommendationData;
+    } else {
+      log("Failed to retrieve share link data. Status code: ${response.statusCode}");
+      // Handle error
+      throw Exception('Failed to retrieve share link data');
     }
   }
 

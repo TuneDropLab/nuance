@@ -404,7 +404,7 @@ class _RecommendationsResultScreenState
                                       widget.searchTitle ??
                                       "",
                                   playlistId: playlist.id ?? "",
-                                  imageUrl: generatedImage!,
+                                  imageUrl: widget.imageUrl ?? generatedImage!,
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
 
@@ -717,18 +717,19 @@ class _RecommendationsResultScreenState
                               final description =
                                   descriptionController.text.trim();
                               if (name.isNotEmpty) {
+                                
                                 final Map<String, String> data = {
                                   'name': name,
                                   'description': description.isEmpty
                                       ? "Powered by Nuance"
                                       : description,
-                                  'image': generatedImage ?? "",
+                                  'image': widget.imageUrl ?? generatedImage ?? "",
                                 };
                                 ref
                                     .read(createPlaylistProvider(data).future)
                                     .then((newPlaylist) {
                                   if (widget.sessionState?.value?.accessToken !=
-                                      null) {
+                                      null ) {
                                     setState(() {
                                       _loadingPlaylistId = newPlaylist.id;
                                     });
@@ -740,7 +741,7 @@ class _RecommendationsResultScreenState
                                           widget.searchTitle ??
                                           "",
                                       playlistId: newPlaylist.id ?? "",
-                                      imageUrl: generatedImage ?? "",
+                                      imageUrl: widget.imageUrl ?? generatedImage ?? "",
                                       trackIds: trackIds,
                                     );
                                     ref
@@ -1021,7 +1022,9 @@ class _RecommendationsResultScreenState
                                         widget.tagQuery ??
                                         widget.searchTitle ??
                                         "",
-                                    recommendations ?? widget.songs ?? []);
+                                    recommendations ?? widget.songs ?? [], 
+                                    widget.imageUrl ?? generatedImage ?? playlistImage ?? "",
+                                    );
                           },
                         ),
                       ),
