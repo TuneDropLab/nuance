@@ -126,7 +126,7 @@ class _RecommendationsResultScreenState
           sessionStateFromProvider.value?.providerToken ??
           "";
 
-      if (widget.imageUrl == null) {
+      if (widget.imageUrl == null && widget.playlistId == null) {
         generatedImage = await RecommendationsService().getGeneratedImage(
             accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
