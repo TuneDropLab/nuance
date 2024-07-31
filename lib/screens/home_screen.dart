@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as math;
 
+
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -172,6 +173,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? historyList.first.searchQuery
         : '';
 
+    final List<LinearGradient> cardGradients = List.generate(
+      recommendations.length,
+      (index) => gradients[math.Random().nextInt(gradients.length)],
+    );
     // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
     void submit(String type) {
@@ -556,6 +561,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 return GeneratePlaylistCard(
                                   prompt: recommendation['text'],
                                   image: recommendation['image'],
+                                  gradient: cardGradients[index],
                                   onClick: () {
                                     // pass only recommendation['text'] if its a genrate playlist card
                                     // with submit type submit('generatedRecQuery');

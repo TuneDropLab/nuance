@@ -7,13 +7,16 @@ class AddTracksParams {
   final String accessToken;
   final String playlistId;
   final List<String> trackIds;
+  
   final String searchQuery;
+  final String imageUrl;
 
   AddTracksParams({
     required this.accessToken,
     required this.playlistId,
     required this.trackIds,
     required this.searchQuery,
+    required this.imageUrl,
   });
 }
 
@@ -30,7 +33,7 @@ class AddTracksNotifier extends AsyncNotifier<void> {
         params.accessToken,
         params.searchQuery,
         params.playlistId,
-
+        params.imageUrl,
         params.trackIds,
       );
       state = const AsyncValue.data(null);

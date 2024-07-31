@@ -80,6 +80,7 @@ const headingTextStyle = TextStyle(
   fontSize: 20,
   fontWeight: FontWeight.w500,
   color: Colors.white,
+  overflow: TextOverflow.ellipsis,
 );
 
 // final GlobalKey<ScaffoldState> globalKey = GlobalKey(); 

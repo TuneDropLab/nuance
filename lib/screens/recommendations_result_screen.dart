@@ -38,6 +38,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   final String? playlistId;
   final AsyncValue<SessionData?>? sessionState;
   final List<SongModel>? songs;
+  final String? imageUrl;
 
   const RecommendationsResultScreen({
     super.key,
@@ -47,6 +48,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
     this.playlistId,
     this.sessionState,
     this.songs,
+    this.imageUrl,
   });
 
   @override
@@ -124,19 +126,23 @@ class _RecommendationsResultScreenState
           sessionStateFromProvider.value?.providerToken ??
           "";
 
-      generatedImage = await RecommendationsService().getGeneratedImage(
-          accessToken,
-          widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
+      if (widget.imageUrl == null && widget.playlistId == null) {
+        generatedImage = await RecommendationsService().getGeneratedImage(
+            accessToken,
+            widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
+      }
 
       log("CACHED GENERATED IMAGE generatedImage: $generatedImage");
 
-      final result = widget.searchQuery != null || widget.tagQuery != null
-          ? await service.getRecommendations(
-              accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
-          : widget.playlistId != null
-              ? await service.fetchPlaylistTracks(
-                  accessToken, providerToken, widget.playlistId ?? "")
-              : null;
+      final result = widget.songs != null
+          ? widget.songs!
+          : widget.searchQuery != null || widget.tagQuery != null
+              ? await service.getRecommendations(
+                  accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+              : widget.playlistId != null
+                  ? await service.fetchPlaylistTracks(
+                      accessToken, providerToken, widget.playlistId ?? "")
+                  : null;
 
       if (mounted) {
         setState(() {
@@ -219,9 +225,10 @@ class _RecommendationsResultScreenState
       List<SongModel>? newRecommendations;
 
       if (widget.searchQuery != null || widget.tagQuery != null) {
-        newRecommendations = await service.getRecommendations(
+        newRecommendations = await service.getMoreRecommendations(
           accessToken,
           widget.searchQuery ?? widget.tagQuery ?? "",
+          recommendations ?? [],
         );
       }
       // else if (widget.playlistId != null) {
@@ -232,11 +239,15 @@ class _RecommendationsResultScreenState
       //   );
       // }
 
-      if (mounted && newRecommendations != null) {
-        setState(() {
-          recommendations = [...?recommendations, ...?newRecommendations];
-          _isGeneratingMore = false;
-        });
+      if (mounted) {
+        if (newRecommendations != null) {
+          setState(() {
+            recommendations = [...?recommendations, ...?newRecommendations];
+            _isGeneratingMore = false;
+          });
+        } else {
+          CustomSnackbar().show("No more recommendations generated");
+        }
       }
     } catch (e) {
       log("Error generating more: ${e.toString()}");
@@ -393,6 +404,7 @@ class _RecommendationsResultScreenState
                                       widget.searchTitle ??
                                       "",
                                   playlistId: playlist.id ?? "",
+                                  imageUrl: widget.imageUrl ?? generatedImage!,
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
 
@@ -705,17 +717,19 @@ class _RecommendationsResultScreenState
                               final description =
                                   descriptionController.text.trim();
                               if (name.isNotEmpty) {
+                                
                                 final Map<String, String> data = {
                                   'name': name,
                                   'description': description.isEmpty
                                       ? "Powered by Nuance"
                                       : description,
+                                  'image': widget.imageUrl ?? generatedImage ?? "",
                                 };
                                 ref
                                     .read(createPlaylistProvider(data).future)
                                     .then((newPlaylist) {
                                   if (widget.sessionState?.value?.accessToken !=
-                                      null) {
+                                      null ) {
                                     setState(() {
                                       _loadingPlaylistId = newPlaylist.id;
                                     });
@@ -727,6 +741,7 @@ class _RecommendationsResultScreenState
                                           widget.searchTitle ??
                                           "",
                                       playlistId: newPlaylist.id ?? "",
+                                      imageUrl: widget.imageUrl ?? generatedImage ?? "",
                                       trackIds: trackIds,
                                     );
                                     ref
@@ -1007,7 +1022,9 @@ class _RecommendationsResultScreenState
                                         widget.tagQuery ??
                                         widget.searchTitle ??
                                         "",
-                                    recommendations ?? widget.songs ?? []);
+                                    recommendations ?? widget.songs ?? [], 
+                                    widget.imageUrl ?? generatedImage ?? playlistImage ?? "",
+                                    );
                           },
                         ),
                       ),
@@ -1118,7 +1135,9 @@ class _RecommendationsResultScreenState
                         ),
                       ),
                 actions: [
+                  
                   if (_isSelectionMode)
+                  widget.playlistId == null ? 
                     IconButton(
                       icon: const Icon(
                         CupertinoIcons.delete,
@@ -1127,7 +1146,9 @@ class _RecommendationsResultScreenState
                       ),
                       onPressed: _deleteSelected,
                     )
+                    : const SizedBox.shrink()
                   else
+                  widget.playlistId == null ? 
                     IconButton(
                       icon: const Icon(
                         CupertinoIcons.delete,
@@ -1139,7 +1160,8 @@ class _RecommendationsResultScreenState
                           _isSelectionMode = true;
                         });
                       },
-                    ),
+                    )
+                    : const SizedBox.shrink(),
                 ],
                 expandedHeight: 280.0,
                 floating: true,
@@ -1174,10 +1196,12 @@ class _RecommendationsResultScreenState
                         Container(
                           color: Colors.black.withOpacity(0.5),
                           child: CachedNetworkImage(
-                            imageUrl: widget.playlistId != null
-                                // if we pass playlist id we dont use the genrate image we just use the spotify image
-                                ? playlistImage ?? ""
-                                : generatedImage ?? "",
+                            imageUrl: widget.imageUrl != null
+                                ? widget.imageUrl!
+                                : widget.playlistId != null
+                                    // if we pass playlist id we dont use the genrate image we just use the spotify image
+                                    ? playlistImage ?? ""
+                                    : generatedImage ?? "",
                             fit: BoxFit.cover,
                             errorWidget: (context, url, error) {
                               return const SizedBox.shrink();
@@ -1212,9 +1236,16 @@ class _RecommendationsResultScreenState
                                   .clamp(0.0, maxExtent - 6),
                           left: titleAlignmentShift,
                           child: _isSelectionMode
-                              ? Text(
-                                  "${_selectedItems.length} selected",
-                                  style: headingTextStyle,
+                              ? ConstrainedBox(
+                                  constraints: const BoxConstraints(
+                                      maxWidth:
+                                          250), // Define the max width here
+                                  child: Text(
+                                    "${_selectedItems.length} selected",
+                                    style: headingTextStyle,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
                                 )
                               : Column(
                                   mainAxisSize: MainAxisSize.min,
@@ -1225,31 +1256,36 @@ class _RecommendationsResultScreenState
                                           widget.tagQuery ??
                                           widget.searchTitle ??
                                           "",
-                                      child: Text(
-                                        capitalizeFirst(widget.searchQuery ??
-                                            widget.tagQuery ??
-                                            widget.searchTitle ??
-                                            ""),
-                                        style: headingTextStyle,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            maxWidth:
+                                                284), // Define the max width here
+                                        child: Text(
+                                          capitalizeFirst(widget.searchQuery ??
+                                              widget.tagQuery ??
+                                              widget.searchTitle ??
+                                              ""),
+                                          style: headingTextStyle,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
                                       ),
                                     ),
                                     isLoading
                                         ? const SizedBox.shrink()
-                                        : errorList.isNotEmpty
-                                            ? Text(
-                                                'Error loading details',
-                                                style:
-                                                    subtitleTextStyle.copyWith(
-                                                  color: Colors.white,
-                                                ),
-                                              )
-                                            : Text(
-                                                '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                                                style:
-                                                    subtitleTextStyle.copyWith(
-                                                  color: Colors.grey.shade300,
-                                                ),
+                                        : ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                                maxWidth:
+                                                    250), // Define the max width here
+                                            child: Text(
+                                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                              style: subtitleTextStyle.copyWith(
+                                                color: Colors.grey.shade300,
                                               ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
                                   ],
                                 ),
                         ),
@@ -1357,42 +1393,47 @@ class _RecommendationsResultScreenState
                       );
                     }
 
-                    if (errorList.isNotEmpty) {
-                      return const Center(
-                        child: Text(
-                          'Error loading playlist songs',
-                          style: TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
-                      );
-                    }
+                    // if (errorList.isNotEmpty) {
+                    //   return const Center(
+                    //     child: Text(
+                    //       'Error loading playlist songs',
+                    //       style: TextStyle(
+                    //         color: Colors.white,
+                    //       ),
+                    //     ),
+                    //   );
+                    // }
 
                     if (index ==
                         (recommendations?.length ?? widget.songs?.length)) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: _isGeneratingMore
-                            ? const SizedBox(
-                                height: 50,
-                                child: CupertinoActivityIndicator(
-                                  color: Colors.white,
-                                  radius: 10,
-                                ),
-                              )
-                            : Center(
-                                child: SizedBox(
-                                  width: 190,
-                                  child: GeneralButton(
-                                    hasPadding: true,
-                                    backgroundColor: const Color(0xffD9D9D9),
-                                    text: "Generate More",
-                                    color: Colors.black,
-                                    onPressed: _generateMore,
+                      if (widget.imageUrl == null && widget.playlistId == null) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: _isGeneratingMore
+                              ? const SizedBox(
+                                  height: 50,
+                                  child: CupertinoActivityIndicator(
+                                    color: Colors.white,
+                                    radius: 10,
+                                  ),
+                                )
+                              : Center(
+                                  child: SizedBox(
+                                    width: 190,
+                                    child: GeneralButton(
+                                      hasPadding: true,
+                                      backgroundColor: const Color(0xffD9D9D9),
+                                      text: "Generate More",
+                                      color: Colors.black,
+                                      onPressed: _generateMore,
+                                    ),
                                   ),
                                 ),
-                              ),
-                      );
+                        );
+                      } else {
+                        return const SizedBox
+                            .shrink(); // Return an empty widget if imageUrl is not null
+                      }
                     }
 
                     final song =
@@ -1413,6 +1454,7 @@ class _RecommendationsResultScreenState
                               ),
                             ],
                             child: MusicListTile(
+                              isFromSpotifyPlaylistCard: widget.playlistId != null,
                               isPlaying:
                                   _isPlaying && _currentSong?.id == song.id,
                               trailingOnTap: () => _togglePlay(song),
@@ -1439,6 +1481,7 @@ class _RecommendationsResultScreenState
                             ),
                           )
                         : MusicListTile(
+                            isFromSpotifyPlaylistCard: widget.playlistId != null,
                             isPlaying:
                                 _isPlaying && _currentSong?.id == song.id,
                             trailingOnTap: () => _togglePlay(song),
