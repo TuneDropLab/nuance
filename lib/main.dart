@@ -10,15 +10,18 @@ import 'package:firebase_messaging/firebase_messaging.dart'; // Import Firebase 
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/routes.dart';
-import 'package:nuance/screens/auth/login_screen.dart';
+// import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
+import 'package:nuance/screens/onboarding_screen.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/theme.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
+import 'package:nuance/widgets/loadingscreen.dart';
 import 'package:uni_links/uni_links.dart';
 // import http package as http
-import 'package:http/http.dart' as http;
+// import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,12 +62,30 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   StreamSubscription? _sub;
+  bool? _isFirstRun;
 
   @override
   void initState() {
     super.initState();
+    _checkFirstRun();
     _initUniLinks();
-    _initFirebaseMessaging(); // Initialize Firebase Messaging
+    _initFirebaseMessaging();
+  }
+
+  Future<void> _checkFirstRun() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        _isFirstRun = prefs.getBool('isFirstRun') ?? true;
+      });
+      print("Is first run: $_isFirstRun");
+    } catch (e) {
+      print("Error in _checkFirstRun: $e");
+      // Default to true if there's an error
+      setState(() {
+        _isFirstRun = true;
+      });
+    }
   }
 
   Future<void> _initUniLinks() async {
@@ -86,9 +107,6 @@ class _MyAppState extends State<MyApp> {
     FirebaseMessaging.instance.requestPermission();
     FirebaseMessaging.instance.getToken().then((String? token) {
       print("Device Token: $token");
-      // if (token != null) {
-      //   _sendTokenToServer(token);
-      // }
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
@@ -99,24 +117,6 @@ class _MyAppState extends State<MyApp> {
       print("Message opened app: ${message.notification?.title}");
     });
   }
-
-  // void _sendTokenToServer(String token) async {
-  //   final response = await http.post(
-  //     Uri.parse('https://your-server.com/api/save-token'),
-  //     headers: <String, String>{
-  //       'Content-Type': 'application/json; charset=UTF-8',
-  //     },
-  //     body: jsonEncode(<String, String>{
-  //       'token': token,
-  //     }),
-  //   );
-
-  //   if (response.statusCode == 200) {
-  //     print('Token successfully sent to the server');
-  //   } else {
-  //     print('Failed to send token to the server');
-  //   }
-  // }
 
   @override
   void dispose() {
@@ -144,6 +144,12 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _clearSharedPreferences() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    print('SharedPreferences cleared.');
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetCupertinoApp(
@@ -155,11 +161,26 @@ class _MyAppState extends State<MyApp> {
       ],
       debugShowCheckedModeBanner: false,
       title: 'Nuance',
-      initialRoute: widget.sessionData == null
-          ? InitialScreen.routeName
-          : HomeScreen.routeName,
+      home: _isFirstRun == null
+          ? OnboardingScreen(onComplete: _onboardingComplete)
+          : _isFirstRun!
+              ? OnboardingScreen(onComplete: _onboardingComplete)
+              : widget.sessionData == null
+                  ?  OnboardingScreen(onComplete: _onboardingComplete)
+                  : const HomeScreen(),
       theme: AppTheme.lightTheme,
-      routes: routes,
     );
+  }
+
+  void _onboardingComplete() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isFirstRun', false);
+    setState(() {
+      _isFirstRun = false;
+    });
+    // Navigate to the appropriate screen after onboarding
+    Get.offAll(() => widget.sessionData == null
+        ? const InitialScreen()
+        : const HomeScreen());
   }
 }
