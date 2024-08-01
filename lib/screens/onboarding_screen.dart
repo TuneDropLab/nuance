@@ -20,9 +20,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   late AnimationController _animationController;
 
   static const List<String> sampleImages = [
-    'https://img.freepik.com/free-photo/lovely-woman-vintage-outfit-expressing-interest-outdoor-shot-glamorous-happy-girl-sunglasses_197531-11312.jpg',
-    'https://img.freepik.com/free-photo/shapely-woman-vintage-dress-touching-her-glasses-outdoor-shot-interested-relaxed-girl-brown-outfit_197531-11308.jpg',
-    'https://img.freepik.com/premium-photo/cheerful-lady-brown-outfit-looking-around-outdoor-portrait-fashionable-caucasian-model-with-short-wavy-hairstyle_197531-25791.jpg',
+    'https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/65d5e90b58ca2a11f5d5c441_artboard-1-65d5e8edee2d6d3ad54698df-%402x-p-1080.webp',
+    'https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/65d5e90b58ca2a11f5d5c441_artboard-1-65d5e8edee2d6d3ad54698df-%402x-p-1080.webp',
+    'https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/65d5e90b58ca2a11f5d5c441_artboard-1-65d5e8edee2d6d3ad54698df-%402x-p-1080.webp',
   ];
 
   @override
@@ -82,7 +82,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             headingTextStyle: headingTextStyle,
             subHeadingTextStyle: subtitleTextStyle,
             buttonText: "Done",
-            boardingScreenColor: Color.fromARGB(255, 20, 20, 20),
+            boardingScreenColor: const Color.fromARGB(255, 20, 20, 20),
             activeIndicatorColor: Colors.grey[900],
           ),
         ],
