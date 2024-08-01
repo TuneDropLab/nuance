@@ -1,6 +1,9 @@
+import 'package:fancy_onboarding_screen/core/model/onboarding_item_model.dart';
 import 'package:flutter/material.dart';
-import 'package:fan_carousel_image_slider/fan_carousel_image_slider.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fancy_onboarding_screen/fancy_onboarding_screen.dart';
+import 'dart:math';
+
+import 'package:nuance/utils/constants.dart';
 
 class OnboardingScreen extends StatefulWidget {
   static const routeName = '/onboarding';
@@ -12,9 +15,9 @@ class OnboardingScreen extends StatefulWidget {
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  int _currentPage = 0;
-  final PageController _pageController = PageController();
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
 
   static const List<String> sampleImages = [
     'https://img.freepik.com/free-photo/lovely-woman-vintage-outfit-expressing-interest-outdoor-shot-glamorous-happy-girl-sunglasses_197531-11312.jpg',
@@ -23,120 +26,129 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _animationController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 4))
+          ..repeat();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  List<OnBoardingItemModel> get boardingItemsList => [
+        OnBoardingItemModel(
+          title: 'Welcome to Nuance',
+          subtitle: 'Effortlessly curate your perfect soundtrack',
+          image: sampleImages[0],
+          titleColor: Colors.white,
+          // subtitleColor: Colors.white,
+          subtitleTextStyle: subtitleTextStyle,
+        ),
+        OnBoardingItemModel(
+          title: 'Discover music tailored for you',
+          subtitle: 'Find tracks that match your mood and taste',
+          image: sampleImages[1],
+          titleColor: Colors.white,
+          // subtitleColor: Colors.white,
+          subtitleTextStyle: subtitleTextStyle,
+        ),
+        OnBoardingItemModel(
+          title: 'Create playlists with a tap',
+          subtitle: 'Effortlessly curate your perfect soundtrack',
+          image: sampleImages[2],
+          titleColor: Colors.white,
+          // subtitleColor: Colors.white,
+          subtitleTextStyle: subtitleTextStyle,
+        ),
+      ];
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // backgroundColor: Colors.black,
       body: Stack(
         children: [
-          PageView(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
-            children: [
-              _buildPage(0),
-              _buildPage(1),
-              _buildPage(2),
-            ],
-          ),
-          if (_currentPage == 1) _buildFallingIcons(),
-          Positioned(
-            bottom: 20,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                  onPressed: widget.onComplete,
-                  child: const Text('Skip'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    if (_currentPage < 2) {
-                      _pageController.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
-                      );
-                    } else {
-                      widget.onComplete?.call();
-                    }
-                  },
-                  child: Text(_currentPage < 2 ? 'Next' : 'Get Started'),
-                ),
-              ],
-            ),
+          // _buildFallingIcons(),
+          FancyOnBoardingScreen(
+            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+            onBoardingItems: boardingItemsList,
+            onBtnTap: () => widget.onComplete!(), // Required parameter
+            headingText: "Nuance",
+            subHeadingText: "Let's get started",
+            headingTextStyle: headingTextStyle,
+            subHeadingTextStyle: subtitleTextStyle,
+            buttonText: "Done",
+            boardingScreenColor: Color.fromARGB(255, 20, 20, 20),
+            activeIndicatorColor: Colors.grey[900],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPage(int index) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        SizedBox(
-          height: 420,
-          child: FanCarouselImageSlider.sliderType1(
-            imagesLink: sampleImages,
-            isAssets: false,
-            autoPlay: false,
-            sliderHeight: 400,
-            sliderWidth: MediaQuery.of(context).size.width,
-            showIndicator: false,
-            initalPageIndex: 0,
-            turns: 200,
-            sidesOpacity: 0.8,
-            imageFitMode: BoxFit.cover,
-            slideViewportFraction: 0.8,
-            userCanDrag: false,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'Onboarding Screen ${index + 1}',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          child: Text(
-            'This is some sample text for onboarding screen ${index + 1}. Replace with your actual content.',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFallingIcons() {
+    final random = Random();
+
     return IgnorePointer(
       child: Stack(
         children: List.generate(
-          20,
-          (index) => Positioned(
-            left: (index * 20.0) % MediaQuery.of(context).size.width,
-            child: Icon(
-              Icons.music_note,
-              size: 24,
-              color: Colors.blue.withOpacity(0.5),
-            )
+          50,
+          (index) {
+            final leftPosition =
+                random.nextDouble() * MediaQuery.of(context).size.width;
+            final iconSize = 30 + random.nextDouble() * 20;
+            final rotationAngle = random.nextDouble() * 2 * pi;
+            final animationDuration = Duration(seconds: 3 + random.nextInt(4));
+            final animation = Tween<double>(
+                    begin: -100, end: MediaQuery.of(context).size.height)
                 .animate(
-                  onPlay: (controller) => controller.repeat(),
-                )
-                .moveY(
-                  begin: -100,
-                  end: MediaQuery.of(context).size.height,
-                  curve: Curves.easeInOut,
-                  duration: Duration(seconds: 3 + index % 4),
-                )
-                .fadeIn(duration: const Duration(milliseconds: 500))
-                .fadeOut(delay: const Duration(seconds: 2)),
-          ),
+              CurvedAnimation(
+                parent: _animationController,
+                curve: const Interval(
+                  0.0,
+                  1.0,
+                  curve: Curves.linear,
+                ),
+              ),
+            );
+
+            return Positioned(
+              left: leftPosition,
+              top: -100,
+              child: AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, animation.value),
+                    child: Transform.rotate(
+                      angle: rotationAngle,
+                      child: Icon(
+                        Icons.music_note,
+                        size: iconSize,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
+
+// void main() {
+//   runApp(MaterialApp(
+//     home: OnboardingScreen(
+//       onComplete: () {
+//         // Handle completion
+//       },
+//     ),
+//   ));
+// }
