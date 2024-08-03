@@ -119,8 +119,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         currentPage++;
         isMoreLoading = false;
       });
-
-      log('FETCH MORE NEW RECOMMENDATIONS: $newRecommendations');
     } catch (e) {
       debugPrint("ERROR extra fetch: $e");
       throw Exception('Failed to load more recommendations');

@@ -9,9 +9,7 @@ final spotifyHomeRecommendationsProvider =
     final authService = ref.read(authServiceProvider);
     final sessionData = await authService.getSessionData();
 
-
     if (sessionData == null) {
-      log("SESSION DATA IS NULL: $sessionData");
       throw Exception('User not authenticated');
     }
 
@@ -20,7 +18,6 @@ final spotifyHomeRecommendationsProvider =
         .getSpotifyHomeRecommendations(accessToken);
     return recommendations;
   } catch (e) {
-    log("SPOTIFY HOME RECOMMENDATIONS PROVIDER ERROR: $e");
     throw Exception('Failed to load Spotify home recommendations');
   }
 });

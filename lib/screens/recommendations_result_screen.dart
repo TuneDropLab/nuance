@@ -127,8 +127,6 @@ class _RecommendationsResultScreenState
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
       }
 
-      log("CACHED GENERATED IMAGE generatedImage: $generatedImage");
-
       final result = widget.songs != null
           ? widget.songs!
           : widget.searchQuery != null || widget.tagQuery != null
@@ -155,7 +153,6 @@ class _RecommendationsResultScreenState
         });
       }
     } catch (e) {
-      log("Error: ${e.toString()}");
       if (mounted) {
         setState(() {
           errorList.add(e.toString());
@@ -170,7 +167,6 @@ class _RecommendationsResultScreenState
       isLoading = true;
       errorList = [];
     });
-    log("Follow Playlist PLAYLISTID: $playlistId");
     try {
       final service = RecommendationsService();
       final accessToken = widget.sessionState?.value?.accessToken ??
@@ -185,7 +181,6 @@ class _RecommendationsResultScreenState
         });
       }
     } catch (e) {
-      log("Error: ${e.toString()}");
       CustomSnackbar().show("Error: ${e.toString()}");
       if (mounted) {
         setState(() {
@@ -236,7 +231,6 @@ class _RecommendationsResultScreenState
         }
       }
     } catch (e) {
-      log("Error generating more: ${e.toString()}");
       if (mounted) {
         setState(() {
           errorList.add(e.toString());
@@ -1344,8 +1338,6 @@ class _RecommendationsResultScreenState
 
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];
-
-      log("Session data: $sessionData");
 
       if (sessionData != null) {
         final sessionMap = jsonDecode(sessionData);

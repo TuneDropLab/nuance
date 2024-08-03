@@ -24,33 +24,23 @@ class RecommendationsService {
         },
         body: jsonEncode({'userMessage': userMessage}),
       );
-      log("REQUEST: ${response.request.toString()}");
-      log("RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
-        log("RESPONSE DATA: ${response.statusCode}");
         final Map<String, dynamic> data = jsonDecode(response.body);
-
-        log("RESPONSE DATA: $data");
 
         final List<dynamic> recommendedSongsJson =
             data['recommendations']['songs'];
-        log("gemini songsJson DATA: $recommendedSongsJson");
         final recommendations = recommendedSongsJson
             .map((item) => RecommendationModel.fromJson(item))
             .toList();
-        log("recommendations DATA: $recommendations");
 
         final trackInfo = await getTrackInfo(accessToken, recommendations);
-        log("trackInfo DATA: $trackInfo");
 
         return trackInfo;
       } else {
-        log('Failed to load recommendations: ${response.body}');
         throw Exception('Failed to load recommendations');
       }
     } catch (e) {
-      log('Exception in getRecommendations: $e');
       rethrow;
     }
   }
@@ -67,35 +57,25 @@ class RecommendationsService {
         body: jsonEncode(
             {'userMessage': userMessage, 'currentSongs': currentSongList}),
       );
-      log("REQUEST: ${response.request.toString()}");
-      log("RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
-        log("RESPONSE DATA: ${response.statusCode}");
         final Map<String, dynamic> data = jsonDecode(response.body);
-
-        log("RESPONSE DATA: $data");
 
         final List<dynamic> recommendedSongsJson =
             data['recommendations']['songs'];
-        log("gemini songsJson DATA: $recommendedSongsJson");
         final recommendations = recommendedSongsJson
             .map((item) => RecommendationModel.fromJson(item))
             .toList();
-        log("recommendations DATA: $recommendations");
 
         final trackInfo = await getTrackInfo(accessToken, recommendations,
             currentSongList: currentSongList // Use named parameter here
             );
-        log("trackInfo DATA: $trackInfo");
 
         return trackInfo;
       } else {
-        log('Failed to load recommendations: ${response.body}');
         throw Exception('Failed to load recommendations');
       }
     } catch (e) {
-      log('Exception in getRecommendations: $e');
       rethrow;
     }
   }
@@ -110,7 +90,6 @@ class RecommendationsService {
 
       if (currentSongList != null) {
         requestBody['currentSongs'] = currentSongList;
-        log("currentSongList: $currentSongList");
       }
 
       final response = await http.post(
@@ -122,18 +101,13 @@ class RecommendationsService {
         body: jsonEncode(requestBody),
       );
 
-      log("getTrackInfo REQUEST: ${response.request.toString()}");
-      log("getTrackInfo RESPONSE: ${response.body}");
-
       if (response.statusCode == 200) {
         final List<dynamic> trackData = jsonDecode(response.body)['trackInfo'];
         return trackData.map((item) => SongModel.fromJson(item)).toList();
       } else {
-        log('Failed to load track info: ${response.body}');
         throw Exception('Failed to load track info');
       }
     } catch (e) {
-      log('Exception in getTrackInfo: $e');
       rethrow;
     }
   }
@@ -147,8 +121,6 @@ class RecommendationsService {
           'Authorization': 'Bearer $accessToken',
         },
       );
-      log("getPlaylists REQUEST: ${response.request.toString()}");
-      log("getPlaylists RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         final List<dynamic> playlistData =
@@ -159,15 +131,12 @@ class RecommendationsService {
             .where((item) => item['owner']['id'] == userId)
             .map((item) => PlaylistModel.fromJson(item))
             .toList();
-        log("userPlaylists DATA: $userPlaylists");
 
         return userPlaylists;
       } else {
-        log('Failed to load playlists: ${response.body}');
         throw Exception('Failed to load playlists');
       }
     } catch (e) {
-      log('Exception in getPlaylists: $e');
       rethrow;
     }
   }
@@ -190,13 +159,10 @@ class RecommendationsService {
       );
 
       if (response.statusCode == 200) {
-        log('Tracks added to playlist successfully');
       } else {
-        log('Failed to add tracks to playlist: ${response.body}');
         throw Exception('Failed to add tracks to playlist');
       }
     } catch (e) {
-      log('Exception in addTracksToPlaylist: $e');
       rethrow;
     }
   }
@@ -222,16 +188,10 @@ class RecommendationsService {
         }),
       );
 
-      debugPrint("createPlaylist REQUEST: ${response.request.toString()}");
-      debugPrint("createPlaylist RESPONSE: ${response.statusCode}");
-
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
         debugPrint("created playlist data: $data");
-
-        // Set the playlist cover image
         await setPlaylistCoverImage(accessToken, data['id'], imageUrl);
-
         return PlaylistModel.fromJson(data);
       } else {
         debugPrint('Failed to create playlist: ${response.body}');
@@ -291,17 +251,14 @@ class RecommendationsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> historyData = jsonDecode(response.body);
-        debugPrint("History Data: $historyData");
         return historyData.map((item) => HistoryModel.fromJson(item)).toList();
       } else {
         _customSnackbar.show('Failed to get history');
-        log('Failed to load history: ${response.body}');
         throw Exception('Failed to load history');
       }
     } catch (e) {
       _customSnackbar.show('Failed to get history');
 
-      log('Exception in getHistory: $e');
       rethrow;
     }
   }
@@ -317,13 +274,10 @@ class RecommendationsService {
       );
 
       if (response.statusCode == 200) {
-        log('History deleted successfully');
       } else {
-        log('Failed to delete history: ${response.body}');
         throw Exception('Failed to delete history');
       }
     } catch (e) {
-      log('Exception in deleteHistory: $e');
       rethrow;
     }
   }
@@ -339,13 +293,10 @@ class RecommendationsService {
       );
 
       if (response.statusCode == 200) {
-        log('All history deleted successfully');
       } else {
-        log('Failed to delete all history: ${response.body}');
         throw Exception('Failed to delete all history');
       }
     } catch (e) {
-      log('Exception in deleteAllHistory: $e');
       rethrow;
     }
   }
@@ -363,16 +314,13 @@ class RecommendationsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
-        log("Spotify Home Recommendations Data: $data");
         return data;
       } else {
         _customSnackbar.show('Failed to generate recommendations');
-        log('Failed to load Spotify home recommendations: ${response.body}');
         throw Exception('Failed to load Spotify home recommendations');
       }
     } catch (e) {
       _customSnackbar.show('Failed to generate recommendations');
-      log('Exception in getSpotifyHomeRecommendations: $e');
       rethrow;
     }
   }
@@ -389,16 +337,13 @@ class RecommendationsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> tags = jsonDecode(response.body)['tags'];
-        log("Generated Tags Data: $tags");
         return tags.map((tag) => tag.toString()).toList();
       } else {
         _customSnackbar.show('Failed to generate recommendation tags');
-        log('Failed to generate recommendation tags: ${response.body}');
         throw Exception('Failed to generate recommendation tags');
       }
     } catch (e) {
       _customSnackbar.show('Failed to generate recommendation tags');
-      log('Exception in generateRecommendationTags: $e');
       rethrow;
     }
   }
@@ -419,7 +364,6 @@ class RecommendationsService {
       );
 
       final data = jsonDecode(response.body);
-      log("Playlist Tracks Data: $data");
       if (response.statusCode == 200) {
         final playlistImage = data['playlistImage'];
         final tracks = (data['playlistTracks'] as List)
@@ -471,7 +415,6 @@ class RecommendationsService {
         ),
       );
     } else {
-      log("status code!!!!!: ${response.statusCode}");
       CustomSnackbar().show(
         'Failed to generate share link',
       );
@@ -489,7 +432,6 @@ class RecommendationsService {
       final recommendationData = body;
       return recommendationData;
     } else {
-      log("Failed to retrieve share link data. Status code: ${response.statusCode}");
       throw Exception('Failed to retrieve share link data');
     }
   }
@@ -507,20 +449,14 @@ class RecommendationsService {
         },
       );
 
-      log("followSpotifyPlaylist REQUEST: ${response.request.toString()}");
-      log("followSpotifyPlaylist RESPONSE: ${response.body}");
-
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
       final String message = responseBody['message'];
       if (response.statusCode == 200) {
-        log('Playlist followed successfully');
         CustomSnackbar().show(message);
       } else {
-        log('Failed to follow playlist: $message');
         throw Exception('Failed to follow playlist: $message');
       }
     } catch (e) {
-      log('Exception in followSpotifyPlaylist: $e');
       rethrow;
     }
   }
@@ -537,13 +473,9 @@ class RecommendationsService {
         },
       );
 
-      log("getUserProfile REQUEST: ${response.request.toString()}");
-      log("getUserProfile RESPONSE: ${response.body}");
-
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        log('Failed to fetch user profile: ${response.body}');
         CustomSnackbar().show(
           'Failed to fetch user profile',
         );
@@ -553,7 +485,6 @@ class RecommendationsService {
       CustomSnackbar().show(
         'Failed to fetch user profile',
       );
-      log('Exception in getUserProfile: $e');
       rethrow;
     }
   }
@@ -572,17 +503,12 @@ class RecommendationsService {
         body: jsonEncode({'name': name}),
       );
 
-      log("updateUserProfile REQUEST: ${response.request.toString()}");
-      log("updateUserProfile RESPONSE: ${response.body}");
-
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
-        log('Failed to update user profile: ${response.body}');
         throw Exception('Failed to update user profile');
       }
     } catch (e) {
-      log('Exception in updateUserProfile: $e');
       rethrow;
     }
   }
@@ -600,25 +526,17 @@ class RecommendationsService {
         },
         body: jsonEncode({'promptMessage': promptMessage}),
       );
-      log("REQUEST: ${response.request.toString()}");
-      log("RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
-        log("RESPONSE DATA: ${response.statusCode}");
         final Map<String, dynamic> data = jsonDecode(response.body);
 
-        log("RESPONSE DATA: $data");
-
         final String image = data['image'];
-        log("Generated image DATA: $image");
 
         return image;
       } else {
-        log('Failed to generate image: ${response.body}');
         throw Exception('Failed to generate image');
       }
     } catch (e) {
-      log('Exception in getGeneratedImage: $e');
       rethrow;
     }
   }

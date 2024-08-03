@@ -6,21 +6,17 @@ import 'package:nuance/services/recomedation_service.dart';
 
 final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
   try {
-    log("HISTORY PROVIDER CALLED");
     final authService = ref.read(authServiceProvider);
     final sessionData = await authService.getSessionData();
 
     if (sessionData == null) {
-      log("SESSION DATA IS NULL:!!! $sessionData");
       throw Exception('User not authenticated');
     }
 
     final history =
         await RecommendationsService().getHistory(sessionData['access_token']);
-    log("HISTORY RETURNED:!!! $history");
     return history.reversed.toList();
   } catch (e) {
-    log("HISTORY PROVIDER ERROR: $e");
     throw Exception('Failed to load history');
   }
 });
@@ -53,4 +49,3 @@ final deleteAllHistoryProvider = FutureProvider<void>((ref) async {
     throw Exception('Failed to delete all history');
   }
 });
-

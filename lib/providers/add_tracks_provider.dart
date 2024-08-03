@@ -7,7 +7,7 @@ class AddTracksParams {
   final String accessToken;
   final String playlistId;
   final List<String> trackIds;
-  
+
   final String searchQuery;
   final String imageUrl;
 
@@ -37,10 +37,8 @@ class AddTracksNotifier extends AsyncNotifier<void> {
         params.trackIds,
       );
       state = const AsyncValue.data(null);
-      log('Tracks added to playlist successfully');
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
-      log("ADD TRACKS PROVIDER ERROR: $e");
     }
   }
 }

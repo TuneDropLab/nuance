@@ -35,7 +35,6 @@ class SessionData {
   }
 
   factory SessionData.fromJson(Map<String, dynamic> json) {
-    log("SESSION DATA FROM JSON: $json");
     return SessionData(
       accessToken: json['access_token'],
       refreshToken: json['refresh_token'],

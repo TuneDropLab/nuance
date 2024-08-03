@@ -23,12 +23,10 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
   Future<SessionData?> _loadSession() async {
     try {
       final sessionData = await authService.getSessionData();
-      log("LOADING SESSION FROM SESSION NOTIFIER: $sessionData");
       if (sessionData != null) {
         return SessionData.fromJson(sessionData);
       }
     } catch (e) {
-      log("ERROR LOADING SESSION: $e");
       return Future.error(e);
     }
     return null;
@@ -92,7 +90,6 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         state = AsyncData(SessionData.fromJson(updatedSessionJson));
       }
     } catch (e) {
-      log('Exception in updateUserName: $e');
       state = AsyncError(e, StackTrace.current);
     }
   }

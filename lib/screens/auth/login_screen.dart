@@ -35,8 +35,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];
 
-      log("Session data: $sessionData");
-
       if (sessionData != null) {
         final sessionMap = jsonDecode(sessionData);
         final accessToken = sessionMap['access_token'];
@@ -59,8 +57,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           debugPrint("Error fetching user profile: $error");
         }
       }
-    } on PlatformException catch (e) {
-    }
+    } on PlatformException catch (e) {}
   }
 
   @override
@@ -93,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.7), 
+                        Colors.black.withOpacity(0.7),
                         Colors.transparent,
                       ],
                     ),

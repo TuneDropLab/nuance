@@ -70,7 +70,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
           images.add(artistImage);
         }
       } else {
-        log('Failed to load artist images: ${artistResponse.body}');
         throw Exception('Failed to load artist images');
       }
 
@@ -80,8 +79,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
         });
       }
     } catch (e) {
-      log('Exception in _fetchArtistsImages: $e');
-
       throw Exception('Failed to load artist images');
     }
   }
