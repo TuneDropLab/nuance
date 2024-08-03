@@ -22,8 +22,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  late String _status;
-
   Future<void> _authenticate() async {
     const authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
@@ -33,7 +31,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         url: authUrl,
         callbackUrlScheme: callbackUrlScheme,
       );
-      _status = "Alright";
 
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];
@@ -50,13 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               await RecommendationsService().getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
-
-          // Update session data
           await ref
               .read(sessionProvider.notifier)
               .storeSessionAndSaveToState(sessionData, name, email);
-
-          // Navigate to HomeScreen
           await Get.to(
             () => const HomeScreen(),
             transition: Transition.fade,
@@ -64,23 +57,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         } catch (error) {
           debugPrint("Error fetching user profile: $error");
-          // setState(() {
-          //   _status = 'Error fetching user profile';
-          // });
         }
       }
     } on PlatformException catch (e) {
-      // setState(() {
-      //   debugPrint("ERROR MESSAGE: ${e.message}");
-      //   _status = 'Error: ${e.message}';
-      // });
     }
   }
 
   @override
   void initState() {
     super.initState();
-    _status = "Untouched";
   }
 
   @override
@@ -95,7 +80,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               left: 0,
               right: 0,
               child: Container(
-                height: 600, // Adjust the height as needed
+                height: 600,
                 decoration: const BoxDecoration(
                   image: DecorationImage(
                     image: AssetImage('assets/3dbg.png'),
@@ -108,7 +93,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.7), // Darken the top part
+                        Colors.black.withOpacity(0.7), 
                         Colors.transparent,
                       ],
                     ),

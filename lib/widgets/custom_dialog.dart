@@ -40,14 +40,10 @@ class ConfirmDialog extends StatelessWidget {
           },
         ),
         TextButton(
-          // style: TextButton.styleFrom(
-          //   foregroundColor: Colors.red, // Button text color
-          // ),
           onPressed: () {
             if (onConfirm != null) {
               onConfirm!();
             }
-            // Get.back();
           },
           child: Text(confirmText),
         ),

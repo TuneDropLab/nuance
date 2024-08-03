@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nuance/utils/constants.dart';
 
 class SpinningSvg extends StatefulWidget {

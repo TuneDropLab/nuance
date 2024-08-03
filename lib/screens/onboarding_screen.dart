@@ -45,7 +45,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           subtitle: 'Effortlessly curate your perfect soundtrack',
           image: sampleImages[0],
           titleColor: Colors.white,
-          // subtitleColor: Colors.white,
           subtitleTextStyle: subtitleTextStyle,
         ),
         OnBoardingItemModel(
@@ -53,7 +52,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           subtitle: 'Find tracks that match your mood and taste',
           image: sampleImages[1],
           titleColor: Colors.white,
-          // subtitleColor: Colors.white,
           subtitleTextStyle: subtitleTextStyle,
         ),
         OnBoardingItemModel(
@@ -61,7 +59,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           subtitle: 'Effortlessly curate your perfect soundtrack',
           image: sampleImages[2],
           titleColor: Colors.white,
-          // subtitleColor: Colors.white,
           subtitleTextStyle: subtitleTextStyle,
         ),
       ];
@@ -69,14 +66,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // _buildFallingIcons(),
           FancyOnBoardingScreen(
             backgroundColor: const Color.fromARGB(255, 0, 0, 0),
             onBoardingItems: boardingItemsList,
-            onBtnTap: () => widget.onComplete!(), // Required parameter
+            onBtnTap: () => widget.onComplete!(),
             headingText: "Nuance",
             subHeadingText: "Let's get started",
             headingTextStyle: headingTextStyle,
@@ -89,66 +84,4 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ),
     );
   }
-
-  Widget _buildFallingIcons() {
-    final random = Random();
-
-    return IgnorePointer(
-      child: Stack(
-        children: List.generate(
-          50,
-          (index) {
-            final leftPosition =
-                random.nextDouble() * MediaQuery.of(context).size.width;
-            final iconSize = 30 + random.nextDouble() * 20;
-            final rotationAngle = random.nextDouble() * 2 * pi;
-            final animationDuration = Duration(seconds: 3 + random.nextInt(4));
-            final animation = Tween<double>(
-                    begin: -100, end: MediaQuery.of(context).size.height)
-                .animate(
-              CurvedAnimation(
-                parent: _animationController,
-                curve: const Interval(
-                  0.0,
-                  1.0,
-                  curve: Curves.linear,
-                ),
-              ),
-            );
-
-            return Positioned(
-              left: leftPosition,
-              top: -100,
-              child: AnimatedBuilder(
-                animation: animation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(0, animation.value),
-                    child: Transform.rotate(
-                      angle: rotationAngle,
-                      child: Icon(
-                        Icons.music_note,
-                        size: iconSize,
-                        color: Colors.white.withOpacity(0.7),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
 }
-
-// void main() {
-//   runApp(MaterialApp(
-//     home: OnboardingScreen(
-//       onComplete: () {
-//         // Handle completion
-//       },
-//     ),
-//   ));
-// }

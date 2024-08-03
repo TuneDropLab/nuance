@@ -7,7 +7,6 @@ class GeneralButton extends StatelessWidget {
   final Color? backgroundColor;
   final VoidCallback? onPressed;
   final bool hasPadding;
-  // final bool hasSidePadding;
 
   const GeneralButton({
     Key? key,
@@ -17,7 +16,6 @@ class GeneralButton extends StatelessWidget {
     this.backgroundColor = Colors.orange,
     required this.onPressed,
     this.hasPadding = false,
-    // this.hasSidePadding = false,
   }) : super(key: key);
 
   @override

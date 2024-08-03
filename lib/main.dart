@@ -9,25 +9,19 @@ import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'; // Import Firebase Messaging
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
-import 'package:nuance/routes.dart';
-// import 'package:nuance/screens/auth/login_screen.dart';
+
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/screens/onboarding_screen.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
-import 'package:nuance/theme.dart';
+import 'package:nuance/utils/theme.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
-import 'package:nuance/widgets/loadingscreen.dart';
 import 'package:uni_links/uni_links.dart';
-// import http package as http
-// import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-      // options: DefaultFirebaseOptions.currentPlatform,
-      );
+  await Firebase.initializeApp();
 
   // Initialize Firebase Messaging
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -78,9 +72,7 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _isFirstRun = prefs.getBool('isFirstRun') ?? true;
       });
-      print("Is first run: $_isFirstRun");
     } catch (e) {
-      print("Error in _checkFirstRun: $e");
       // Default to true if there's an error
       setState(() {
         _isFirstRun = true;
@@ -98,7 +90,6 @@ class _MyAppState extends State<MyApp> {
         // Handle error
       });
     } on Exception catch (e) {
-      // Handle exception by logging or displaying an error message
       print(e.toString());
     }
   }
@@ -144,12 +135,6 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<void> _clearSharedPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    print('SharedPreferences cleared.');
-  }
-
   @override
   Widget build(BuildContext context) {
     return GetCupertinoApp(
@@ -178,7 +163,6 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _isFirstRun = false;
     });
-    // Navigate to the appropriate screen after onboarding
     Get.offAll(() => widget.sessionData == null
         ? const InitialScreen()
         : const HomeScreen());

@@ -83,7 +83,6 @@ const headingTextStyle = TextStyle(
   overflow: TextOverflow.ellipsis,
 );
 
-// final GlobalKey<ScaffoldState> globalKey = GlobalKey(); 
 T identity<T>(T t) => t;
 
 extension DurationInt on int {

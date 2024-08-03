@@ -18,7 +18,6 @@ class CustomSnackbar {
 
   void show(
     String message, {
-    // required String message,
     Widget icon = const SizedBox.shrink(),
     TextStyle? textStyle,
     Duration enterDuration = const Duration(milliseconds: 500),
@@ -51,11 +50,6 @@ class CustomSnackbar {
                     end: const Offset(0, 0),
                     curve: enterCurve,
                   ),
-                  // FadeEffect(
-                  //   duration: enterDuration,
-                  //   begin: 0,
-                  //   end: 1,
-                  // )
                 ],
                 onComplete: (controller) async {
                   await Future.delayed(const Duration(seconds: 4));
@@ -67,7 +61,6 @@ class CustomSnackbar {
                   });
                 },
                 child: Container(
-                  // margin: const EdgeInsets.symmetric(horizontal: 15.0),
                   padding: const EdgeInsets.symmetric(
                       horizontal: 5.0, vertical: 20.0),
                   decoration: BoxDecoration(

@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -88,17 +86,7 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
                   .fadeOut(
                     duration: 2000.ms,
                     curve: Curves.easeOut,
-                  )
-
-          // .then(delay: 1.seconds)
-          // .fadeOut(duration: 1.seconds),
-          ),
-    )
-        // .animate()
-        // .fadeOut(
-        //       duration: 1.seconds,
-        //       delay: 2.seconds,
-        //     )
-        ;
+                  )),
+    );
   }
 }

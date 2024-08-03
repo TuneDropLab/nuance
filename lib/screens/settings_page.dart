@@ -1,14 +1,12 @@
-import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/services/recomedation_service.dart';
-import 'package:nuance/theme.dart';
+import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/general_button.dart';
@@ -30,20 +28,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
     final sessionData = ref.read(sessionProvider.notifier);
-    final focusNode = FocusNode();
-
-    void editName() {
-      // Navigate to a new screen to edit the user's name
-      // Get.to(() => EditNameScreen(sessionState: sessionState));
-    }
-
-   
-
     var nameController = TextEditingController();
 
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          ref.invalidate(historyProvider);
+        }
       },
       child: SafeArea(
         child: Scaffold(
@@ -56,7 +47,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             backgroundColor: Colors.black,
             leading: GestureDetector(
               onTap: () {
-                // ref.invalidate(historyProvider);
                 Get.back();
               },
               child: CircleAvatar(
@@ -128,44 +118,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         color: Colors.orange,
                                       ),
                                     ),
-                                    onTap: () {
-                                      // globalKey.currentState!.openDrawer();
-                                      // sessionData.logout();
-                                    },
+                                    onTap: () {},
                                   );
                                 }
 
-                                //       CachedNetworkImage(
-                                //   imageBuilder: (context, imageProvider) =>
-                                //       CircleAvatar(
-                                //     radius: 70,
-                                //     backgroundImage: imageProvider,
-                                //     backgroundColor: Colors.grey,
-                                //   ),
-                                //   fit: BoxFit.cover,
-                                //   // height: 150,
-                                //   imageUrl:
-                                //       data.user["user_metadata"]["avatar_url"] ?? "",
-                                //   placeholder: (context, url) => const Center(
-                                //     child: CupertinoActivityIndicator(
-                                //         // color: AppTheme.textColor,
-                                //         ),
-                                //   ),
-                                //   errorWidget: (context, url, error) => Container(
-                                //     width: 140.0,
-                                //     height: 140.0,
-                                //     decoration: const BoxDecoration(
-                                //       shape: BoxShape.circle,
-                                //       color: Colors.black12,
-                                //     ),
-                                //   ),
-                                // ),
+                                // use a cupertino button for consistency
                                 return CupertinoButton(
                                   padding: const EdgeInsets.all(0),
-                                  onPressed: () {
-                                    // globalKey.currentState!.openDrawer();
-                                    // sessionData.logout();
-                                  },
+                                  onPressed: () {},
                                   child: CachedNetworkImage(
                                     imageBuilder: (context, imageProvider) =>
                                         CircleAvatar(
@@ -185,8 +145,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     errorWidget: (context, url, error) =>
                                         GestureDetector(
                                       child: Container(
-                                        // width: 40.0,
-                                        // height: 40.0,
                                         decoration: const BoxDecoration(
                                           shape: BoxShape.circle,
                                           gradient: LinearGradient(
@@ -219,10 +177,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                           ),
                                         ),
                                       ),
-                                      onTap: () {
-                                        // globalKey.currentState!.openDrawer();
-                                        // sessionData.logout();
-                                      },
                                     ),
                                   ),
                                 );
@@ -231,19 +185,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 child: CupertinoActivityIndicator(
                                     color: AppTheme.textColor),
                               ),
-                              error: (error, stack) => GestureDetector(
-                                child: Container(
-                                  width: 70.0,
-                                  height: 70.0,
-                                  decoration: const BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.orange,
-                                  ),
+                              error: (error, stack) => Container(
+                                width: 70.0,
+                                height: 70.0,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.orange,
                                 ),
-                                onTap: () {
-                                  // globalKey.currentState!.openDrawer();
-                                  // sessionData.logout();
-                                },
                               ),
                             ),
                           ),
@@ -259,9 +207,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         TextField(
                           onChanged: (value) {
                             nameController.text = value;
-                            // nameController.selection = TextSelection.fromPosition(
-                            //     TextPosition(offset: value.length));
-                            // value = nameController.text;
                           },
                           controller: nameController,
                           maxLines: 1,
@@ -306,9 +251,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 const Color.fromARGB(255, 4, 37, 6),
                             onPressed: () {
                               sessionData.updateUserName(nameController.text);
-                              // ref.invalidate(sessionProvider);
-                              // sessionData.logout();
-                              // save details user has stored to their profile
                             },
                           ),
                         ),
@@ -322,9 +264,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               color: Colors.white,
                               backgroundColor: Colors.grey.shade800,
                               onPressed: () {
-                                // sessionData.logout();
-                                // save details user has stored to their profile
-                                // Dialog to clear history
                                 Get.dialog(
                                   ConfirmDialog(
                                     heading: "Delete all history",
@@ -332,14 +271,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         "Are you sure you want to delete all history?",
                                     confirmText: "Delete",
                                     onConfirm: () {
-                                      // Remove item locally
-                                      // setState(() {
-                                      //   // _localHistory.remove(historyItem);
-                                      // });
                                       ref.invalidate(historyProvider);
-
                                       Get.back();
-
                                       RecommendationsService().deleteAllHistory(
                                         sessionState.value?.accessToken ?? "",
                                       );

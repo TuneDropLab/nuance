@@ -14,7 +14,7 @@ class FetchMoreIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const height = 150.0;
-    const appContentColor = Colors.pink; // Define appContentColor
+    const appContentColor = Colors.pink;
     return CustomRefreshIndicator(
       onRefresh: () async => onAction(),
       trigger: IndicatorTrigger.trailingEdge,

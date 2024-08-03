@@ -101,7 +101,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
         frequency: 1,
         speed: 5,
       ),
-      // Add more options if needed
     ];
 
     AnimatedMeshGradientOptions getRandomGradientOptions() {
@@ -110,7 +109,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
     }
 
     const pastelColors = [
-      // Color.fromARGB(255, 164, 136, 126),
       Color.fromARGB(255, 239, 212, 130),
       Color.fromARGB(255, 151, 253, 234),
       Color.fromARGB(255, 147, 192, 237),
@@ -130,7 +128,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
           colors.add(color);
         }
       }
-
       return colors;
     }
 
@@ -182,18 +179,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 14),
-                    // decoration: BoxDecoration(
-                    //   color: Colors.grey[800],
-                    //   borderRadius: BorderRadius.circular(10),
-                    //   boxShadow: [
-                    //     BoxShadow(
-                    //       color: Colors.black.withOpacity(0.9),
-                    //       spreadRadius: 6,
-                    //       blurRadius: 15,
-                    //       offset: const Offset(0, 9),
-                    //     ),
-                    //   ],
-                    // ),
                     height: 90,
                     child: artistImages.isEmpty
                         ? Shimmer.fromColors(
@@ -203,8 +188,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                               alignment: Alignment.center,
                               children: List.generate(7, (index) {
                                 return Positioned(
-                                    left: index *
-                                        34.0, // Adjust the overlap distance here
+                                    left: index * 34.0,
                                     child: const CircleAvatar(
                                       radius: 30,
                                       child: CircleAvatar(
@@ -223,8 +207,7 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                                 artistImages.length,
                                 (index) {
                                   return Positioned(
-                                    left: index *
-                                        34.0, // Adjust the overlap distance here
+                                    left: index * 34.0,
                                     child: ArtistChip(
                                       imageUrl: artistImages[index],
                                     ),
@@ -236,79 +219,6 @@ class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
                   ),
                 ),
               ),
-              // AnimatedMeshGradient(
-              //   colors: const [
-              //     Color.fromARGB(255, 255, 204, 184),
-              //     Color.fromARGB(255, 255, 237, 184),
-              //     // Color.fromARGB(255, 184, 255, 242),
-              //     Color.fromARGB(255, 7, 52, 98),
-              //   ],
-              //   options: AnimatedMeshGradientOptions(
-              //     amplitude: 30,
-              //     grain: 0.4,
-              //     frequency: 5,
-              //     speed: 2,
-              //   ),
-              //   child: Container(
-              //     height: 90,
-              //   ),
-              //   // controller: _controller,
-              //   // child: Container(
-              //   //   padding:
-              //   //       const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-              //   //   // decoration: BoxDecoration(
-              //   //   //   color: Colors.grey[800],
-              //   //   //   borderRadius: BorderRadius.circular(10),
-              //   //   //   boxShadow: [
-              //   //   //     BoxShadow(
-              //   //   //       color: Colors.black.withOpacity(0.9),
-              //   //   //       spreadRadius: 6,
-              //   //   //       blurRadius: 15,
-              //   //   //       offset: const Offset(0, 9),
-              //   //   //     ),
-              //   //   //   ],
-              //   //   // ),
-              //   //   height: 90,
-              //   //   child: artistImages.isEmpty
-              //   //       ? Shimmer.fromColors(
-              //   //           baseColor: Colors.grey[700]!,
-              //   //           highlightColor: Colors.grey[500]!,
-              //   //           child: Stack(
-              //   //             alignment: Alignment.center,
-              //   //             children: List.generate(7, (index) {
-              //   //               return Positioned(
-              //   //                   left: index *
-              //   //                       34.0, // Adjust the overlap distance here
-              //   //                   child: const CircleAvatar(
-              //   //                     radius: 30,
-              //   //                     child: CircleAvatar(
-              //   //                       radius: 28.0,
-              //   //                       backgroundColor:
-              //   //                           Color.fromARGB(255, 95, 94, 94),
-              //   //                     ),
-              //   //                   ));
-              //   //             }),
-              //   //           ),
-              //   //         )
-              //   //       : const Center(
-              //   //           // child: Stack(
-              //   //           //   alignment: Alignment.center,
-              //   //           //   children: List.generate(
-              //   //           //     artistImages.length,
-              //   //           //     (index) {
-              //   //           //       return Positioned(
-              //   //           //         left: index *
-              //   //           //             34.0, // Adjust the overlap distance here
-              //   //           //         child: ArtistChip(
-              //   //           //           imageUrl: artistImages[index],
-              //   //           //         ),
-              //   //           //       );
-              //   //           //     },
-              //   //           //   ),
-              //   //           // ),
-              //   //           ),
-              //   // ),
-              // ),
               const SizedBox(height: 20),
               Text(
                 widget.playlistName,

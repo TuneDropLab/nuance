@@ -11,24 +11,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
-import 'package:nuance/main.dart';
 import 'package:nuance/models/session_data_model.dart';
-import 'package:nuance/providers/history_provider.dart';
-import 'package:nuance/providers/recommendation_provider.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/services/recomedation_service.dart';
-import 'package:nuance/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
-import 'package:shimmer/shimmer.dart';
 
 class RecommendationsResultScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -186,11 +181,9 @@ class _RecommendationsResultScreenState
 
       if (mounted) {
         setState(() {
-          // recommendations = result;
           isLoading = false;
         });
       }
-      // CustomSnackbar().show("Playlist followed successfully");
     } catch (e) {
       log("Error: ${e.toString()}");
       CustomSnackbar().show("Error: ${e.toString()}");
@@ -231,13 +224,6 @@ class _RecommendationsResultScreenState
           recommendations ?? [],
         );
       }
-      // else if (widget.playlistId != null) {
-      //   newRecommendations = await service.fetchPlaylistTracks(
-      //     accessToken,
-      //     providerToken,
-      //     widget.playlistId ?? "",
-      //   );
-      // }
 
       if (mounted) {
         if (newRecommendations != null) {
@@ -259,36 +245,6 @@ class _RecommendationsResultScreenState
         CustomSnackbar().show("Failed to generate more recommendations");
       }
     }
-  }
-
-  void _showArtworkOverlay(BuildContext context, String artworkUrl) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
-          child: CupertinoPageScaffold(
-            backgroundColor: Colors.black54,
-            child: Center(
-                child: CachedNetworkImage(
-              imageUrl: artworkUrl,
-              errorWidget: (context, url, error) {
-                return Container(
-                  alignment: Alignment.center,
-                  child: const Icon(Icons.error),
-                );
-              },
-              placeholder: (context, url) {
-                return Container(
-                  alignment: Alignment.center,
-                  child: const CupertinoActivityIndicator(),
-                );
-              },
-            )),
-          ),
-        );
-      },
-    );
   }
 
   final Set<String> _selectedItems = {};
@@ -463,18 +419,9 @@ class _RecommendationsResultScreenState
                                         setState(() {
                                           _loadingPlaylistId = null;
                                         });
-                                        // Navigator.pop(context); // Close modal
                                         Get.back();
-                                        // ScaffoldMessenger.of(context)
-                                        //     .showSnackBar(
-                                        //   SnackBar(
-                                        //       content: Text(
-                                        //           'Successfully added tracks to ${playlist.name} playlist.')),
-                                        // );
                                         CustomSnackbar().show(
                                             "Successfully added tracks to ${playlist.name} playlist.");
-
-                                        // Navigator.pop(context); // Navigate back to home screen
                                       }).catchError(
                                         (error) {
                                           setState(() {
@@ -717,19 +664,19 @@ class _RecommendationsResultScreenState
                               final description =
                                   descriptionController.text.trim();
                               if (name.isNotEmpty) {
-                                
                                 final Map<String, String> data = {
                                   'name': name,
                                   'description': description.isEmpty
                                       ? "Powered by Nuance"
                                       : description,
-                                  'image': widget.imageUrl ?? generatedImage ?? "",
+                                  'image':
+                                      widget.imageUrl ?? generatedImage ?? "",
                                 };
                                 ref
                                     .read(createPlaylistProvider(data).future)
                                     .then((newPlaylist) {
                                   if (widget.sessionState?.value?.accessToken !=
-                                      null ) {
+                                      null) {
                                     setState(() {
                                       _loadingPlaylistId = newPlaylist.id;
                                     });
@@ -741,7 +688,9 @@ class _RecommendationsResultScreenState
                                           widget.searchTitle ??
                                           "",
                                       playlistId: newPlaylist.id ?? "",
-                                      imageUrl: widget.imageUrl ?? generatedImage ?? "",
+                                      imageUrl: widget.imageUrl ??
+                                          generatedImage ??
+                                          "",
                                       trackIds: trackIds,
                                     );
                                     ref
@@ -833,118 +782,13 @@ class _RecommendationsResultScreenState
   Widget build(BuildContext context) {
     final sessionData = ref.read(sessionProvider.notifier);
     final sessionState = ref.watch(sessionProvider);
-    if (widget.sessionState == null && sessionState.value == null) {
-      // return;
-      // const Scaffold(
-      //   body: Center(
-      //     child: Text('No search term found'),
-      //   ),
-      // );
-    }
+    if (widget.sessionState == null && sessionState.value == null) {}
     ref.invalidate(playlistProvider);
     int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
     int uniqueArtistsCount =
         getUniqueArtistsCount(recommendations ?? widget.songs ?? []);
 
-    // final GlobalKey<ScaffoldState> globalKey = GlobalKey();
-
     return Scaffold(
-      // key: globalKey,
-//       appBar: AppBar(
-//         leading: _isSelectionMode
-//             ? IconButton(
-//                 icon: const Icon(
-//                   CupertinoIcons.xmark,
-//                   color: Colors.white,
-//                 ),
-//                 onPressed: () {
-//                   setState(() {
-//                     _selectedItems.clear();
-//                     _isSelectionMode = false;
-//                   });
-//                 },
-//               )
-//             : GestureDetector(
-//                 onTap: () {
-//                   Get.back();
-//                 },
-//                 child: CircleAvatar(
-//                   backgroundColor: Colors.transparent,
-//                   radius: 10.0,
-//                   child: Image.asset(
-//                     "assets/backbtn.png",
-//                     height: 40.0,
-//                     width: 40.0,
-//                     fit: BoxFit.fill,
-//                   ),
-//                 ),
-//               ),
-//         backgroundColor: Colors.black,
-//         title: _isSelectionMode
-//             ? Text(
-//                 "${_selectedItems.length} selected",
-//                 style: headingTextStyle,
-//               )
-//             : Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Tooltip(
-//                     message: widget.searchQuery ??
-//                         widget.tagQuery ??
-//                         widget.searchTitle ??
-//                         "",
-//                     child: Text(
-//                       capitalizeFirst(widget.searchQuery ??
-//                           widget.tagQuery ??
-//                           widget.searchTitle ??
-//                           ""),
-//                       style: headingTextStyle,
-//                     ),
-//                   ),
-//                   isLoading
-//                       ? const SizedBox.shrink()
-//                       : errorList.isNotEmpty
-//                           ? Text(
-//                               'Error  loading  details',
-//                               style: subtitleTextStyle,
-//                             )
-//                           : Text(
-//                               '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
-//                               style: subtitleTextStyle,
-//                             ),
-//                 ],
-//               ),
-//         actions: [
-//           if (_isSelectionMode)
-//             IconButton(
-//               icon: const Icon(
-//                 CupertinoIcons.delete,
-//                 size: 18,
-//                 color: Colors.white,
-//               ),
-//               onPressed: _deleteSelected,
-//             )
-//           else
-//             IconButton(
-//               icon: const Icon(
-//                 CupertinoIcons.delete,
-//                 size: 18,
-//               ),
-//               onPressed: () {
-//                 setState(() {
-//                   _isSelectionMode = true;
-//                 });
-//               },
-//             ),
-// //TODO: REMOVE AND USE IMAGE AS PARALLAX BG FOR APPBAR TESTING IMAGE
-//           CachedNetworkImage(
-//             imageUrl: generatedImage ?? "",
-//             height: 50,
-//             width: 50,
-//           )
-//           // newMethod(ref.read(sessionProvider)),
-//         ],
-//       ),
       bottomNavigationBar: Container(
         color: Colors.black,
         height: widget.tagQuery != null ? 140 : 80,
@@ -986,7 +830,6 @@ class _RecommendationsResultScreenState
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Row(
                     children: [
-                      // if (!isLoading)
                       Expanded(
                         child: GeneralButton(
                           hasPadding: true,
@@ -1008,12 +851,7 @@ class _RecommendationsResultScreenState
                                   )
                                 : Colors.black,
                           ),
-                          // backgroundColor: const Color(0xffD9D9D9),
                           onPressed: () {
-                            // print(
-                            //     "Share details: ${widget.searchQuery}");
-                            // print(
-                            //     "Share details: ${widget.songs ?? recommendations}");
                             isLoading
                                 ? null
                                 : RecommendationsService().shareRecommendation(
@@ -1022,17 +860,18 @@ class _RecommendationsResultScreenState
                                         widget.tagQuery ??
                                         widget.searchTitle ??
                                         "",
-                                    recommendations ?? widget.songs ?? [], 
-                                    widget.imageUrl ?? generatedImage ?? playlistImage ?? "",
-                                    );
+                                    recommendations ?? widget.songs ?? [],
+                                    widget.imageUrl ??
+                                        generatedImage ??
+                                        playlistImage ??
+                                        "",
+                                  );
                           },
                         ),
                       ),
-                      // if (!isLoading)
                       const SizedBox(
                         width: 5,
                       ),
-                      // if (!isLoading)
                       Expanded(
                         child: GeneralButton(
                           backgroundColor: const Color(0xffFDAD3C),
@@ -1052,8 +891,6 @@ class _RecommendationsResultScreenState
                           onPressed: () {
                             isLoading
                                 ? null
-                                // : recommendations?.isEmpty ?? true
-                                //     ? null
                                 : widget.playlistId != null
                                     ? _followPlaylist(widget.playlistId!)
                                     : _showPlaylists(
@@ -1094,7 +931,6 @@ class _RecommendationsResultScreenState
           ),
         ),
       ),
-
       body: Container(
         color: Colors.black,
         child: CustomScrollView(
@@ -1102,7 +938,6 @@ class _RecommendationsResultScreenState
             if (!isLoading)
               SliverAppBar(
                 stretch: true,
-                // snap: true,
                 automaticallyImplyLeading: false,
                 centerTitle: false,
                 backgroundColor: Colors.black,
@@ -1135,33 +970,32 @@ class _RecommendationsResultScreenState
                         ),
                       ),
                 actions: [
-                  
                   if (_isSelectionMode)
-                  widget.playlistId == null ? 
-                    IconButton(
-                      icon: const Icon(
-                        CupertinoIcons.delete,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      onPressed: _deleteSelected,
-                    )
-                    : const SizedBox.shrink()
+                    widget.playlistId == null
+                        ? IconButton(
+                            icon: const Icon(
+                              CupertinoIcons.delete,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            onPressed: _deleteSelected,
+                          )
+                        : const SizedBox.shrink()
                   else
-                  widget.playlistId == null ? 
-                    IconButton(
-                      icon: const Icon(
-                        CupertinoIcons.delete,
-                        size: 18,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isSelectionMode = true;
-                        });
-                      },
-                    )
-                    : const SizedBox.shrink(),
+                    widget.playlistId == null
+                        ? IconButton(
+                            icon: const Icon(
+                              CupertinoIcons.delete,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isSelectionMode = true;
+                              });
+                            },
+                          )
+                        : const SizedBox.shrink(),
                 ],
                 expandedHeight: 280.0,
                 floating: true,
@@ -1175,12 +1009,6 @@ class _RecommendationsResultScreenState
                     const double fadeStart = maxExtent - kToolbarHeight * 2;
                     const double fadeEnd = maxExtent - kToolbarHeight;
 
-                    // Calculate the opacity of the title based on the shrinkOffset
-                    // final double titleOpacity = 1.0 -
-                    //     ((shrinkOffset - fadeStart) / (fadeStart - fadeEnd))
-                    //         .clamp(0.0, 1.0);
-
-                    // Calculate the shift value for title alignment
                     final double titleAlignmentShift = 60.0 -
                         (41.0 *
                             ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
@@ -1212,8 +1040,7 @@ class _RecommendationsResultScreenState
                           ),
                         ),
                         Container(
-                          color: Colors.black.withOpacity(
-                              appBarOpacity), // This ensures it becomes fully black.
+                          color: Colors.black.withOpacity(appBarOpacity),
                         ),
                         Container(
                           decoration: BoxDecoration(
@@ -1222,7 +1049,6 @@ class _RecommendationsResultScreenState
                               end: Alignment.bottomCenter,
                               colors: [
                                 Colors.black.withOpacity(0.6),
-                                // Colors.transparent,
                                 Colors.black.withOpacity(0.5),
                                 Colors.black.withOpacity(0.5),
                                 Colors.black.withOpacity(0.8),
@@ -1237,9 +1063,8 @@ class _RecommendationsResultScreenState
                           left: titleAlignmentShift,
                           child: _isSelectionMode
                               ? ConstrainedBox(
-                                  constraints: const BoxConstraints(
-                                      maxWidth:
-                                          250), // Define the max width here
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 250),
                                   child: Text(
                                     "${_selectedItems.length} selected",
                                     style: headingTextStyle,
@@ -1257,9 +1082,8 @@ class _RecommendationsResultScreenState
                                           widget.searchTitle ??
                                           "",
                                       child: ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                            maxWidth:
-                                                284), // Define the max width here
+                                        constraints:
+                                            const BoxConstraints(maxWidth: 284),
                                         child: Text(
                                           capitalizeFirst(widget.searchQuery ??
                                               widget.tagQuery ??
@@ -1275,8 +1099,7 @@ class _RecommendationsResultScreenState
                                         ? const SizedBox.shrink()
                                         : ConstrainedBox(
                                             constraints: const BoxConstraints(
-                                                maxWidth:
-                                                    250), // Define the max width here
+                                                maxWidth: 250),
                                             child: Text(
                                               '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
                                               style: subtitleTextStyle.copyWith(
@@ -1315,11 +1138,6 @@ class _RecommendationsResultScreenState
                   ),
                 ),
                 title: Container(
-                  // color: Colors.black,
-                  // top: 0.0 +
-                  //     ((shrinkOffset / maxExtent) * maxExtent)
-                  //         .clamp(0.0, 280.0),
-                  // left: titleAlignmentShift,
                   child: _isSelectionMode
                       ? Text(
                           "${_selectedItems.length} selected",
@@ -1339,9 +1157,6 @@ class _RecommendationsResultScreenState
                                     widget.tagQuery ??
                                     widget.searchTitle ??
                                     ""),
-                                //                          (widget.recommendation.title?.length ?? 0) >= 26
-                                // ? "${widget.recommendation.title?.substring(0, 24)}..."
-                                // : widget.recommendation.title ?? "",
                                 style: headingTextStyle,
                               ),
                             ),
@@ -1393,20 +1208,10 @@ class _RecommendationsResultScreenState
                       );
                     }
 
-                    // if (errorList.isNotEmpty) {
-                    //   return const Center(
-                    //     child: Text(
-                    //       'Error loading playlist songs',
-                    //       style: TextStyle(
-                    //         color: Colors.white,
-                    //       ),
-                    //     ),
-                    //   );
-                    // }
-
                     if (index ==
                         (recommendations?.length ?? widget.songs?.length)) {
-                      if (widget.imageUrl == null && widget.playlistId == null) {
+                      if (widget.imageUrl == null &&
+                          widget.playlistId == null) {
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: _isGeneratingMore
@@ -1431,8 +1236,7 @@ class _RecommendationsResultScreenState
                                 ),
                         );
                       } else {
-                        return const SizedBox
-                            .shrink(); // Return an empty widget if imageUrl is not null
+                        return const SizedBox.shrink();
                       }
                     }
 
@@ -1454,7 +1258,8 @@ class _RecommendationsResultScreenState
                               ),
                             ],
                             child: MusicListTile(
-                              isFromSpotifyPlaylistCard: widget.playlistId != null,
+                              isFromSpotifyPlaylistCard:
+                                  widget.playlistId != null,
                               isPlaying:
                                   _isPlaying && _currentSong?.id == song.id,
                               trailingOnTap: () => _togglePlay(song),
@@ -1481,7 +1286,8 @@ class _RecommendationsResultScreenState
                             ),
                           )
                         : MusicListTile(
-                            isFromSpotifyPlaylistCard: widget.playlistId != null,
+                            isFromSpotifyPlaylistCard:
+                                widget.playlistId != null,
                             isPlaying:
                                 _isPlaying && _currentSong?.id == song.id,
                             trailingOnTap: () => _togglePlay(song),
@@ -1514,293 +1320,6 @@ class _RecommendationsResultScreenState
                 ),
               ),
             ),
-
-            // Scaffold(
-            //   backgroundColor: Colors.black,
-            //   body: Container(
-            //     color: Colors.black,
-            //     child: CustomScrollView(
-            //       slivers: <Widget>[
-            //         SliverAppBar(
-            //           leading: _isSelectionMode
-            //               ? IconButton(
-            //                   icon: const Icon(
-            //                     CupertinoIcons.xmark,
-            //                     color: Colors.white,
-            //                   ),
-            //                   onPressed: () {
-            //                     setState(() {
-            //                       _selectedItems.clear();
-            //                       _isSelectionMode = false;
-            //                     });
-            //                   },
-            //                 )
-            //               : GestureDetector(
-            //                   onTap: () {
-            //                     Navigator.of(context).pop();
-            //                   },
-            //                   child: CircleAvatar(
-            //                     backgroundColor: Colors.transparent,
-            //                     radius: 10.0,
-            //                     child: Image.asset(
-            //                       "assets/backbtn.png",
-            //                       height: 40.0,
-            //                       width: 40.0,
-            //                       fit: BoxFit.fill,
-            //                     ),
-            //                   ),
-            //                 ),
-            //           backgroundColor: Colors.black,
-            //           title: _isSelectionMode
-            //               ? Text(
-            //                   "${_selectedItems.length} selected",
-            //                   style: headingTextStyle,
-            //                 )
-            //               : Column(
-            //                   crossAxisAlignment: CrossAxisAlignment.start,
-            //                   children: [
-            //                     Tooltip(
-            //                       message: widget.searchQuery ??
-            //                           widget.tagQuery ??
-            //                           widget.searchTitle ??
-            //                           "",
-            //                       child: Text(
-            //                         capitalizeFirst(widget.searchQuery ??
-            //                             widget.tagQuery ??
-            //                             widget.searchTitle ??
-            //                             ""),
-            //                         style: headingTextStyle,
-            //                       ),
-            //                     ),
-            //                     isLoading
-            //                         ? const SizedBox.shrink()
-            //                         : errorList.isNotEmpty
-            //                             ? Text(
-            //                                 'Error loading details',
-            //                                 style: subtitleTextStyle,
-            //                               )
-            //                             : Text(
-            //                                 '$uniqueArtistsCount  artists • ${recommendations?.length ?? widget.songs?.length ?? 0}  songs • ${formatMilliseconds(totalDuration)}',
-            //                                 style: subtitleTextStyle,
-            //                               ),
-            //                   ],
-            //                 ),
-            //           actions: [
-            //             if (_isSelectionMode)
-            //               IconButton(
-            //                 icon: const Icon(
-            //                   CupertinoIcons.delete,
-            //                   size: 18,
-            //                   color: Colors.white,
-            //                 ),
-            //                 onPressed: _deleteSelected,
-            //               )
-            //             else
-            //               IconButton(
-            //                 icon: const Icon(
-            //                   CupertinoIcons.delete,
-            //                   size: 18,
-            //                 ),
-            //                 onPressed: () {
-            //                   setState(() {
-            //                     _isSelectionMode = true;
-            //                   });
-            //                 },
-            //               ),
-            //             CachedNetworkImage(
-            //               imageUrl: generatedImage ?? "",
-            //               height: 50,
-            //               width: 50,
-            //             ),
-            //           ],
-            //           expandedHeight: 150.0,
-            //           floating: true,
-            //           pinned: true,
-            //           flexibleSpace: FlexibleSpaceBar(
-            //             background: Container(
-            //               color: Colors.black,
-            //               child: Center(
-            //                 child: CachedNetworkImage(
-            //                   imageUrl: generatedImage ?? "",
-            //                   fit: BoxFit.cover,
-            //                 ),
-            //               ),
-            //             ),
-            //           ),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
-
-            // SliverList(
-            //   delegate: SliverChildBuilderDelegate(
-            //     (BuildContext context, int index) {
-            //       return Container(
-            //         // color: index.isOdd ? Colors.white : Colors.black12,
-            //         // height: 100.0,
-            //         child: Center(
-            //           child: Text('$index',
-            //               textScaler: const TextScaler.linear(5.0)),
-            //         ),
-            //       );
-            //     },
-            //     childCount: 20,
-            //   ),
-            // ),
-
-            // SliverList
-            // Container(
-            //   color: Colors.black,
-            //   child: isLoading
-            //       ? Center(
-            //           child: SpinningSvg(
-            //             svgWidget:
-            //                 // SvgPicture.asset('assets/images/your_svg.svg'),
-            //                 Image.asset(
-            //               'assets/hdlogo.png',
-            //               height: 40,
-            //             ),
-            //             // size: 10.0,
-            //             textList: [
-            //               widget.searchQuery != null
-            //                   ? 'Searching for songs...'
-            //                   : widget.tagQuery != null
-            //                       ? 'Generating playlist songs...'
-            //                       : widget.searchTitle != null
-            //                           ? 'Getting playlist songs...'
-            //                           : 'Loading playlist songs...',
-            //               'Just a moment...',
-            //               'Getting playlist songs...',
-            //               'Almost done...',
-            //             ],
-            //           ),
-            //         )
-            //       : errorList.isNotEmpty
-            //           ? const Center(
-            //               child: Text(
-            //                 'Error loading playlist songs',
-            //                 style: TextStyle(
-            //                   color: Colors.white,
-            //                 ),
-            //               ),
-            //             )
-            //           : ListView.builder(
-            //               padding: EdgeInsets.only(
-            //                 top: 24,
-            //                 bottom: widget.tagQuery != null ? 190 : 120,
-            //               ),
-            //               itemCount:
-            //                   (recommendations?.length ?? widget.songs?.length)! +
-            //                           1 ??
-            //                       0,
-            //               itemBuilder: (context, index) {
-            //                 if (index == recommendations!.length) {
-            //                   return Padding(
-            //                     padding: const EdgeInsets.all(16.0),
-            //                     child: _isGeneratingMore
-            //                         ? const SizedBox(
-            //                             height: 50,
-            //                             child: CupertinoActivityIndicator(
-            //                               color: Colors.white,
-            //                               radius: 10,
-            //                             ),
-            //                           )
-            //                         : Center(
-            //                             child: SizedBox(
-            //                               width: 190,
-            //                               child: GeneralButton(
-            //                                 hasPadding: true,
-            //                                 backgroundColor:
-            //                                     const Color(0xffD9D9D9),
-            //                                 text: "Generate More",
-            //                                 color: Colors.black,
-            //                                 // icon: const Icon(
-            //                                 //   Icons.blur_on_sharp,
-            //                                 //   color: Colors.black,
-            //                                 //   // size: 40,
-            //                                 // ),
-            //                                 onPressed: _generateMore,
-            //                               ),
-            //                             ),
-            //                           ),
-            //                   );
-            //                 }
-
-            //                 final song =
-            //                     recommendations?[index] ?? widget.songs?[index];
-
-            //                 return widget.playlistId != null ||
-            //                         widget.searchQuery != null ||
-            //                         widget.tagQuery != null
-            //                     ? Animate(
-            //                         effects: [
-            //                           FadeEffect(
-            //                             delay: Duration(
-            //                                 milliseconds:
-            //                                     (50 * (index % 5)).toInt()),
-            //                             duration:
-            //                                 const Duration(milliseconds: 300),
-            //                             curve: Curves.easeInOut,
-            //                             begin: 0.0,
-            //                             end: 1.0,
-            //                           ),
-            //                         ],
-            //                         child: MusicListTile(
-            //                           isPlaying: _isPlaying &&
-            //                               _currentSong?.id == song?.id,
-            //                           trailingOnTap: () => _togglePlay(song),
-            //                           recommendation: song!,
-            //                           onPlaybackStateChanged: (isPlaying) {
-            //                             setState(() {
-            //                               _isPlaying = isPlaying;
-            //                             });
-            //                           },
-            //                           isSelected:
-            //                               _selectedItems.contains(song.id),
-            //                           onTap: () {
-            //                             if (_isSelectionMode) {
-            //                               _toggleSelection(song.id ?? '');
-            //                             } else {
-            //                               _togglePlay(song);
-            //                             }
-            //                           },
-            //                           onDismissed: () {
-            //                             setState(() {
-            //                               recommendations?.removeWhere(
-            //                                   (s) => s.id == song.id);
-            //                             });
-            //                           },
-            //                         ),
-            //                       )
-            //                     : MusicListTile(
-            //                         isPlaying: _isPlaying &&
-            //                             _currentSong?.id == song?.id,
-            //                         trailingOnTap: () => _togglePlay(song),
-            //                         recommendation: song!,
-            //                         onPlaybackStateChanged: (isPlaying) {
-            //                           setState(() {
-            //                             _isPlaying = isPlaying;
-            //                           });
-            //                         },
-            //                         isSelected: _selectedItems.contains(song.id),
-            //                         onTap: () {
-            //                           if (_isSelectionMode) {
-            //                             _toggleSelection(song.id ?? '');
-            //                           } else {
-            //                             _togglePlay(song);
-            //                           }
-            //                         },
-            //                         onDismissed: () {
-            //                           setState(() {
-            //                             recommendations
-            //                                 ?.removeWhere((s) => s.id == song.id);
-            //                           });
-            //                         },
-            //                       );
-            //               },
-            //             ),
-            // ),
           ],
         ),
       ),
@@ -1813,8 +1332,6 @@ class _RecommendationsResultScreenState
     super.dispose();
   }
 
-  late String _status;
-
   Future<void> _authenticate() async {
     const authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
@@ -1824,7 +1341,6 @@ class _RecommendationsResultScreenState
         url: authUrl,
         callbackUrlScheme: callbackUrlScheme,
       );
-      _status = "Alright";
 
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];
@@ -1855,15 +1371,12 @@ class _RecommendationsResultScreenState
           );
         } catch (error) {
           debugPrint("Error fetching user profile: $error");
-          setState(() {
-            _status = 'Error fetching user profile';
-          });
         }
       }
     } on PlatformException catch (e) {
       setState(() {
         debugPrint("ERROR MESSAGE: ${e.message}");
-        _status = 'Error: ${e.message}';
+        print('Error: ${e.message}');
       });
     }
   }

@@ -1,11 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:nuance/utils/constants.dart';
-import 'package:nuance/widgets/artist_chip.dart';
+
 import 'package:nuance/widgets/general_button.dart';
-import 'dart:math';
 
 class GeneratePlaylistCard extends StatelessWidget {
   final String? prompt;
@@ -27,7 +24,6 @@ class GeneratePlaylistCard extends StatelessWidget {
 
     return Container(
       height: 200,
-      // margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
@@ -64,9 +60,6 @@ class GeneratePlaylistCard extends StatelessWidget {
               ),
             ),
           ),
-          // const SizedBox(
-          //   height: 16,
-          // ),
           const Spacer(),
           SizedBox(
             width: Get.width,

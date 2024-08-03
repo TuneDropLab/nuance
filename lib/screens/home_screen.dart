@@ -1,9 +1,7 @@
 import 'dart:developer';
 import 'dart:math' as math;
-
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -16,10 +14,9 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
-import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/services/recomedation_service.dart';
-import 'package:nuance/theme.dart';
+import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/custom_divider.dart';
@@ -28,7 +25,6 @@ import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/myindicator.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
-// import 'package:pull_to_refresh_flutter3/pull_to_refresh_flutter3.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:nuance/providers/history_provider.dart';
 
@@ -47,19 +43,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final TextEditingController _controller = TextEditingController(text: '');
   final _tagQuery = TextEditingController();
   final _generatedRecQuery = TextEditingController();
-  final _imageController = TextEditingController();
-  // final GlobalKey<ScaffoldState> _key = GlobalKey();
-  // final RefreshController _refreshController =
-  //     RefreshController(initialRefresh: false);
-  // final focusNode = FocusNode();
-
   final ScrollController _scrollController = ScrollController();
 
-  int currentPage = 1; // Track current page number
-  bool isLoading = false; // Track loading state
-  bool isMoreLoading = false; // Track loading state for pagination
-  List<dynamic> recommendations = []; // List to store recommendations
-  // final sessionState = ref.watch(sessionProvider);
+  int currentPage = 1;
+  bool isLoading = false;
+  bool isMoreLoading = false;
+  List<dynamic> recommendations = [];
 
   @override
   void initState() {
@@ -90,15 +79,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
 
-      // final service = RecommendationsService().getGeneratedImage(accessToken, promptMessage),
-
       setState(() {
-        recommendations = List.from(
-            newRecommendations); // Initialize with new recommendations
+        recommendations = List.from(newRecommendations);
         isLoading = false;
       });
     } catch (e) {
-      // Handle error
       print("ERROR initial fetch: $e");
       throw Exception('Failed to load intial recommendations');
     } finally {
@@ -116,8 +101,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-      // final imageUrl = await getGeneratedImage(accessToken, name);
-
       final authService = ref.read(authServiceProvider);
       final sessionData = await authService.getSessionData();
 
@@ -155,7 +138,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     await Future.delayed(const Duration(seconds: 2));
-    // _refreshController.refreshCompleted();
     _fetchRecommendations();
   }
 
@@ -163,8 +145,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
     print(sessionState);
-    // final sessionData = ref.read(sessionProvider.notifier);
-    // final homeRecommendations = ref.watch(spotifyHomeRecommendationsProvider);
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
     final historyProviderRef = ref.watch(historyProvider);
     final List<HistoryModel>? historyList = historyProviderRef.value;
@@ -176,7 +156,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       recommendations.length,
       (index) => gradients[math.Random().nextInt(gradients.length)],
     );
-    // ref.invalidate(historyProvider);
     final focusNode = FocusNode();
     void submit(String type) {
       focusNode.unfocus();
@@ -193,7 +172,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               searchQuery: userMessage!.trim(),
               tagQuery: null,
               sessionState: sessionState,
-              // playlistImage: Uri.encodeFull(_imageController.text),
             ));
       } else if (type == 'tagQuery') {
         tagQuery = _tagQuery.text;
@@ -204,7 +182,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               searchQuery: null,
               tagQuery: tagQuery,
               sessionState: sessionState,
-              // playlistImage: Uri.encodeFull(_imageController.text),
             ));
       } else if (type == 'generatedRecQuery') {
         generatedRecQuery = _generatedRecQuery.text;
@@ -215,60 +192,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               searchQuery: generatedRecQuery,
               tagQuery: null,
               sessionState: sessionState,
-              // playlistImage: Uri.encodeFull(_imageController.text),
             ));
       }
     }
 
-    // final historyAsyncValue = ref.watch(historyProvider);
-
-    // Sort the history list in ascending order based on searchQuery
-    // historyList?.sort((a, b) => a.searchQuery!.compareTo(b.searchQuery!));
-    // print("LAST GEENRATED HERW!!!!!: $lastGeneratedQuery");
-
-    // Add a method to compare the last generated query with the new input query
     void compareAndConfirmQuery(
         String lastQuery, String newQuery, void Function() submit) {
-      // print("LAST QUERY: $lastQuery");
-      // print("NEW QUERY: $newQuery");
-      // ref.invalidate(historyProvider);
       if (lastQuery == newQuery) {
         showDialog(
           context: context,
           builder: (context) {
-            // return AlertDialog(
-            //   backgroundColor: Colors.grey[900],
-            //   title: const Text(
-            //     'You just generated a similar playlist',
-            //     style: TextStyle(
-            //       color: Colors.white,
-            //     ),
-            //   ),
-            //   content: Text(
-            //     'Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists',
-            //     style: subtitleTextStyle,
-            //   ),
-            //   actions: <Widget>[
-            //     TextButton(
-            //       onPressed: () {
-            //         Get.back();
-            //         globalKey.currentState!.openDrawer();
-            //       },
-            //       child: const Text(
-            //         'Go to history',
-            //       ),
-            //     ),
-            //     TextButton(
-            //       onPressed: () {
-            //         Navigator.of(context).pop();
-            //         submit(); // Correctly call the submit function
-            //       },
-            //       child: const Text(
-            //         'Regenerate',
-            //       ),
-            //     ),
-            //   ],
-            // );
             return ConfirmDialog(
               heading: 'You just generated a similar playlist',
               subtitle:
@@ -276,13 +209,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               confirmText: "Regenerate",
               onConfirm: () {
                 Get.back();
-                submit(); // Correctly call the submit function
+                submit();
               },
             );
           },
         );
       } else {
-        submit(); // Correctly call the submit function
+        submit();
       }
     }
 
@@ -302,8 +235,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: Colors.black,
             title: sessionState.when(
               data: (data) {
-                // print("data is this !!!!: ${data?.accessToken} ");
-
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -312,21 +243,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Animate(
                           effects: const [
                             MoveEffect(
-                              begin: Offset(0, -5), // Move down from 10px above
+                              begin: Offset(0, -5),
                               end: Offset(0, 0),
                               delay: Duration(
                                 milliseconds: 2000,
                               ),
-                              duration: Duration(
-                                  milliseconds:
-                                      500), // Duration of the animation
-                              curve: Curves.easeOut, // Smooth transition
+                              duration: Duration(milliseconds: 500),
+                              curve: Curves.easeOut,
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              // duration: Duration(milliseconds: 500),
-                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
@@ -344,31 +271,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Animate(
                           effects: const [
                             MoveEffect(
-                              begin: Offset(0, -5), // Move down from 10px above
+                              begin: Offset(0, -5),
                               end: Offset(0, 0),
                               duration: Duration(
                                 seconds: 2,
-                              ), // Duration of the animation
-                              // delay: Duration(seconds: 1),
-// Delay for the second animation
+                              ),
                               delay: Duration(
                                 milliseconds: 2500,
                               ),
-                              curve: Curves.easeOut, // Smooth transition
+                              curve: Curves.easeOut,
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              // duration: Duration(milliseconds: 100),
-                              // delay: Duration(
-                              //   seconds: 2,
-                              // ),
-                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
                             ' ${data?.user["user_metadata"]["full_name"].split(" ")[0]}',
-                            // ' ${data.user["user_metadata"]["full_name"]}',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium!
@@ -386,24 +305,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Animate(
                           effects: const [
                             MoveEffect(
-                              begin: Offset(0, -5), // Move down from 10px above
+                              begin: Offset(0, -5),
                               end: Offset(0, 0),
-                              duration: Duration(
-                                  milliseconds:
-                                      500), // Duration of the animation
-                              delay: Duration(
-                                  milliseconds:
-                                      3500), // Delay for the third animation
-                              curve: Curves.easeOut, // Smooth transition
+                              duration: Duration(milliseconds: 500),
+                              delay: Duration(milliseconds: 3500),
+                              curve: Curves.easeOut,
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              // duration: Duration(milliseconds: 500),
-                              // delay: Duration(
-                              //   seconds: 3,
-                              // ),
-                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
@@ -421,23 +331,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Animate(
                           effects: const [
                             MoveEffect(
-                              begin: Offset(0, -5), // Move down from 10px above
+                              begin: Offset(0, -5),
                               end: Offset(0, 0),
                               duration: Duration(
                                 milliseconds: 500,
-                              ), // Duration of the animation
+                              ),
                               delay: Duration(
                                 milliseconds: 4000,
                               ),
-                              // / Delay for the fourth animation
-                              curve: Curves.easeOut, // Smooth transition
+                              curve: Curves.easeOut,
                             ),
                             FadeEffect(
                               begin: 0.0,
                               end: 1.0,
-                              // duration: Duration(milliseconds: 500),
-                              // delay: Duration(milliseconds: 1500),
-                              // curve: Curves.easeOut,
                             ),
                           ],
                           child: Text(
@@ -496,34 +402,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       },
                     )
                   : CheckMarkIndicator(
-                      // backgroundColor: Colors.transparent,
                       onRefresh: onRefresh,
-                      // indicatorBuilder: (context, controller) {
-                      //   return CheckMarkIndicator(
-                      //     child: Container(
-                      //       height: 40,
-                      //       width: 40,
-                      //       decoration: const BoxDecoration(
-                      //         color: Colors.transparent,
-                      //         shape: BoxShape.circle,
-                      //       ),
-                      //       // color: Colors.white,
-                      //       alignment: Alignment.center,
-                      //       child: Image.asset(
-                      //         "assets/whitelogo.png",
-                      //         color: Colors.white,
-                      //       ),
-                      //     ),
-                      //   );
-                      // },
-                      // triggerMode: RefreshIndicatorTriggerMode.anywhere,
-                      // displacement: 100,
-                      // color: Colors.white,
-
-                      // enablePullDown: true,
-                      // onRefresh: onRefresh,
-                      // controller: _refreshController,
-
                       child: RawScrollbar(
                         fadeDuration: 500.ms,
                         radius: const Radius.circular(20),
@@ -545,8 +424,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   playlistName: recommendation['name'],
                                   artistNames: recommendation['description'],
                                   onClick: () {
-                                    // pass playlist id and search title if its a spotfiy playlist card
-                                    // this means if we pass laylist id it is a spotify playlist card
                                     Get.to(
                                       RecommendationsResultScreen(
                                         sessionState: sessionState,
@@ -562,17 +439,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   image: recommendation['image'],
                                   gradient: cardGradients[index],
                                   onClick: () {
-                                    // pass only recommendation['text'] if its a genrate playlist card
-                                    // with submit type submit('generatedRecQuery');
                                     _generatedRecQuery.text =
                                         recommendation['text'];
                                     submit('generatedRecQuery');
                                   },
                                 ).marginOnly(bottom: 25);
                               }
-                            }
-                            // return null;
-                            else {
+                            } else {
                               return const Center(
                                 child: CupertinoActivityIndicator(
                                   color: Colors.white,
@@ -763,9 +636,7 @@ Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
               ),
             ),
             onTap: () {
-              // globalKey.currentState!.openDrawer();
               // OPEN A dialog to sign them back in
-              // Get.offAll(const LoginScreen());
               Get.dialog(
                 ConfirmDialog(
                   heading: 'Sign in',
@@ -774,11 +645,9 @@ Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
                   confirmText: "Sign in",
                   onConfirm: () {
                     Get.back();
-                    // submit(); // Correctly call the submit function
                   },
                 ),
               );
-              // sessionData.logout();
             },
           );
         }
@@ -788,8 +657,6 @@ Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
             globalKey.currentState!.openDrawer();
 
             ref.invalidate(historyProvider);
-
-            // sessionData.logout();
           },
           child: CachedNetworkImage(
             imageBuilder: (context, imageProvider) => Container(
@@ -841,7 +708,6 @@ Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
               ),
               onTap: () {
                 globalKey.currentState!.openDrawer();
-                // sessionData.logout();
               },
             ),
           ),
@@ -861,7 +727,6 @@ Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
         ),
         onTap: () {
           globalKey.currentState!.openDrawer();
-          // sessionData.logout();
         },
       ),
     ),

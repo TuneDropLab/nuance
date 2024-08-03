@@ -69,11 +69,6 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         final accessToken = sessionJson['access_token'] as String;
         final response =
             await recommendationsService.updateUserProfile(accessToken, name);
-        // final sessionData = await authService.getSessionData();
-        // if (sessionData != null) {
-        // final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
-        // final accessToken = sessionJson['access_token'] as String;
-        // final response = await recommendationsService.updateUserProfile(accessToken, name);
         final userMetadata =
             sessionJson['user']['user_metadata'] as Map<String, dynamic>;
         final updatedUserMetadata = {

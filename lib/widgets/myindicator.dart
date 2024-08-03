@@ -45,7 +45,7 @@ class CheckMarkIndicator extends StatefulWidget {
 
 class _CheckMarkIndicatorState extends State<CheckMarkIndicator>
     with SingleTickerProviderStateMixin {
-  /// Whether to render check mark instead of spinner
+  // Whether to render check mark instead of spinner
   bool _renderCompleteState = false;
 
   ScrollDirection prevScrollDirection = ScrollDirection.idle;
@@ -59,11 +59,8 @@ class _CheckMarkIndicatorState extends State<CheckMarkIndicator>
         completeDuration: Duration(seconds: 2),
       ),
       onStateChanged: (change) {
-        /// set [_renderCompleteState] to true when controller.state become completed
         if (change.didChange(to: IndicatorState.complete)) {
           _renderCompleteState = true;
-
-          /// set [_renderCompleteState] to false when controller.state become idle
         } else if (change.didChange(to: IndicatorState.idle)) {
           _renderCompleteState = false;
         }

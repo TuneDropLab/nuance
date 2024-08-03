@@ -26,22 +26,21 @@ class MyCustomDrawer extends ConsumerStatefulWidget {
 }
 
 class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
-  String? _selectedArtist;
   final TextEditingController _searchController = TextEditingController();
   List<HistoryModel> _localHistory = [];
 
-  bool _isLoading = false; // New variable
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _loadHistory(); // New method call
+    _loadHistory();
   }
 
   void _loadHistory() {
     setState(() {
       _isLoading = true;
-      _localHistory = []; // Clear the list when loading
+      _localHistory = [];
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -65,13 +64,11 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   Widget build(BuildContext context) {
     return Drawer(
       width: Get.width,
-      // color: Color.fromARGB(255, 12, 12, 12),
       backgroundColor: const Color.fromARGB(255, 14, 14, 14),
       child: SafeArea(
         child: SizedBox(
           height: Get.height,
           width: Get.width,
-          // color: Colors.transparent,
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 15,
@@ -80,9 +77,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
               children: [
                 Column(
                   children: [
-                    // Heading and Search Bar
                     Container(
-                      // color: Colors.lightBlue,
                       padding: const EdgeInsets.only(
                         top: 15,
                         bottom: 15,
@@ -137,13 +132,8 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
                                   ),
-                              // hintTexts: const [
-                              //   'Search',
-                              // ],
-
                               onSubmitted: (value) {
-                                setState(
-                                    () {}); // Trigger a rebuild when search query is submitted
+                                setState(() {});
                               },
                             ),
                           ),
@@ -187,13 +177,13 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
 
                               _localHistory = history;
 
-                              // Future.microtask(() {
-                              //   if (mounted) {
-                              //     setState(() {
-                              //       _localHistory = history;
-                              //     });
-                              //   }
-                              // });
+                              Future.microtask(() {
+                                if (mounted) {
+                                  setState(() {
+                                    _localHistory = history;
+                                  });
+                                }
+                              });
                               return ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _searchController,
                                 builder: (context, value, __) {
@@ -263,7 +253,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                                 ),
                                           contentPadding: EdgeInsets.zero,
                                           onTap: () {
-                                            // Get.back();
                                             Get.to(
                                               () => RecommendationsResultScreen(
                                                 searchTitle:
@@ -313,7 +302,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                     style: TextStyle(color: Colors.red),
                                   ),
                                   ElevatedButton(
-                                    // New retry button
                                     onPressed: _loadHistory,
                                     child: const Text('Retry'),
                                   ),
@@ -326,13 +314,10 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                     ),
                   ],
                 ),
-                // Add the bottom bar
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
                     color: const Color.fromARGB(255, 14, 14, 14),
-                    // padding: const EdgeInsets.symmetric(
-                    //     vertical: 10, horizontal: 20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -342,9 +327,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            // Get.back();
                             Get.to(const SettingsScreen());
-                            // Get.back(); // Navigate back
                           },
                         ),
                         IconButton(
@@ -353,7 +336,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            Get.back(); // Navigate back
+                            Get.back();
                           },
                         ),
                       ],
@@ -406,8 +389,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   }
 
   void _deleteHistoryItem(HistoryModel historyItem) {
-    print("HII HERE: ${historyItem.id}");
-    // dialog then call Recommendations . delete histry item
     Get.dialog(
       ConfirmDialog(
         heading: "Delete ${historyItem.searchQuery}?",
@@ -415,7 +396,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
         confirmText: "Delete",
         onConfirm: () {
           Get.back();
-          // Remove item locally
           setState(() {
             _localHistory.remove(historyItem);
           });
@@ -425,7 +405,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
             historyItem.id ?? 0,
           );
           _loadHistory();
-          // ref.invalidate(historyProvider);
         },
       ),
     );
@@ -477,8 +456,6 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
             ? CachedNetworkImage(
                 imageBuilder: (context, imageProvider) {
                   return Container(
-                    // height: 80,
-                    // width: 80,
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: imageProvider,
@@ -503,8 +480,6 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
                 },
               )
             : Container(
-                // height: 80,
-                //     width: 80,
                 decoration: BoxDecoration(
                   color: Colors.amber,
                   borderRadius: BorderRadius.circular(20),

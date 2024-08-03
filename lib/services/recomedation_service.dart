@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
@@ -42,7 +41,6 @@ class RecommendationsService {
             .toList();
         log("recommendations DATA: $recommendations");
 
-        // Get track information for the recommendations
         final trackInfo = await getTrackInfo(accessToken, recommendations);
         log("trackInfo DATA: $trackInfo");
 
@@ -86,7 +84,6 @@ class RecommendationsService {
             .toList();
         log("recommendations DATA: $recommendations");
 
-        // Get track information for the recommendations
         final trackInfo = await getTrackInfo(accessToken, recommendations,
             currentSongList: currentSongList // Use named parameter here
             );
@@ -192,11 +189,6 @@ class RecommendationsService {
             {'trackIds': trackIds, 'query': searchQuery, 'imageUrl': image}),
       );
 
-      // log('ADD TRACKS TO PLAYLIST RESPONSE: ${response.body}');
-      log('ADD TRACKS accessToken RESPONSE: $accessToken');
-      log('ADD TRACKS playlistId RESPONSE: $playlistId');
-      log('ADD TRACKS trackIds RESPONSE: ${trackIds.first}');
-
       if (response.statusCode == 200) {
         log('Tracks added to playlist successfully');
       } else {
@@ -217,8 +209,6 @@ class RecommendationsService {
     String imageUrl,
   ) async {
     try {
-      print("IMAGE STRING $imageUrl");
-
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists'),
         headers: {
@@ -238,10 +228,6 @@ class RecommendationsService {
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
         debugPrint("created playlist data: $data");
-
-        // Get the playlist image from gemini
-        // final imageUrl = await getGeneratedImage(accessToken, name);
-        log("imageResponse!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: $imageUrl");
 
         // Set the playlist cover image
         await setPlaylistCoverImage(accessToken, data['id'], imageUrl);
@@ -269,9 +255,6 @@ class RecommendationsService {
   Future<void> setPlaylistCoverImage(
       String accessToken, String playlistId, String imageUrl) async {
     try {
-      // final imageBytes = await getImageBytes(imageUrl);
-      // final base64Image = base64Encode(imageBytes);
-
       final response = await http.post(
         Uri.parse('$baseURL/spotify/playlists/$playlistId/cover-image'),
         headers: {
@@ -296,29 +279,6 @@ class RecommendationsService {
     }
   }
 
-  // Future<void> setPlaylistCoverImage(
-  //     String accessToken, String playlistId, String imageUrl) async {
-  //   try {
-  //     final response = await http.put(
-  //       Uri.parse('$baseURL/spotify/playlists/$playlistId/cover-image'),
-  //       headers: {
-  //         'Authorization': 'Bearer $accessToken',
-  //         'Content-Type': 'image/jpeg',
-  //       },
-  //       body: base64Decode(imageUrl),
-  //     );
-
-  //     if (response.statusCode != 202) {
-  //       debugPrint('Failed to set playlist cover image: ${response.body}');
-  //       throw Exception('Failed to set playlist cover image');
-  //     }
-  //     print('SET PLAYLIST COVER IMAGE: $response');
-  //   } catch (e) {
-  //     debugPrint('Exception in setPlaylistCoverImage: $e');
-  //     rethrow;
-  //   }
-  // }
-
   Future<List<HistoryModel>> getHistory(String accessToken) async {
     try {
       final response = await http.get(
@@ -328,8 +288,6 @@ class RecommendationsService {
           'Content-Type': 'application/json',
         },
       );
-      log("getHistory REQUEST: ${response.request.toString()}");
-      log("getHistory RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         final List<dynamic> historyData = jsonDecode(response.body);
@@ -357,8 +315,6 @@ class RecommendationsService {
           'Content-Type': 'application/json',
         },
       );
-      log("deleteHistory REQUEST: ${response.request.toString()}");
-      log("deleteHistory RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         log('History deleted successfully');
@@ -381,8 +337,6 @@ class RecommendationsService {
           'Content-Type': 'application/json',
         },
       );
-      log("deleteAllHistory REQUEST: ${response.request.toString()}");
-      log("deleteAllHistory RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         log('All history deleted successfully');
@@ -398,8 +352,6 @@ class RecommendationsService {
 
   Future<List<dynamic>> getSpotifyHomeRecommendations(
       String accessToken) async {
-    // _customSnackbar.show("Hi");
-    // errorDialog(text: "Failed to generate recommendation tags");
     try {
       final response = await http.get(
         Uri.parse('$baseURL/spotify/home'),
@@ -408,8 +360,6 @@ class RecommendationsService {
           'Content-Type': 'application/json',
         },
       );
-      log("getSpotifyHomeRecommendations REQUEST: ${response.request.toString()}");
-      log("getSpotifyHomeRecommendations RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -422,18 +372,13 @@ class RecommendationsService {
       }
     } catch (e) {
       _customSnackbar.show('Failed to generate recommendations');
-
-      // errorDialog(text: "Failed to get recommendations");
-
       log('Exception in getSpotifyHomeRecommendations: $e');
-
       rethrow;
     }
   }
 
   Future<List<String>> getTags(String accessToken) async {
     try {
-      // errorDialog(text: "Failed to generate recommendation tags");
       final response = await http.get(
         Uri.parse('$baseURL/gemini/tags'),
         headers: {
@@ -441,8 +386,6 @@ class RecommendationsService {
           'Content-Type': 'application/json',
         },
       );
-      log("generateRecommendationTags REQUEST: ${response.request.toString()}");
-      log("generateRecommendationTags RESPONSE: ${response.body}");
 
       if (response.statusCode == 200) {
         final List<dynamic> tags = jsonDecode(response.body)['tags'];
@@ -450,80 +393,15 @@ class RecommendationsService {
         return tags.map((tag) => tag.toString()).toList();
       } else {
         _customSnackbar.show('Failed to generate recommendation tags');
-
         log('Failed to generate recommendation tags: ${response.body}');
-
-        // errorDialog(text: "Failed to generate recommendation tags");
         throw Exception('Failed to generate recommendation tags');
       }
     } catch (e) {
-      // _customSnackbar.show(context, message);
       _customSnackbar.show('Failed to generate recommendation tags');
-      // errorDialog(text: "Failed to generate recommendation tags");
-      // newMethod();
       log('Exception in generateRecommendationTags: $e');
       rethrow;
     }
   }
-
-  // SnackbarController errorDialog({required String text}) {
-  //   // return Get.snackbar('User 123', 'Successfully created',
-  //   //     snackPosition: SnackPosition.BOTTOM);
-  // }
-
-  // Future<dynamic> errorDialog({required String text}) {
-  //   // snakcbar for error messages
-  //   return showDialog(
-  //     context: Get.context!,
-  //     builder: (context) => AlertDialog(
-  //       title: const Text('An error occured'),
-  //       content: Text(text),
-  //       actions: [
-  //         TextButton(
-  //           child: const Text('Ok'),
-  //           onPressed: () {
-  //             Get.back();
-  //           },
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-  // Future<List<SongModel>> fetchPlaylistTracks(
-  //     String accessToken, String providerId, String playlistId) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('$baseURL/spotify/playlist-tracks'),
-  //       headers: {
-  //         'Authorization': 'Bearer $accessToken',
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: jsonEncode({
-  //         'playlistId': playlistId,
-  //         'userId': providerId,
-  //       }),
-  //     );
-
-  //     print("Body!!!!!! ${response.body}");
-
-  //     final data = jsonDecode(response.body);
-  //     log("Playlist Tracks Data: $data");
-  //     if (response.statusCode == 200) {
-  //       return (data['playlistTracks'] as List)
-  //           .map((e) => SongModel.fromJson(e))
-  //           .toList();
-  //     } else {
-  //       _customSnackbar.show('Failed to get playlist songs');
-  //       throw Exception('Failed to load playlist songs');
-  //     }
-  //   } catch (e) {
-  //     _customSnackbar.show('Failed to get playlist songs');
-
-  //     print('Error fetching playlist tracks: $e');
-  //     throw Exception('Failed to fetch playlist tracks');
-  //   }
-  // }
 
   Future<Map<String, dynamic>> fetchPlaylistTracks(
       String accessToken, String providerId, String playlistId) async {
@@ -539,8 +417,6 @@ class RecommendationsService {
           'userId': providerId,
         }),
       );
-
-      print("Body!!!!!! ${response.body}");
 
       final data = jsonDecode(response.body);
       log("Playlist Tracks Data: $data");
@@ -566,8 +442,8 @@ class RecommendationsService {
     }
   }
 
-  Future<void> shareRecommendation(
-      BuildContext context, String playlistName, List<dynamic> songs, String playlistImageUrl) async {
+  Future<void> shareRecommendation(BuildContext context, String playlistName,
+      List<dynamic> songs, String playlistImageUrl) async {
     final url = Uri.parse('$baseURL/share/generate');
     final recommendationData = {
       'searchQuery': playlistName,
@@ -584,11 +460,8 @@ class RecommendationsService {
       final body = jsonDecode(response.body);
       final shareLink = body['link'];
 
-      // Use regex to modify the link
       final modifiedLink = shareLink.replaceFirst(
           RegExp(r'^http:\/\/localhost:3000'), 'nuanceapp://');
-
-      // Open the share dialog
       Share.share(
         modifiedLink,
         subject: "Check out this recommendation",
@@ -614,12 +487,9 @@ class RecommendationsService {
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
       final recommendationData = body;
-
-      // Return the recommendation data 
       return recommendationData;
     } else {
       log("Failed to retrieve share link data. Status code: ${response.statusCode}");
-      // Handle error
       throw Exception('Failed to retrieve share link data');
     }
   }
@@ -642,8 +512,6 @@ class RecommendationsService {
 
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
       final String message = responseBody['message'];
-// Parse the JSON response and extract the value of the "message" key
-// Update the followSpotifyPlaylist method
       if (response.statusCode == 200) {
         log('Playlist followed successfully');
         CustomSnackbar().show(message);
@@ -718,42 +586,6 @@ class RecommendationsService {
       rethrow;
     }
   }
-
-  // Future<String> getGeneratedImage(
-  //   String accessToken,
-  //   String promptMessage,
-  // ) async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('$baseURL/gemini/image'),
-  //       headers: {
-  //         'Authorization': 'Bearer $accessToken',
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: jsonEncode({'promptMessage': promptMessage}),
-  //     );
-  //     log("REQUEST: ${response.request.toString()}");
-  //     log("RESPONSE: ${response.body}");
-
-  //     if (response.statusCode == 200) {
-  //       log("RESPONSE DATA: ${response.statusCode}");
-  //       final Map<String, dynamic> data = jsonDecode(response.body);
-
-  //       log("RESPONSE DATA: $data");
-
-  //       final String image = data['image'];
-  //       log("Generated image DATA: $image");
-
-  //       return image;
-  //     } else {
-  //       log('Failed to generate image: ${response.body}');
-  //       throw Exception('Failed to generate image');
-  //     }
-  //   } catch (e) {
-  //     log('Exception in getGeneratedImage: $e');
-  //     rethrow;
-  //   }
-  // }
 
   Future<String> getGeneratedImage(
     String accessToken,

@@ -12,5 +12,4 @@ Map<String, Widget Function(BuildContext)> routes = {
   OnboardingScreen.routeName: (context) => const OnboardingScreen(),
   RecommendationsResultScreen.routeName: (context) =>
       const RecommendationsResultScreen(),
-  // Define other routes here
 };
