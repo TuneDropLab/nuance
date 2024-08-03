@@ -1,8 +1,6 @@
 import 'package:fancy_onboarding_screen/core/model/onboarding_item_model.dart';
 import 'package:flutter/material.dart';
 import 'package:fancy_onboarding_screen/fancy_onboarding_screen.dart';
-import 'dart:math';
-
 import 'package:nuance/utils/constants.dart';
 
 class OnboardingScreen extends StatefulWidget {

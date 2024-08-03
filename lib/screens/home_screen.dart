@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' as math;
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -8,7 +7,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';

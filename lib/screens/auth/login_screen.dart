@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
-import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
