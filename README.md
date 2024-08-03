@@ -1,16 +1,27 @@
-# nuance
+# Nuance
 
-A new Flutter project.
+Nuance is a Flutter application that integrates with Spotify for user authentication.
 
-## Getting Started
+## Prerequisites
 
-This project is a starting point for a Flutter application.
+- Flutter SDK
+- Dart
+- Spotify Developer Account
 
-A few resources to get you started if this is your first Flutter project:
+## Setup
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+1.  Clone the repository: `git clone https://github.com/your-repo/nuance.git`.
+2.  Navigate to the project directory: `cd nuance`.
+3.  Install dependencies: `flutter pub get`.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Running the Application
+
+### Android
+
+1.  Update the `build.gradle` file with your Android SDK details and dependencies.
+2.  Run the application: `flutter run`.
+
+### iOS
+
+1.  Update the `Podfile` with your iOS platform version and dependencies.
+2.  Run the application: `flutter run`.
