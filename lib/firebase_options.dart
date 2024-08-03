@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '597861685440',
     projectId: 'nuance-ec8ce',
     storageBucket: 'nuance-ec8ce.appspot.com',
-    iosBundleId: 'com.example.nuance',
+    iosBundleId: 'com.discovernuance.nuance',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '597861685440',
     projectId: 'nuance-ec8ce',
     storageBucket: 'nuance-ec8ce.appspot.com',
-    iosBundleId: 'com.example.nuance',
+    iosBundleId: 'com.discovernuance.nuance',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

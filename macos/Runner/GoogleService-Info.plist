@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.nuance</string>
+	<string>com.discovernuance.nuance</string>
 	<key>PROJECT_ID</key>
 	<string>nuance-ec8ce</string>
 	<key>STORAGE_BUCKET</key>
