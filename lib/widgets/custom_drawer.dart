@@ -30,6 +30,31 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   final TextEditingController _searchController = TextEditingController();
   List<HistoryModel> _localHistory = [];
 
+  bool _isLoading = false; // New variable
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory(); // New method call
+  }
+
+  void _loadHistory() {
+    setState(() {
+      _isLoading = true;
+      _localHistory = []; // Clear the list when loading
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.refresh(historyProvider).whenData((_) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    });
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -132,6 +157,23 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           final historyAsyncValue = ref.watch(historyProvider);
                           return historyAsyncValue.when(
                             data: (history) {
+                              if (_isLoading) {
+                                // New condition
+                                return Center(
+                                  child: SpinningSvg(
+                                    svgWidget: Image.asset(
+                                      'assets/hdlogo.png',
+                                      height: 40,
+                                    ),
+                                    textList: const [
+                                      'Loading your history ...',
+                                      'Just a moment ...',
+                                      'Almost done ...',
+                                    ],
+                                  ),
+                                );
+                              }
+
                               if (history.isEmpty) {
                                 return Center(
                                   child: Text(
@@ -143,13 +185,15 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                 );
                               }
 
-                              Future.microtask(() {
-                                if (mounted) {
-                                  setState(() {
-                                    _localHistory = history;
-                                  });
-                                }
-                              });
+                              _localHistory = history;
+
+                              // Future.microtask(() {
+                              //   if (mounted) {
+                              //     setState(() {
+                              //       _localHistory = history;
+                              //     });
+                              //   }
+                              // });
                               return ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _searchController,
                                 builder: (context, value, __) {
@@ -220,8 +264,8 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           contentPadding: EdgeInsets.zero,
                                           onTap: () {
                                             // Get.back();
-                                            Get.to(() => 
-                                              RecommendationsResultScreen(
+                                            Get.to(
+                                              () => RecommendationsResultScreen(
                                                 searchTitle:
                                                     historyItem.searchQuery,
                                                 sessionState:
@@ -237,7 +281,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                               CupertinoIcons.delete,
                                               size: 16,
                                               color: Colors.white,
-
                                             ),
                                             onPressed: () {
                                               _deleteHistoryItem(historyItem);
@@ -261,10 +304,20 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                 ],
                               ),
                             ),
-                            error: (error, stackTrace) => const Center(
-                              child: Text(
-                                'Error loading history',
-                                style: TextStyle(color: Colors.red),
+                            error: (error, stackTrace) => Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Error loading history',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                  ElevatedButton(
+                                    // New retry button
+                                    onPressed: _loadHistory,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
                               ),
                             ),
                           );
@@ -371,7 +424,8 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
             widget.sessionState.value?.accessToken ?? "",
             historyItem.id ?? 0,
           );
-          ref.invalidate(historyProvider);
+          _loadHistory();
+          // ref.invalidate(historyProvider);
         },
       ),
     );

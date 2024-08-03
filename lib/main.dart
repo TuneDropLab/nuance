@@ -162,7 +162,7 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Nuance',
       home: _isFirstRun == null
-          ?  OnboardingScreen(onComplete: _onboardingComplete)
+          ? OnboardingScreen(onComplete: _onboardingComplete)
           : _isFirstRun!
               ? OnboardingScreen(onComplete: _onboardingComplete)
               : !_isFirstRun! && widget.sessionData == null

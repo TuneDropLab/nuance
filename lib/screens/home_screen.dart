@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:math' as math;
 
-
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_refresh_indicator/custom_refresh_indicator.dart';
@@ -232,7 +231,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         String lastQuery, String newQuery, void Function() submit) {
       // print("LAST QUERY: $lastQuery");
       // print("NEW QUERY: $newQuery");
-      ref.invalidate(historyProvider);
+      // ref.invalidate(historyProvider);
       if (lastQuery == newQuery) {
         showDialog(
           context: context,
@@ -468,7 +467,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             automaticallyImplyLeading: false,
             centerTitle: false,
             actions: [
-              newMethod(sessionState),
+              newMethod(sessionState, ref),
             ],
           ),
           body: Stack(children: [
@@ -739,7 +738,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-Padding newMethod(AsyncValue<SessionData?> sessionState) {
+Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
   return Padding(
     padding: const EdgeInsets.only(right: 15),
     child: sessionState.when(
@@ -787,6 +786,9 @@ Padding newMethod(AsyncValue<SessionData?> sessionState) {
           padding: const EdgeInsets.all(0),
           onPressed: () {
             globalKey.currentState!.openDrawer();
+
+            ref.invalidate(historyProvider);
+
             // sessionData.logout();
           },
           child: CachedNetworkImage(
