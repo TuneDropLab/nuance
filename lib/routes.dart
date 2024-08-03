@@ -1,3 +1,5 @@
+// not needed but we will keep it in case of future changes
+
 import 'package:flutter/material.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
