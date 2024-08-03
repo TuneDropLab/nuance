@@ -1,20 +1,26 @@
 # Nuance
 
-Nuance is a Flutter application that integrates with Spotify to provide music recommendations. It uses Spotify's authentication and leverages machine learning to generate song recommendations based on user input.
+Welcome to Nuance, a Flutter-based music recommendation application that integrates with Spotify. This application is designed to provide a personalized music experience by generating song recommendations based on user input. 
 
-## Features
+## Key Features
 
-- User Authentication: Nuance uses Spotify for user authentication. See [`auth_provider.dart`](lib/providers/auth_provider.dart#L1-L50) for more details.
-- Music Recommendations: Nuance provides music recommendations based on user input. See [`home_recommedations_provider.dart`](lib/providers/home_recommedations_provider.dart#L1-L23) and [`recomedation_service.dart`](lib/services/recomedation_service.dart#L1-L400) for more details.
-- User Profile: Nuance fetches and displays user profile information. See [`home_screen.dart`](lib/screens/home_screen.dart#L630-L690) for more details.
+- **User Authentication**: Nuance uses Spotify for user authentication. This allows us to personalize the user experience and provide recommendations based on the user's Spotify listening history. The authentication process is handled in the [`auth_provider.dart`](lib/providers/auth_provider.dart#L1-L50) file.
+
+- **Music Recommendations**: One of the core features of Nuance is its ability to provide music recommendations. This is achieved by leveraging machine learning algorithms to analyze user input and generate relevant song recommendations. The logic for this feature can be found in the [`home_recommedations_provider.dart`](lib/providers/home_recommedations_provider.dart#L1-L23) and [`recomedation_service.dart`](lib/services/recomedation_service.dart#L1-L400) files.
+
+- **User Profile**: Nuance fetches and displays user profile information from Spotify. This includes the user's name and profile picture. The code for this feature is located in the [`home_screen.dart`](lib/screens/home_screen.dart#L630-L690) file.
 
 ## Prerequisites
 
+Before you can run Nuance, you'll need the following installed on your machine:
+
 - Flutter SDK
 - Dart
-- Spotify Developer Account
+- A Spotify Developer Account
 
 ## Setup
+
+To set up Nuance on your local machine, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/your-repo/nuance.git`.
 2. Navigate to the project directory: `cd nuance`.
@@ -34,8 +40,8 @@ Nuance is a Flutter application that integrates with Spotify to provide music re
 
 ## Contributing
 
-Contributions are welcome. Please make sure to read the [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
+We welcome contributions to Nuance! If you'd like to contribute, please make sure to read the [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
 
 ## License
 
-This project is licensed under the MIT License. See [`LICENSE.md`](LICENSE.md) for more details.
+Nuance is licensed under the MIT License. For more details, see the [`LICENSE.md`](LICENSE.md) file.
