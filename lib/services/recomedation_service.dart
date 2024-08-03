@@ -272,7 +272,7 @@ class RecommendationsService {
         debugPrint('Failed to set playlist cover image: ${response.body}');
         throw Exception('Failed to set playlist cover image');
       }
-      print('SET PLAYLIST COVER IMAGE: $response');
+      debugPrint('SET PLAYLIST COVER IMAGE: $response');
     } catch (e) {
       debugPrint('Exception in setPlaylistCoverImage: $e');
       rethrow;
@@ -291,7 +291,7 @@ class RecommendationsService {
 
       if (response.statusCode == 200) {
         final List<dynamic> historyData = jsonDecode(response.body);
-        print("History Data: $historyData");
+        debugPrint("History Data: $historyData");
         return historyData.map((item) => HistoryModel.fromJson(item)).toList();
       } else {
         _customSnackbar.show('Failed to get history');
@@ -437,7 +437,7 @@ class RecommendationsService {
     } catch (e) {
       _customSnackbar.show('Failed to get playlist songs');
 
-      print('Error fetching playlist tracks: $e');
+      debugPrint('Error fetching playlist tracks: $e');
       throw Exception('Failed to fetch playlist tracks');
     }
   }

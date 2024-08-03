@@ -147,8 +147,8 @@ class _RecommendationsResultScreenState
             } else if (result is Map<String, dynamic>) {
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
-              print("playlistImage playlistImage!!!! $playlistImage");
-              print("playlistImage result!!!! $result");
+              debugPrint("playlistImage playlistImage!!!! $playlistImage");
+              debugPrint("playlistImage result!!!! $result");
             }
           }
           isLoading = false;
@@ -1376,7 +1376,7 @@ class _RecommendationsResultScreenState
     } on PlatformException catch (e) {
       setState(() {
         debugPrint("ERROR MESSAGE: ${e.message}");
-        print('Error: ${e.message}');
+        debugPrint('Error: ${e.message}');
       });
     }
   }

@@ -42,7 +42,7 @@ void main() async {
 
 // Firebase Messaging Background Handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print("Handling a background message: ${message.messageId}");
+  debugPrint("Handling a background message: ${message.messageId}");
 }
 
 class MyApp extends StatefulWidget {
@@ -90,22 +90,22 @@ class _MyAppState extends State<MyApp> {
         // Handle error
       });
     } on Exception catch (e) {
-      print(e.toString());
+      debugPrint(e.toString());
     }
   }
 
   void _initFirebaseMessaging() async {
     FirebaseMessaging.instance.requestPermission();
     FirebaseMessaging.instance.getToken().then((String? token) {
-      print("Device Token: $token");
+      debugPrint("Device Token: $token");
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Foreground Message received: ${message.notification?.title}");
+      debugPrint("Foreground Message received: ${message.notification?.title}");
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("Message opened app: ${message.notification?.title}");
+      debugPrint("Message opened app: ${message.notification?.title}");
     });
   }
 

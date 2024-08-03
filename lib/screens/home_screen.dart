@@ -84,7 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isLoading = false;
       });
     } catch (e) {
-      print("ERROR initial fetch: $e");
+      debugPrint("ERROR initial fetch: $e");
       throw Exception('Failed to load intial recommendations');
     } finally {
       setState(() {
@@ -122,7 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       log('FETCH MORE NEW RECOMMENDATIONS: $newRecommendations');
     } catch (e) {
-      print("ERROR extra fetch: $e");
+      debugPrint("ERROR extra fetch: $e");
       throw Exception('Failed to load more recommendations');
     } finally {
       setState(() {
@@ -144,13 +144,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    print(sessionState);
+
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
-    final historyProviderRef = ref.watch(historyProvider);
-    final List<HistoryModel>? historyList = historyProviderRef.value;
-    String? lastGeneratedQuery = historyList != null && historyList.isNotEmpty
-        ? historyList.first.searchQuery
-        : '';
 
     final List<LinearGradient> cardGradients = List.generate(
       recommendations.length,
@@ -196,32 +191,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
     }
 
-    void compareAndConfirmQuery(
-        String lastQuery, String newQuery, void Function() submit) {
-      if (lastQuery == newQuery) {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return ConfirmDialog(
-              heading: 'You just generated a similar playlist',
-              subtitle:
-                  "Are you sure you want to regenerate the same playlist? You can check your history for previously created playlists",
-              confirmText: "Regenerate",
-              onConfirm: () {
-                Get.back();
-                submit();
-              },
-            );
-          },
-        );
-      } else {
-        submit();
-      }
-    }
-
-    return WillPopScope(
-      onWillPop: () async {
-        return true;
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          return;
+        }
       },
       child: SafeArea(
         child: Scaffold(
@@ -416,7 +390,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             if (index < recommendations.length) {
                               final recommendation = recommendations[index];
                               if (recommendation['type'] == 'playlist') {
-                                // pass
                                 return SpotifyPlaylistCard(
                                   trackListHref: recommendation['tracks']
                                       ['href'],
@@ -488,7 +461,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ];
                               final Color randomColor =
                                   colors[math.Random().nextInt(colors.length)];
-
                               return InkWell(
                                 onTap: () {
                                   _tagQuery.text = data[index];
@@ -596,7 +568,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         'Songs to Help Me Sleep',
                       ],
                       onSubmitted: (value) {
-                        //  userMessage
                         submit('userMessage');
                       },
                     ),
