@@ -10,7 +10,7 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -41,8 +41,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
         // Fetch user profile details
         try {
-          final profile =
-              await RecommendationsService().getUserProfile(accessToken);
+          final profile = await AllServices().getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
           await ref

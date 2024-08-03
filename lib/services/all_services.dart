@@ -11,7 +11,7 @@ import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:share_plus/share_plus.dart';
 
-class RecommendationsService {
+class AllServices {
   final CustomSnackbar _customSnackbar = CustomSnackbar();
   Future<List<SongModel>> getRecommendations(
       String accessToken, String userMessage) async {

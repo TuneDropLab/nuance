@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 
 final recommendationsProvider =
     FutureProvider.family<List<SongModel>, String>((ref, userMessage) async {
@@ -14,7 +14,7 @@ final recommendationsProvider =
       throw Exception('User not authenticated');
     }
 
-    final theSongs = await RecommendationsService()
+    final theSongs = await AllServices()
         .getRecommendations(sessionData['access_token'], userMessage);
 
     return theSongs;

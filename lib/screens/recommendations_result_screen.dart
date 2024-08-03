@@ -17,7 +17,7 @@ import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
 import 'package:nuance/screens/home_screen.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
@@ -113,7 +113,7 @@ class _RecommendationsResultScreenState
     });
 
     try {
-      final service = RecommendationsService();
+      final service = AllServices();
       final accessToken = widget.sessionState?.value?.accessToken ??
           sessionStateFromProvider.value?.providerToken ??
           "";
@@ -122,8 +122,7 @@ class _RecommendationsResultScreenState
           "";
 
       if (widget.imageUrl == null && widget.playlistId == null) {
-        generatedImage = await RecommendationsService().getGeneratedImage(
-            accessToken,
+        generatedImage = await AllServices().getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
       }
 
@@ -168,7 +167,7 @@ class _RecommendationsResultScreenState
       errorList = [];
     });
     try {
-      final service = RecommendationsService();
+      final service = AllServices();
       final accessToken = widget.sessionState?.value?.accessToken ??
           ref.read(sessionProvider).value?.providerToken ??
           "";
@@ -201,7 +200,7 @@ class _RecommendationsResultScreenState
     });
 
     try {
-      final service = RecommendationsService();
+      final service = AllServices();
       final sessionStateFromProvider = ref.read(sessionProvider);
       final accessToken = widget.sessionState?.value?.accessToken ??
           sessionStateFromProvider.value?.providerToken ??
@@ -848,7 +847,7 @@ class _RecommendationsResultScreenState
                           onPressed: () {
                             isLoading
                                 ? null
-                                : RecommendationsService().shareRecommendation(
+                                : AllServices().shareRecommendation(
                                     context,
                                     widget.searchQuery ??
                                         widget.tagQuery ??
@@ -1345,8 +1344,7 @@ class _RecommendationsResultScreenState
 
         // Fetch user profile details
         try {
-          final profile =
-              await RecommendationsService().getUserProfile(accessToken);
+          final profile = await AllServices().getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
 

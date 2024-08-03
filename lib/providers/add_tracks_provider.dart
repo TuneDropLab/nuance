@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 
 class AddTracksParams {
   final String accessToken;
@@ -29,7 +29,7 @@ class AddTracksNotifier extends AsyncNotifier<void> {
   Future<void> addTracksToPlaylist(AddTracksParams params) async {
     state = const AsyncValue.loading();
     try {
-      await RecommendationsService().addTracksToExistingPlaylist(
+      await AllServices().addTracksToExistingPlaylist(
         params.accessToken,
         params.searchQuery,
         params.playlistId,

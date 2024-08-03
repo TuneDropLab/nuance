@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
@@ -273,7 +273,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                     onConfirm: () {
                                       ref.invalidate(historyProvider);
                                       Get.back();
-                                      RecommendationsService().deleteAllHistory(
+                                      AllServices().deleteAllHistory(
                                         sessionState.value?.accessToken ?? "",
                                       );
                                     },

@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 
 final playlistProvider = FutureProvider<List<PlaylistModel>>((ref) async {
   try {
@@ -14,8 +14,8 @@ final playlistProvider = FutureProvider<List<PlaylistModel>>((ref) async {
     }
 
     final userId = sessionData['user']["user_metadata"]["provider_id"];
-    final playlists = await RecommendationsService()
-        .getPlaylists(sessionData['access_token'], userId);
+    final playlists =
+        await AllServices().getPlaylists(sessionData['access_token'], userId);
     return playlists;
   } catch (e) {
     throw Exception('Failed to load playlists');
@@ -34,7 +34,7 @@ final createPlaylistProvider =
     }
 
     final userId = sessionData['user']["user_metadata"]["provider_id"];
-    final newPlaylist = await RecommendationsService().createPlaylist(
+    final newPlaylist = await AllServices().createPlaylist(
       sessionData['access_token'],
       userId,
       data['name']!,

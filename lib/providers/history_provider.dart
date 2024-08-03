@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 
 final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
   try {
@@ -13,8 +13,7 @@ final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
       throw Exception('User not authenticated');
     }
 
-    final history =
-        await RecommendationsService().getHistory(sessionData['access_token']);
+    final history = await AllServices().getHistory(sessionData['access_token']);
     return history.reversed.toList();
   } catch (e) {
     throw Exception('Failed to load history');
@@ -29,8 +28,7 @@ final deleteHistoryEntryProvider =
     if (sessionData == null) {
       throw Exception('User not authenticated');
     }
-    await RecommendationsService()
-        .deleteHistory(sessionData['access_token'], historyId);
+    await AllServices().deleteHistory(sessionData['access_token'], historyId);
   } catch (e) {
     throw Exception('Failed to delete history entry');
   }
@@ -43,8 +41,7 @@ final deleteAllHistoryProvider = FutureProvider<void>((ref) async {
     if (sessionData == null) {
       throw Exception('User not authenticated');
     }
-    await RecommendationsService()
-        .deleteAllHistory(sessionData['access_token']);
+    await AllServices().deleteAllHistory(sessionData['access_token']);
   } catch (e) {
     throw Exception('Failed to delete all history');
   }

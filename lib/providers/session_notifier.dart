@@ -6,17 +6,17 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/services/auth_service.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 
 class SessionNotifier extends AsyncNotifier<SessionData?> {
   late final AuthService authService;
-  late final RecommendationsService recommendationsService;
+  late final AllServices allServices;
 
   @override
   Future<SessionData?> build() async {
     authService = ref.read(authServiceProvider);
-    recommendationsService = RecommendationsService();
+    allServices = AllServices();
     return await _loadSession();
   }
 
@@ -65,8 +65,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
           await authService.getSessionData();
       if (sessionJson != null) {
         final accessToken = sessionJson['access_token'] as String;
-        final response =
-            await recommendationsService.updateUserProfile(accessToken, name);
+        final response = await allServices.updateUserProfile(accessToken, name);
         final userMetadata =
             sessionJson['user']['user_metadata'] as Map<String, dynamic>;
         final updatedUserMetadata = {

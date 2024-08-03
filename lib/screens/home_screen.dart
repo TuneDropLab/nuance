@@ -15,7 +15,7 @@ import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
@@ -110,8 +110,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       final accessToken = sessionData['access_token'];
 
-      final newRecommendations = await RecommendationsService()
-          .getSpotifyHomeRecommendations(accessToken);
+      final newRecommendations =
+          await AllServices().getSpotifyHomeRecommendations(accessToken);
 
       setState(() {
         recommendations = List.from(recommendations)

@@ -9,7 +9,7 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/recommendations_result_screen.dart';
 import 'package:nuance/screens/settings_page.dart';
-import 'package:nuance/services/recomedation_service.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/loader.dart';
@@ -400,7 +400,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
             _localHistory.remove(historyItem);
           });
 
-          RecommendationsService().deleteHistory(
+          AllServices().deleteHistory(
             widget.sessionState.value?.accessToken ?? "",
             historyItem.id ?? 0,
           );
