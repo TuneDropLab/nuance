@@ -347,7 +347,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             automaticallyImplyLeading: false,
             centerTitle: false,
             actions: [
-              newMethod(sessionState, ref),
+              circularAvatar(sessionState, ref),
             ],
           ),
           body: Stack(children: [
@@ -582,7 +582,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-Padding newMethod(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
+Padding circularAvatar(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
   return Padding(
     padding: const EdgeInsets.only(right: 15),
     child: sessionState.when(
