@@ -22,7 +22,7 @@ Before you can run Nuance, you'll need the following installed on your machine:
 
 To set up Nuance on your local machine, follow these steps:
 
-1. **Clone the repository**: Use the command `git clone https://github.com/your-repo/nuance.git` to clone the repository to your local machine.
+1. **Clone the repository**: Use the command `git clone https://github.com/TuneDropLab/nuance` to clone the repository to your local machine.
 
 2. **Navigate to the project directory**: Use the command `cd nuance` to navigate into the root directory of the project.
 
