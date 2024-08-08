@@ -22,15 +22,13 @@ Before you can run Nuance, you'll need the following installed on your machine:
 
 To set up Nuance on your local machine, follow these steps:
 
-1. **Clone the repository**: Use the command `git clone https://github.com/your-repo/nuance.git` to clone the repository to your local machine.
+1. **Clone the repository**: Use the command `git clone https://github.com/TuneDropLab/nuance` to clone the repository to your local machine.
 
 2. **Navigate to the project directory**: Use the command `cd nuance` to navigate into the root directory of the project.
 
 3. **Install Flutter dependencies**: Run the command `flutter pub get` to fetch the necessary Flutter dependencies for the project.
-
-5. **Set up Spotify Developer Account**: Nuance uses Spotify's API for music recommendations. You'll need to create a Spotify Developer account, create a new application, and get the Client ID. Replace the `client_id` in the [`auth_provider.dart`](lib/providers/auth_provider.dart#L1-L50) file with your Spotify Client ID.
-
-6. **Run the application**: Connect your device or start your emulator, then run the command `flutter run` to start the application.
+  
+4. **Run the application**: Connect your device or start your emulator, then run the command `flutter run` to start the application.
 
 ## Running the Application
 
@@ -44,10 +42,6 @@ To set up Nuance on your local machine, follow these steps:
 1. Update the `Podfile` with your iOS platform version and dependencies.
 2. Run the application: `flutter run`.
 
-## Contributing
-
-We welcome contributions to Nuance! If you'd like to contribute, please make sure to read the [`CONTRIBUTING.md`](CONTRIBUTING.md) for guidelines.
-
 ## License
 
-Nuance is licensed under the MIT License. For more details, see the [`LICENSE.md`](LICENSE.md) file.
+Nuance is licensed under the MIT License.
