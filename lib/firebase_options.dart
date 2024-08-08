@@ -51,20 +51,20 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCWYCLjcHAybGj6g2WHb7EowK_GoJYOXQ0',
-    appId: '1:597861685440:android:86bc3010e933500688f525',
-    messagingSenderId: '597861685440',
-    projectId: 'nuance-ec8ce',
-    storageBucket: 'nuance-ec8ce.appspot.com',
+    apiKey: 'AIzaSyDtszMqgbVTbTwqYKFDRZid1SsU4ap8ktg',
+    appId: '1:111351014313:android:6158799cc0877bad26dab8',
+    messagingSenderId: '111351014313',
+    projectId: 'nuancedemo-789d4',
+    storageBucket: 'nuancedemo-789d4.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBz9K5lgzDGHqMn09Snfpr_HybY3FvZzJs',
-    appId: '1:597861685440:ios:e86c14d39629435488f525',
-    messagingSenderId: '597861685440',
-    projectId: 'nuance-ec8ce',
-    storageBucket: 'nuance-ec8ce.appspot.com',
-    iosBundleId: 'com.discovernuance.nuance',
+    apiKey: 'AIzaSyDGplR3u8Y2fC87rEySfM5xPKlLsVlLWl4',
+    appId: '1:111351014313:ios:55ee759e42f51e8f26dab8',
+    messagingSenderId: '111351014313',
+    projectId: 'nuancedemo-789d4',
+    storageBucket: 'nuancedemo-789d4.appspot.com',
+    iosBundleId: 'com.example.nuance',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(

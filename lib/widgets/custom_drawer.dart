@@ -12,6 +12,7 @@ import 'package:nuance/screens/settings_page.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
+import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 
 class MyCustomDrawer extends ConsumerStatefulWidget {
@@ -301,9 +302,10 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                     'Error loading history',
                                     style: TextStyle(color: Colors.red),
                                   ),
-                                  ElevatedButton(
+                                  GeneralButton(
                                     onPressed: _loadHistory,
-                                    child: const Text('Retry'),
+                                    text: "Retry",
+                                    backgroundColor: Colors.grey,
                                   ),
                                 ],
                               ),

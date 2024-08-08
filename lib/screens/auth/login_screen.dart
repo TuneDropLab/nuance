@@ -21,7 +21,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _authenticate() async {
-    const authUrl = '$baseURL/auth/login';
+    final authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
 
     try {

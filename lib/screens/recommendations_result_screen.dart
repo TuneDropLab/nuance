@@ -57,10 +57,15 @@ class _RecommendationsResultScreenState
   SongModel? _currentSong;
   String? _loadingPlaylistId;
 
+// to control showing loading indicator on the page
   bool isLoading = true;
+  // how errors are tracked in the page
   List<String> errorList = [];
+  // the controlled list of songs shown on the screen
   List<SongModel>? recommendations = [];
+  // the generated image; if its a generate playlist card
   String? generatedImage;
+  // the playlist image from spotify; if its a playlist card
   String? playlistImage;
 
   @override
@@ -69,7 +74,6 @@ class _RecommendationsResultScreenState
     ref.invalidate(playlistProvider);
     _fetchRecommendationsOrPlaylistTracks();
 
-    // Listen to audio player state changes
     _audioPlayer.onPlayerStateChanged.listen((playerState) {
       if (playerState == PlayerState.playing) {
         setState(() {
@@ -202,9 +206,6 @@ class _RecommendationsResultScreenState
       final service = AllServices();
       final sessionStateFromProvider = ref.read(sessionProvider);
       final accessToken = widget.sessionState?.value?.accessToken ??
-          sessionStateFromProvider.value?.providerToken ??
-          "";
-      final providerToken = widget.sessionState?.value?.providerToken ??
           sessionStateFromProvider.value?.providerToken ??
           "";
 
@@ -1325,7 +1326,7 @@ class _RecommendationsResultScreenState
   }
 
   Future<void> _authenticate() async {
-    const authUrl = '$baseURL/auth/login';
+    final authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
 
     try {
@@ -1340,19 +1341,13 @@ class _RecommendationsResultScreenState
       if (sessionData != null) {
         final sessionMap = jsonDecode(sessionData);
         final accessToken = sessionMap['access_token'];
-
-        // Fetch user profile details
         try {
           final profile = await AllServices().getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
-
-          // Update session data
           await ref
               .read(sessionProvider.notifier)
               .storeSessionAndSaveToState(sessionData, name, email);
-
-          // Navigate to HomeScreen
           await Get.to(
             () => const HomeScreen(),
             transition: Transition.fade,
