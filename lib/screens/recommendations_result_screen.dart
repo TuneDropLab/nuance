@@ -353,7 +353,7 @@ class _RecommendationsResultScreenState
                                       widget.searchTitle ??
                                       "",
                                   playlistId: playlist.id ?? "",
-                                  imageUrl: widget.imageUrl ?? generatedImage!,
+                                  imageUrl: widget.imageUrl ?? generatedImage ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
 
