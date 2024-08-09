@@ -10,6 +10,7 @@ import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // Import flutter_animate
 
 class LoginScreen extends ConsumerStatefulWidget {
   static const routeName = '/';
@@ -19,7 +20,27 @@ class LoginScreen extends ConsumerStatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderStateMixin {
+  bool _isLoading = false; // Loading state
+  late AnimationController _controller; // Animation controller
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the animation controller
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(); // Repeat the animation indefinitely
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // Dispose the controller when the widget is disposed
+    super.dispose();
+  }
+
   Future<void> _authenticate() async {
     final authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
@@ -37,6 +58,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         final sessionMap = jsonDecode(sessionData);
         final accessToken = sessionMap['access_token'];
 
+        // Trigger loading state
+        setState(() {
+          _isLoading = true;
+        });
+
         // Fetch user profile details
         try {
           final profile = await AllServices().getUserProfile(accessToken);
@@ -45,6 +71,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           await ref
               .read(sessionProvider.notifier)
               .storeSessionAndSaveToState(sessionData, name, email);
+
+          // Simulate loading delay
+          await Future.delayed(const Duration(seconds: 2));
+
           await Get.to(
             () => const HomeScreen(),
             transition: Transition.fade,
@@ -52,14 +82,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
         } catch (error) {
           debugPrint("Error fetching user profile: $error");
+        } finally {
+          setState(() {
+            _isLoading = false;
+          });
         }
       }
-    } on PlatformException catch (e) {}
-  }
-
-  @override
-  void initState() {
-    super.initState();
+    } on PlatformException catch (e) {
+      debugPrint("Error during authentication: $e");
+    }
   }
 
   @override
@@ -101,11 +132,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
                   child: Center(
-                    child: Image.asset(
-                      'assets/whitelogo.png',
-                      width: 40,
-                      height: 40,
-                    ),
+                    child: _isLoading
+                        ? RotationTransition(
+                            turns: _controller,
+                            child: Image.asset(
+                              'assets/whitelogo.png',
+                              width: 40,
+                              height: 40,
+                            ),
+                          )
+                        : Image.asset(
+                            'assets/whitelogo.png',
+                            width: 40,
+                            height: 40,
+                          ),
                   ),
                 ),
                 Column(
