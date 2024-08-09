@@ -18,9 +18,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   late AnimationController _animationController;
 
   static const List<String> sampleImages = [
-    'https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/65d5e90b58ca2a11f5d5c441_artboard-1-65d5e8edee2d6d3ad54698df-%402x-p-1080.webp',
-    'https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/65d5e90b58ca2a11f5d5c441_artboard-1-65d5e8edee2d6d3ad54698df-%402x-p-1080.webp',
-    'https://cdn.prod.website-files.com/642d682a6e4ca0d303c81fdf/65d5e90b58ca2a11f5d5c441_artboard-1-65d5e8edee2d6d3ad54698df-%402x-p-1080.webp',
+    'https://i.ibb.co/dkcNCg9/Nuances-i-Phone-13-14-1-2.png',
+    'https://i.ibb.co/f0k1mTC/Nuances-i-Phone-13-14-1-1.png',
+    'https://i.ibb.co/SPGKsMQ/Nuances.png',
   ];
 
   @override
