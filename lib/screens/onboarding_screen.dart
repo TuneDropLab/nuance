@@ -76,7 +76,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             subHeadingTextStyle: subtitleTextStyle,
             buttonText: "Done",
             boardingScreenColor: const Color.fromARGB(255, 20, 20, 20),
-            activeIndicatorColor: Colors.grey[900],
+            activeIndicatorColor: Colors.grey[700],
           ),
         ],
       ),

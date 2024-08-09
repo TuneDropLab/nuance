@@ -151,7 +151,7 @@ class _MyAppState extends State<MyApp> {
           : _isFirstRun!
               ? OnboardingScreen(onComplete: _onboardingComplete)
               : !_isFirstRun! && widget.sessionData == null
-                  ? const InitialScreen()
+                  ? const OnboardingScreen()
                   : const HomeScreen(),
       theme: AppTheme.lightTheme,
     );
