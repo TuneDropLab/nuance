@@ -353,7 +353,8 @@ class _RecommendationsResultScreenState
                                       widget.searchTitle ??
                                       "",
                                   playlistId: playlist.id ?? "",
-                                  imageUrl: widget.imageUrl ?? generatedImage ?? "",
+                                  imageUrl:
+                                      widget.imageUrl ?? generatedImage ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
 
@@ -1012,6 +1013,7 @@ class _RecommendationsResultScreenState
                         1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
 
                     return Stack(
+                      clipBehavior: Clip.none,
                       fit: StackFit.expand,
                       children: [
                         Container(
@@ -1065,45 +1067,69 @@ class _RecommendationsResultScreenState
                                     maxLines: 1,
                                   ),
                                 )
-                              : Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              : Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Tooltip(
-                                      message: widget.searchQuery ??
-                                          widget.tagQuery ??
-                                          widget.searchTitle ??
-                                          "",
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 284),
-                                        child: Text(
-                                          capitalizeFirst(widget.searchQuery ??
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Tooltip(
+                                          message: widget.searchQuery ??
                                               widget.tagQuery ??
                                               widget.searchTitle ??
-                                              ""),
-                                          style: headingTextStyle,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    isLoading
-                                        ? const SizedBox.shrink()
-                                        : ConstrainedBox(
+                                              "",
+                                          child: ConstrainedBox(
                                             constraints: const BoxConstraints(
                                                 maxWidth: 250),
                                             child: Text(
-                                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                                              style: subtitleTextStyle.copyWith(
-                                                color: Colors.grey.shade300,
-                                              ),
+                                              capitalizeFirst(
+                                                  widget.searchQuery ??
+                                                      widget.tagQuery ??
+                                                      widget.searchTitle ??
+                                                      ""),
+                                              style: headingTextStyle,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                             ),
                                           ),
+                                        ),
+                                        isLoading
+                                            ? const SizedBox.shrink()
+                                            : ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        maxWidth: 200),
+                                                child: Text(
+                                                  '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                                  style: subtitleTextStyle
+                                                      .copyWith(
+                                                    color: Colors.grey.shade300,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                      ],
+                                    ),
                                   ],
                                 ),
+                        ),
+                        Positioned(
+                          bottom: -20,
+                          right: 30,
+                          child: Transform.translate(
+                            offset: const Offset(0, 0),
+                            child: IconButton(
+                              onPressed: () {
+                                // Add your refresh logic here
+                              },
+                              icon: SvgPicture.asset("assets/refresh.svg"),
+                            ),
+                          ),
                         ),
                       ],
                     );
