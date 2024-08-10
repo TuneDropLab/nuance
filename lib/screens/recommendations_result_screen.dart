@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -1123,11 +1124,15 @@ class _RecommendationsResultScreenState
                           right: 30,
                           child: Transform.translate(
                             offset: const Offset(0, 0),
-                            child: IconButton(
-                              onPressed: () {
-                                // Add your refresh logic here
-                              },
-                              icon: SvgPicture.asset("assets/refresh.svg"),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: IconButton(
+                                onPressed: () {
+                                  recommendations = [];
+                                  _generateMore();
+                                },
+                                icon: SvgPicture.asset("assets/refresh.svg"),
+                              ),
                             ),
                           ),
                         ),
