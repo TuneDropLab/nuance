@@ -1119,7 +1119,7 @@ class _RecommendationsResultScreenState
                                 ),
                         ),
                         Positioned(
-                          bottom: -20,
+                          bottom: -30,
                           right: 30,
                           child: Transform.translate(
                             offset: const Offset(0, 0),
