@@ -107,7 +107,8 @@ class _RecommendationsResultScreenState
   void dispose() {
     _audioPlayer.dispose();
 
-    _refreshAnimationController.dispose(); // Dispose the controller when the widget is disposed
+    _refreshAnimationController
+        .dispose(); // Dispose the controller when the widget is disposed
     super.dispose();
   }
 
@@ -226,7 +227,7 @@ class _RecommendationsResultScreenState
       _isGeneratingMore = true;
     });
 
-      _refreshAnimationController.repeat(); // 
+    _refreshAnimationController.repeat(); //
 
     try {
       final service = AllServices();
@@ -263,9 +264,13 @@ class _RecommendationsResultScreenState
         });
         CustomSnackbar().show("Failed to generate more recommendations");
       }
+    } finally {
+      setState(() {
+        _isGeneratingMore = false;
+      });
+      _refreshAnimationController.stop(); // Stop spinning
     }
   }
-  
 
   final Set<String> _selectedItems = {};
   bool _isSelectionMode = false;
@@ -1152,12 +1157,23 @@ class _RecommendationsResultScreenState
                             offset: const Offset(0, 0),
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: IconButton(
-                                onPressed: () {
-                                  recommendations = [];
-                                  _generateMore();
+                              child: AnimatedBuilder(
+                                animation: _refreshAnimationController,
+                                builder: (context, child) {
+                                  return Transform.rotate(
+                                    angle: _refreshAnimationController.value *
+                                        2 *
+                                        3.14159,
+                                    child: child,
+                                  );
                                 },
-                                icon: SvgPicture.asset("assets/refresh.svg"),
+                                child: IconButton(
+                                  onPressed: () {
+                                    recommendations = [];
+                                    _generateMore();
+                                  },
+                                  icon: SvgPicture.asset("assets/refresh.svg"),
+                                ),
                               ),
                             ),
                           ),
