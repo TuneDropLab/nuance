@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
@@ -451,7 +452,13 @@ class AllServices {
       final Map<String, dynamic> responseBody = jsonDecode(response.body);
       final String message = responseBody['message'];
       if (response.statusCode == 200) {
-        CustomSnackbar().show(message);
+        CustomSnackbar().show(
+          message,
+          icon: SvgPicture.asset(
+            "assets/spotifylogo.svg",
+            height: 20,
+          ),
+        );
       } else {
         throw Exception('Failed to follow playlist: $message');
       }
