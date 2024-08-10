@@ -9,7 +9,8 @@ import 'package:get/get.dart';
 import 'package:firebase_messaging/firebase_messaging.dart'; // Import Firebase Messaging
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
-
+import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/services/all_services.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/screens/onboarding_screen.dart';
@@ -115,22 +116,31 @@ class _MyAppState extends State<MyApp> {
     super.dispose();
   }
 
-  void _handleDeepLink(Uri uri) {
+  void _handleDeepLink(Uri uri) async {
     if (uri.pathSegments.contains('share')) {
-      final jsonData = uri.queryParameters['data'];
-      if (jsonData != null) {
-        final recommendationData = jsonDecode(jsonData) as Map<String, dynamic>;
-        final searchTitle = recommendationData['searchQuery'] as String?;
-        final songsData = recommendationData['songs'] as List<dynamic>?;
+      final shareId = uri.pathSegments[1];
+      final jsonData =
+          await AllServices().getSharedRecommendation(shareId);
 
-        if (songsData != null) {
-          final songs =
-              songsData.map((song) => SongModel.fromJson(song)).toList();
-          Get.to(() => RecommendationsResultScreen(
-                searchTitle: searchTitle,
-                songs: songs,
-              ));
-        }
+      final searchTitle = jsonData['searchQuery'] as String?;
+      final songsData = jsonData['songs'] as List<dynamic>?;
+      final image = jsonData['image'] as String?;
+      // log('Shared Recommendation: $jsonData');
+      if (songsData != null) {
+        final songs =
+            songsData.map((song) => SongModel.fromJson(song)).toList();
+
+        // Get the session state from the provider
+
+        final container = ProviderContainer();
+        final sessionData = container.read(sessionProvider);
+
+        Get.to(() => RecommendationsResultScreen(
+              searchTitle: searchTitle,
+              songs: songs,
+              imageUrl: image,
+              sessionState: sessionData.asData,
+            ));
       }
     }
   }
