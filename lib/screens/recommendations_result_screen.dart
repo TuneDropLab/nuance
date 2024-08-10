@@ -52,7 +52,8 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
 }
 
 class _RecommendationsResultScreenState
-    extends ConsumerState<RecommendationsResultScreen> {
+    extends ConsumerState<RecommendationsResultScreen>
+    with TickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   SongModel? _currentSong;
@@ -86,6 +87,28 @@ class _RecommendationsResultScreenState
         });
       }
     });
+  }
+
+  late AnimationController _refreshAnimationController; // Animation controller
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the animation controller
+    _refreshAnimationController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(); // Repeat the animation indefinitely
+    _refreshAnimationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+
+    _refreshAnimationController.dispose(); // Dispose the controller when the widget is disposed
+    super.dispose();
   }
 
   void _togglePlay(SongModel song) async {
@@ -203,6 +226,8 @@ class _RecommendationsResultScreenState
       _isGeneratingMore = true;
     });
 
+      _refreshAnimationController.repeat(); // 
+
     try {
       final service = AllServices();
       final sessionStateFromProvider = ref.read(sessionProvider);
@@ -240,6 +265,7 @@ class _RecommendationsResultScreenState
       }
     }
   }
+  
 
   final Set<String> _selectedItems = {};
   bool _isSelectionMode = false;
@@ -1348,12 +1374,6 @@ class _RecommendationsResultScreenState
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
   }
 
   Future<void> _authenticate() async {
