@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +54,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with TickerProviderSt
 
       final uri = Uri.parse(result);
       final sessionData = uri.queryParameters['session'];
-
       if (sessionData != null) {
         final sessionMap = jsonDecode(sessionData);
         final accessToken = sessionMap['access_token'];
