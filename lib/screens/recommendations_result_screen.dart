@@ -1151,6 +1151,7 @@ class _RecommendationsResultScreenState
                                   ],
                                 ),
                         ),
+                        if(widget.playlistId == null)
                         Positioned(
                           bottom: -30,
                           right: 30,
