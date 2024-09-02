@@ -14,7 +14,7 @@ import 'package:nuance/services/all_services.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/screens/onboarding_screen.dart';
-import 'package:nuance/screens/recommendations_result_screen.dart';
+import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:uni_links/uni_links.dart';
@@ -119,8 +119,7 @@ class _MyAppState extends State<MyApp> {
   void _handleDeepLink(Uri uri) async {
     if (uri.pathSegments.contains('share')) {
       final shareId = uri.pathSegments[1];
-      final jsonData =
-          await AllServices().getSharedRecommendation(shareId);
+      final jsonData = await AllServices().getSharedRecommendation(shareId);
 
       final searchTitle = jsonData['searchQuery'] as String?;
       final songsData = jsonData['songs'] as List<dynamic>?;
@@ -135,7 +134,7 @@ class _MyAppState extends State<MyApp> {
         final container = ProviderContainer();
         final sessionData = container.read(sessionProvider);
 
-        Get.to(() => RecommendationsResultScreen(
+        Get.to(() => PlaylistScreen(
               searchTitle: searchTitle,
               songs: songs,
               imageUrl: image,

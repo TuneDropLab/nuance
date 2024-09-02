@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
-import 'package:nuance/screens/recommendations_result_screen.dart';
+import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/screens/settings_page.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
@@ -255,7 +255,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                           contentPadding: EdgeInsets.zero,
                                           onTap: () {
                                             Get.to(
-                                              () => RecommendationsResultScreen(
+                                              () => PlaylistScreen(
                                                 searchTitle:
                                                     historyItem.searchQuery,
                                                 sessionState:

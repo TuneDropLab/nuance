@@ -12,7 +12,7 @@ import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
 import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
-import 'package:nuance/screens/recommendations_result_screen.dart';
+import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
@@ -159,7 +159,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (userMessage.isEmpty) {
           return;
         }
-        Get.to(() => RecommendationsResultScreen(
+        Get.to(() => PlaylistScreen(
               searchQuery: userMessage!.trim(),
               tagQuery: null,
               sessionState: sessionState,
@@ -169,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (tagQuery.isEmpty) {
           return;
         }
-        Get.to(() => RecommendationsResultScreen(
+        Get.to(() => PlaylistScreen(
               searchQuery: null,
               tagQuery: tagQuery,
               sessionState: sessionState,
@@ -179,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (generatedRecQuery.isEmpty) {
           return;
         }
-        Get.to(() => RecommendationsResultScreen(
+        Get.to(() => PlaylistScreen(
               searchQuery: generatedRecQuery,
               tagQuery: null,
               sessionState: sessionState,
@@ -394,7 +394,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   artistNames: recommendation['description'],
                                   onClick: () {
                                     Get.to(
-                                      RecommendationsResultScreen(
+                                      PlaylistScreen(
                                         sessionState: sessionState,
                                         searchTitle: recommendation['name'],
                                         playlistId: recommendation['id'],

@@ -25,7 +25,7 @@ import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
 
-class RecommendationsResultScreen extends ConsumerStatefulWidget {
+class PlaylistScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
   final String? tagQuery;
   final String? searchQuery;
@@ -35,7 +35,7 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   final List<SongModel>? songs;
   final String? imageUrl;
 
-  const RecommendationsResultScreen({
+  const PlaylistScreen({
     super.key,
     this.searchQuery,
     this.tagQuery,
@@ -47,12 +47,12 @@ class RecommendationsResultScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<RecommendationsResultScreen> createState() =>
-      _RecommendationsResultScreenState();
+  ConsumerState<PlaylistScreen> createState() =>
+      _PlaylistScreenState();
 }
 
-class _RecommendationsResultScreenState
-    extends ConsumerState<RecommendationsResultScreen>
+class _PlaylistScreenState
+    extends ConsumerState<PlaylistScreen>
     with TickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
@@ -1032,62 +1032,31 @@ class _RecommendationsResultScreenState
                         constraints.maxHeight - kToolbarHeight;
                     const double maxExtent =
                         280.0; // Should match expandedHeight
-                    const double fadeStart = maxExtent - kToolbarHeight * 2;
-                    const double fadeEnd = maxExtent - kToolbarHeight;
-
-                    final double titleAlignmentShift = 60.0 -
-                        (41.0 *
-                            ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
-                                .clamp(0.0, 1.0));
-
-                    // Calculate the opacity for the app bar background color
-                    final double appBarOpacity =
-                        1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
 
                     return Stack(
                       clipBehavior: Clip.none,
                       fit: StackFit.expand,
                       children: [
-                        Container(
-                          color: Colors.black.withOpacity(0.5),
-                          child: CachedNetworkImage(
-                            imageUrl: widget.imageUrl != null
-                                ? widget.imageUrl!
-                                : widget.playlistId != null
-                                    // if we pass playlist id we dont use the genrate image we just use the spotify image
-                                    ? playlistImage ?? ""
-                                    : generatedImage ?? "",
-                            fit: BoxFit.cover,
-                            errorWidget: (context, url, error) {
-                              return const SizedBox.shrink();
-                            },
-                            placeholder: (context, url) {
-                              return const SizedBox.shrink();
-                            },
-                          ),
-                        ),
-                        Container(
-                          color: Colors.black.withOpacity(appBarOpacity),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.black.withOpacity(0.6),
-                                Colors.black.withOpacity(0.5),
-                                Colors.black.withOpacity(0.5),
-                                Colors.black.withOpacity(0.8),
-                              ],
-                            ),
-                          ),
+                        CachedNetworkImage(
+                          imageUrl: widget.imageUrl != null
+                              ? widget.imageUrl!
+                              : widget.playlistId != null
+                                  ? playlistImage ?? ""
+                                  : generatedImage ?? "",
+                          fit: BoxFit
+                              .contain, // Ensure the image is not cropped or altered
+                          errorWidget: (context, url, error) {
+                            return const SizedBox.shrink();
+                          },
+                          placeholder: (context, url) {
+                            return const SizedBox.shrink();
+                          },
                         ),
                         Positioned(
                           top: 0.0 +
                               ((shrinkOffset / maxExtent) * maxExtent)
                                   .clamp(0.0, maxExtent - 6),
-                          left: titleAlignmentShift,
+                          left: 20.0, // Adjust the position for the title
                           child: _isSelectionMode
                               ? ConstrainedBox(
                                   constraints:
@@ -1099,91 +1068,83 @@ class _RecommendationsResultScreenState
                                     maxLines: 1,
                                   ),
                                 )
-                              : Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                              : Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Tooltip(
-                                          message: widget.searchQuery ??
+                                    Tooltip(
+                                      message: widget.searchQuery ??
+                                          widget.tagQuery ??
+                                          widget.searchTitle ??
+                                          "",
+                                      child: ConstrainedBox(
+                                        constraints:
+                                            const BoxConstraints(maxWidth: 250),
+                                        child: Text(
+                                          capitalizeFirst(widget.searchQuery ??
                                               widget.tagQuery ??
                                               widget.searchTitle ??
-                                              "",
-                                          child: ConstrainedBox(
+                                              ""),
+                                          style: headingTextStyle,
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                        ),
+                                      ),
+                                    ),
+                                    isLoading
+                                        ? const SizedBox.shrink()
+                                        : ConstrainedBox(
                                             constraints: const BoxConstraints(
-                                                maxWidth: 250),
+                                                maxWidth: 200),
                                             child: Text(
-                                              capitalizeFirst(
-                                                  widget.searchQuery ??
-                                                      widget.tagQuery ??
-                                                      widget.searchTitle ??
-                                                      ""),
-                                              style: headingTextStyle,
+                                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                              style: subtitleTextStyle.copyWith(
+                                                color: Colors.grey.shade300,
+                                              ),
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                             ),
                                           ),
-                                        ),
-                                        isLoading
-                                            ? const SizedBox.shrink()
-                                            : ConstrainedBox(
-                                                constraints:
-                                                    const BoxConstraints(
-                                                        maxWidth: 200),
-                                                child: Text(
-                                                  '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                                                  style: subtitleTextStyle
-                                                      .copyWith(
-                                                    color: Colors.grey.shade300,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                              ),
-                                      ],
-                                    ),
                                   ],
                                 ),
                         ),
-                        if(widget.playlistId == null)
-                        Positioned(
-                          bottom: -30,
-                          right: 30,
-                          child: Transform.translate(
-                            offset: const Offset(0, 0),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: AnimatedBuilder(
-                                animation: _refreshAnimationController,
-                                builder: (context, child) {
-                                  return Transform.rotate(
-                                    angle: _refreshAnimationController.value *
-                                        2 *
-                                        pi,
-                                    child: child,
-                                  );
-                                },
-                                child: IconButton(
-                                  onPressed: () {
-                                    recommendations = [];
-                                    _generateMore();
+                        if (widget.playlistId == null)
+                          Positioned(
+                            bottom: -30,
+                            right: 30,
+                            child: Transform.translate(
+                              offset: const Offset(0, 0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: AnimatedBuilder(
+                                  animation: _refreshAnimationController,
+                                  builder: (context, child) {
+                                    return Transform.rotate(
+                                      angle: _refreshAnimationController.value *
+                                          2 *
+                                          pi,
+                                      child: child,
+                                    );
                                   },
-                                  icon: SvgPicture.asset("assets/refresh.svg"),
+                                  child: IconButton(
+                                    onPressed: () {
+                                      recommendations = [];
+                                      _generateMore();
+                                    },
+                                    icon: SvgPicture.asset(
+                                      "assets/refresh.svg",
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
                       ],
                     );
                   },
                 ),
               ),
+
             // appbar to show when loading is true
             if (isLoading)
               SliverAppBar(
