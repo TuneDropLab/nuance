@@ -59,7 +59,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   bool _isPlaying = false;
   SongModel? _currentSong;
   String? _loadingPlaylistId;
-  Color _backgroundColor = Colors.black;
+  final Color _backgroundColor = Colors.black;
 
 // to control showing loading indicator on the page
   bool isLoading = true;
@@ -93,37 +93,48 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
   late AnimationController _refreshAnimationController; // Animation controller
 
+  late AnimationController _controller; // Animation controller
+
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  //   // Initialize the animation controller
+  //   _controller = AnimationController(
+  //     duration: const Duration(seconds: 2),
+  //     vsync: this,
+  //   )..repeat(); // Repeat the animation indefinitely
+  // }
+
+  // @override
+  // void dispose() {
+  //   _controller.dispose(); // Dispose the controller when the widget is disposed
+  //   super.dispose();
+  // }
+
   @override
   void initState() {
     super.initState();
     _updatePaletteGenerator();
-
-    _updateBackgroundColor();
 
     // Initialize the animation controller
     _refreshAnimationController = AnimationController(
       duration: const Duration(seconds: 2),
       vsync: this,
     )..repeat(); // Repeat the animation indefinitely
-    _refreshAnimationController.forward();
-  }
 
-  Future<void> _updateBackgroundColor() async {
-    if (widget.imageUrl != null) {
-      final PaletteGenerator paletteGenerator =
-          await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(widget.imageUrl!),
-      );
-      setState(() {
-        _backgroundColor =
-            paletteGenerator.dominantColor?.color ?? Colors.black;
-      });
-    }
+    _controller = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(); // Repeat the animation indefinitely
+    _refreshAnimationController.forward();
   }
 
   @override
   void dispose() {
     _audioPlayer.dispose();
+
+    _controller.dispose(); // Dispose the controller when the widget is disposed
 
     _refreshAnimationController
         .dispose(); // Dispose the controller when the widget is disposed
@@ -833,12 +844,25 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   Future<void> _updatePaletteGenerator() async {
     final imageUrl = playlistImage;
 
-    if (imageUrl!.isNotEmpty) {
-      final paletteGenerator = await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(imageUrl),
-      );
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      try {
+        final paletteGenerator = await PaletteGenerator.fromImageProvider(
+          CachedNetworkImageProvider(imageUrl),
+        );
+        setState(() {
+          _paletteGenerator = paletteGenerator;
+          isLoading = false;
+        });
+      } catch (e) {
+        print('Error generating palette: $e');
+        setState(() {
+          _paletteGenerator = null;
+          isLoading = false;
+        });
+      }
+    } else {
       setState(() {
-        _paletteGenerator = paletteGenerator;
+        _paletteGenerator = null;
         isLoading = false;
       });
     }
@@ -1050,11 +1074,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: _isGeneratingMore
-                              ? const SizedBox(
+                              ? SizedBox(
                                   height: 50,
-                                  child: CupertinoActivityIndicator(
-                                    color: Colors.white,
-                                    radius: 10,
+                                  child: RotationTransition(
+                                    turns: _controller,
+                                    child: Image.asset(
+                                      'assets/whitelogo.png',
+                                      width: 40,
+                                      height: 40,
+                                    ),
                                   ),
                                 )
                               : Center(
@@ -1288,12 +1316,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             children: [
               SafeArea(
                 child: CachedNetworkImage(
-                  imageUrl: widget.imageUrl != null
-                      ? widget.imageUrl!
-                      : widget.playlistId != null
-                          // if we pass playlist id we dont use the genrate image we just use the spotify image
-                          ? playlistImage ?? ""
-                          : generatedImage ?? "",
+                  imageUrl: playlistImage ?? "",
                   imageBuilder: (context, imageProvider) => Container(
                     margin: const EdgeInsets.only(
                       top: 60,
