@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:math';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -24,7 +25,6 @@ import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
-import 'package:palette_generator/palette_generator.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -57,7 +57,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   bool _isPlaying = false;
   SongModel? _currentSong;
   String? _loadingPlaylistId;
-  Color _backgroundColor = Colors.black;
 
 // to control showing loading indicator on the page
   bool isLoading = true;
@@ -94,9 +93,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   @override
   void initState() {
     super.initState();
-    _updatePaletteGenerator();
-
-    _updateBackgroundColor();
 
     // Initialize the animation controller
     _refreshAnimationController = AnimationController(
@@ -104,19 +100,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       vsync: this,
     )..repeat(); // Repeat the animation indefinitely
     _refreshAnimationController.forward();
-  }
-
-  Future<void> _updateBackgroundColor() async {
-    if (widget.imageUrl != null) {
-      final PaletteGenerator paletteGenerator =
-          await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(widget.imageUrl!),
-      );
-      setState(() {
-        _backgroundColor =
-            paletteGenerator.dominantColor?.color ?? Colors.black;
-      });
-    }
   }
 
   @override
@@ -820,32 +803,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
   final bool _stretch = true;
 
-  PaletteGenerator? _paletteGenerator;
-  // bool isLoading = true;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  // }
-
-  Future<void> _updatePaletteGenerator() async {
-    final imageUrl = widget.imageUrl != null
-        ? widget.imageUrl!
-        : widget.playlistId != null
-            ? playlistImage ?? ""
-            : generatedImage ?? "";
-
-    if (imageUrl.isNotEmpty) {
-      final paletteGenerator = await PaletteGenerator.fromImageProvider(
-        CachedNetworkImageProvider(imageUrl),
-      );
-      setState(() {
-        _paletteGenerator = paletteGenerator;
-        isLoading = false;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final sessionData = ref.read(sessionProvider.notifier);
@@ -1005,7 +962,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           slivers: <Widget>[
             if (!isLoading)
               SliverAppBar(
-                stretch: true,
+                stretch: false,
                 automaticallyImplyLeading: false,
                 centerTitle: false,
                 backgroundColor: Colors.black,
@@ -1065,29 +1022,53 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                           )
                         : const SizedBox.shrink(),
                 ],
-                expandedHeight: 300.0,
-                floating: true,
+                expandedHeight: 250.0,
+                floating: false,
                 pinned: true,
                 flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
                     final double shrinkOffset =
                         constraints.maxHeight - kToolbarHeight;
-                    const double maxExtent = 300.0;
+                    const double maxExtent =
+                        280.0; // Should match expandedHeight
+                    const double fadeStart = maxExtent - kToolbarHeight * 2;
+                    const double fadeEnd = maxExtent - kToolbarHeight;
+
+                    final double titleAlignmentShift = 60.0 -
+                        (41.0 *
+                            ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
+                                .clamp(0.0, 1.0));
+
+                    // Calculate the opacity for the app bar background color
+                    final double appBarOpacity =
+                        1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
 
                     return Stack(
                       clipBehavior: Clip.none,
                       fit: StackFit.expand,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(16.0),
-                          color: Colors.black,
+                        SafeArea(
                           child: CachedNetworkImage(
                             imageUrl: widget.imageUrl != null
                                 ? widget.imageUrl!
                                 : widget.playlistId != null
+                                    // if we pass playlist id we dont use the genrate image we just use the spotify image
                                     ? playlistImage ?? ""
                                     : generatedImage ?? "",
-                            fit: BoxFit.contain,
+                            imageBuilder: (context, imageProvider) => Container(
+                              margin: const EdgeInsets.only(
+                                top: 0,
+                                bottom: 80,
+                                // left: 20,
+                                // right: 20,
+                              ),
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: imageProvider,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ),
                             errorWidget: (context, url, error) {
                               return const SizedBox.shrink();
                             },
@@ -1096,11 +1077,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                             },
                           ),
                         ),
+                        Container(
+                          color: Colors.black.withOpacity(appBarOpacity),
+                        ),
+                        Container(
+                          decoration: const BoxDecoration(),
+                        ),
                         Positioned(
                           top: 0.0 +
-                              ((shrinkOffset / maxExtent) * maxExtent)
+                              ((shrinkOffset / 250) * maxExtent)
                                   .clamp(0.0, maxExtent - 6),
-                          left: 20.0,
+                          left: titleAlignmentShift,
                           child: _isSelectionMode
                               ? ConstrainedBox(
                                   constraints:
@@ -1112,61 +1099,57 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                     maxLines: 1,
                                   ),
                                 )
-                              : Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                              : Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Tooltip(
-                                      message: widget.searchQuery ??
-                                          widget.tagQuery ??
-                                          widget.searchTitle ??
-                                          "",
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 250),
-                                        child: Text(
-                                          capitalizeFirst(widget.searchQuery ??
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Tooltip(
+                                          message: widget.searchQuery ??
                                               widget.tagQuery ??
                                               widget.searchTitle ??
-                                              ""),
-                                          style: headingTextStyle,
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    isLoading
-                                        ? const SizedBox.shrink()
-                                        : ConstrainedBox(
+                                              "",
+                                          child: ConstrainedBox(
                                             constraints: const BoxConstraints(
-                                                maxWidth: 200),
+                                                maxWidth: 250),
                                             child: Text(
-                                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                                              style: subtitleTextStyle.copyWith(
-                                                color: Colors.grey.shade300,
-                                              ),
+                                              capitalizeFirst(
+                                                  widget.searchQuery ??
+                                                      widget.tagQuery ??
+                                                      widget.searchTitle ??
+                                                      ""),
+                                              style: headingTextStyle,
                                               overflow: TextOverflow.ellipsis,
                                               maxLines: 1,
                                             ),
                                           ),
+                                        ),
+                                        isLoading
+                                            ? const SizedBox.shrink()
+                                            : ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        maxWidth: 200),
+                                                child: Text(
+                                                  '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                                  style: subtitleTextStyle
+                                                      .copyWith(
+                                                    color: Colors.grey.shade300,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                         ),
-                        if (_paletteGenerator != null)
-                          Positioned(
-                            bottom: -30,
-                            left: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(16.0),
-                              color: _paletteGenerator!.dominantColor?.color ??
-                                  Colors.grey,
-                              child: Text(
-                                'Prominent Color: ${_paletteGenerator!.dominantColor?.color}',
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
                         if (widget.playlistId == null)
                           Positioned(
                             bottom: -30,
@@ -1190,9 +1173,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                       recommendations = [];
                                       _generateMore();
                                     },
-                                    icon: SvgPicture.asset(
-                                      "assets/refresh.svg",
-                                    ),
+                                    icon:
+                                        SvgPicture.asset("assets/refresh.svg"),
                                   ),
                                 ),
                               ),
@@ -1392,12 +1374,10 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                               }
                             },
                             onDismissed: () {
-                              setState(
-                                () {
-                                  recommendations
-                                      ?.removeWhere((s) => s.id == song.id);
-                                },
-                              );
+                              setState(() {
+                                recommendations
+                                    ?.removeWhere((s) => s.id == song.id);
+                              });
                             },
                           );
                   },
