@@ -25,6 +25,7 @@ import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -57,6 +58,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   bool _isPlaying = false;
   SongModel? _currentSong;
   String? _loadingPlaylistId;
+  Color _backgroundColor = Colors.black;
 
 // to control showing loading indicator on the page
   bool isLoading = true;
@@ -93,6 +95,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   @override
   void initState() {
     super.initState();
+    _updatePaletteGenerator();
+
+    _updateBackgroundColor();
 
     // Initialize the animation controller
     _refreshAnimationController = AnimationController(
@@ -100,6 +105,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       vsync: this,
     )..repeat(); // Repeat the animation indefinitely
     _refreshAnimationController.forward();
+  }
+
+  Future<void> _updateBackgroundColor() async {
+    if (widget.imageUrl != null) {
+      final PaletteGenerator paletteGenerator =
+          await PaletteGenerator.fromImageProvider(
+        CachedNetworkImageProvider(widget.imageUrl!),
+      );
+      setState(() {
+        _backgroundColor =
+            paletteGenerator.dominantColor?.color ?? Colors.black;
+      });
+    }
   }
 
   @override
@@ -803,6 +821,32 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
   final bool _stretch = true;
 
+  PaletteGenerator? _paletteGenerator;
+  // bool isLoading = true;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
+
+  Future<void> _updatePaletteGenerator() async {
+    final imageUrl = widget.imageUrl != null
+        ? widget.imageUrl!
+        : widget.playlistId != null
+            ? playlistImage ?? ""
+            : generatedImage ?? "";
+
+    if (imageUrl.isNotEmpty) {
+      final paletteGenerator = await PaletteGenerator.fromImageProvider(
+        CachedNetworkImageProvider(imageUrl),
+      );
+      setState(() {
+        _paletteGenerator = paletteGenerator;
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionData = ref.read(sessionProvider.notifier);
@@ -1150,6 +1194,21 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                   ],
                                 ),
                         ),
+                        if (_paletteGenerator != null)
+                          Positioned(
+                            bottom: -30,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(16.0),
+                              color: _paletteGenerator!.dominantColor?.color ??
+                                  Colors.grey,
+                              child: Text(
+                                'Prominent Color: ${_paletteGenerator!.dominantColor?.color}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
                         if (widget.playlistId == null)
                           Positioned(
                             bottom: -30,
@@ -1374,10 +1433,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                               }
                             },
                             onDismissed: () {
-                              setState(() {
-                                recommendations
-                                    ?.removeWhere((s) => s.id == song.id);
-                              });
+                              setState(
+                                () {
+                                  recommendations
+                                      ?.removeWhere((s) => s.id == song.id);
+                                },
+                              );
                             },
                           );
                   },
