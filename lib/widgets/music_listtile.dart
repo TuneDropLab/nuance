@@ -127,17 +127,36 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                 ),
               ],
             ),
-            trailing: CircleAvatar(
-              backgroundColor: const Color(0xff191919),
-              child: IconButton(
-                icon: Icon(
-                  widget.isPlaying ? Icons.pause : Icons.play_arrow_rounded,
-                  color: Colors.white,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  onPressed: () async {
+                    final url = widget.recommendation.trackUrl;
+                    if (url != null && await canLaunch(url)) {
+                      await launch(url);
+                    } else {
+                      // Handle the error if the URL cannot be launched
+                    }
+                  },
+                  icon: SvgPicture.asset(
+                    "assets/spotifylogo.svg",
+                    width: 20,
+                  ),
                 ),
-                onPressed: widget.recommendation.previewUrl != null
-                    ? () => widget.trailingOnTap?.call()
-                    : null,
-              ),
+                CircleAvatar(
+                  backgroundColor: const Color(0xff191919),
+                  child: IconButton(
+                    icon: Icon(
+                      widget.isPlaying ? Icons.pause : Icons.play_arrow_rounded,
+                      color: Colors.white,
+                    ),
+                    onPressed: widget.recommendation.previewUrl != null
+                        ? () => widget.trailingOnTap?.call()
+                        : null,
+                  ),
+                ),
+              ],
             ),
             onTap: widget.onTap,
           )

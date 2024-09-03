@@ -24,6 +24,7 @@ import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
+import 'package:palette_generator/palette_generator.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
   static const routeName = '/recommendations-result';
@@ -47,17 +48,16 @@ class PlaylistScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<PlaylistScreen> createState() =>
-      _PlaylistScreenState();
+  ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
 }
 
-class _PlaylistScreenState
-    extends ConsumerState<PlaylistScreen>
+class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     with TickerProviderStateMixin {
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
   SongModel? _currentSong;
   String? _loadingPlaylistId;
+  Color _backgroundColor = Colors.black;
 
 // to control showing loading indicator on the page
   bool isLoading = true;
@@ -94,6 +94,9 @@ class _PlaylistScreenState
   @override
   void initState() {
     super.initState();
+    _updatePaletteGenerator();
+
+    _updateBackgroundColor();
 
     // Initialize the animation controller
     _refreshAnimationController = AnimationController(
@@ -101,6 +104,19 @@ class _PlaylistScreenState
       vsync: this,
     )..repeat(); // Repeat the animation indefinitely
     _refreshAnimationController.forward();
+  }
+
+  Future<void> _updateBackgroundColor() async {
+    if (widget.imageUrl != null) {
+      final PaletteGenerator paletteGenerator =
+          await PaletteGenerator.fromImageProvider(
+        CachedNetworkImageProvider(widget.imageUrl!),
+      );
+      setState(() {
+        _backgroundColor =
+            paletteGenerator.dominantColor?.color ?? Colors.black;
+      });
+    }
   }
 
   @override
@@ -804,6 +820,32 @@ class _PlaylistScreenState
 
   final bool _stretch = true;
 
+  PaletteGenerator? _paletteGenerator;
+  // bool isLoading = true;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  // }
+
+  Future<void> _updatePaletteGenerator() async {
+    final imageUrl = widget.imageUrl != null
+        ? widget.imageUrl!
+        : widget.playlistId != null
+            ? playlistImage ?? ""
+            : generatedImage ?? "";
+
+    if (imageUrl.isNotEmpty) {
+      final paletteGenerator = await PaletteGenerator.fromImageProvider(
+        CachedNetworkImageProvider(imageUrl),
+      );
+      setState(() {
+        _paletteGenerator = paletteGenerator;
+        isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final sessionData = ref.read(sessionProvider.notifier);
@@ -1023,40 +1065,42 @@ class _PlaylistScreenState
                           )
                         : const SizedBox.shrink(),
                 ],
-                expandedHeight: 280.0,
+                expandedHeight: 300.0,
                 floating: true,
                 pinned: true,
                 flexibleSpace: LayoutBuilder(
                   builder: (BuildContext context, BoxConstraints constraints) {
                     final double shrinkOffset =
                         constraints.maxHeight - kToolbarHeight;
-                    const double maxExtent =
-                        280.0; // Should match expandedHeight
+                    const double maxExtent = 300.0;
 
                     return Stack(
                       clipBehavior: Clip.none,
                       fit: StackFit.expand,
                       children: [
-                        CachedNetworkImage(
-                          imageUrl: widget.imageUrl != null
-                              ? widget.imageUrl!
-                              : widget.playlistId != null
-                                  ? playlistImage ?? ""
-                                  : generatedImage ?? "",
-                          fit: BoxFit
-                              .contain, // Ensure the image is not cropped or altered
-                          errorWidget: (context, url, error) {
-                            return const SizedBox.shrink();
-                          },
-                          placeholder: (context, url) {
-                            return const SizedBox.shrink();
-                          },
+                        Container(
+                          padding: const EdgeInsets.all(16.0),
+                          color: Colors.black,
+                          child: CachedNetworkImage(
+                            imageUrl: widget.imageUrl != null
+                                ? widget.imageUrl!
+                                : widget.playlistId != null
+                                    ? playlistImage ?? ""
+                                    : generatedImage ?? "",
+                            fit: BoxFit.contain,
+                            errorWidget: (context, url, error) {
+                              return const SizedBox.shrink();
+                            },
+                            placeholder: (context, url) {
+                              return const SizedBox.shrink();
+                            },
+                          ),
                         ),
                         Positioned(
                           top: 0.0 +
                               ((shrinkOffset / maxExtent) * maxExtent)
                                   .clamp(0.0, maxExtent - 6),
-                          left: 20.0, // Adjust the position for the title
+                          left: 20.0,
                           child: _isSelectionMode
                               ? ConstrainedBox(
                                   constraints:
@@ -1108,6 +1152,21 @@ class _PlaylistScreenState
                                   ],
                                 ),
                         ),
+                        if (_paletteGenerator != null)
+                          Positioned(
+                            bottom: -30,
+                            left: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(16.0),
+                              color: _paletteGenerator!.dominantColor?.color ??
+                                  Colors.grey,
+                              child: Text(
+                                'Prominent Color: ${_paletteGenerator!.dominantColor?.color}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
                         if (widget.playlistId == null)
                           Positioned(
                             bottom: -30,
@@ -1144,7 +1203,6 @@ class _PlaylistScreenState
                   },
                 ),
               ),
-
             // appbar to show when loading is true
             if (isLoading)
               SliverAppBar(
@@ -1334,10 +1392,12 @@ class _PlaylistScreenState
                               }
                             },
                             onDismissed: () {
-                              setState(() {
-                                recommendations
-                                    ?.removeWhere((s) => s.id == song.id);
-                              });
+                              setState(
+                                () {
+                                  recommendations
+                                      ?.removeWhere((s) => s.id == song.id);
+                                },
+                              );
                             },
                           );
                   },
