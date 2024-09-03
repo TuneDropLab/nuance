@@ -1004,7 +1004,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         color: Colors.black,
         child: CustomScrollView(
           slivers: <Widget>[
-            if (!isLoading)
+            if (!isLoading && widget.playlistId != null)
               SliverAppBar(
                 stretch: false,
                 automaticallyImplyLeading: false,
@@ -1209,6 +1209,230 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                               ),
                             ),
                           ),
+                        if (widget.playlistId == null)
+                          Positioned(
+                            bottom: -30,
+                            right: 30,
+                            child: Transform.translate(
+                              offset: const Offset(0, 0),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: AnimatedBuilder(
+                                  animation: _refreshAnimationController,
+                                  builder: (context, child) {
+                                    return Transform.rotate(
+                                      angle: _refreshAnimationController.value *
+                                          2 *
+                                          pi,
+                                      child: child,
+                                    );
+                                  },
+                                  child: IconButton(
+                                    onPressed: () {
+                                      recommendations = [];
+                                      _generateMore();
+                                    },
+                                    icon:
+                                        SvgPicture.asset("assets/refresh.svg"),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            if (!isLoading && widget.playlistId == null)
+              SliverAppBar(
+                stretch: true,
+                automaticallyImplyLeading: false,
+                centerTitle: false,
+                backgroundColor: Colors.black,
+                leading: _isSelectionMode
+                    ? IconButton(
+                        icon: const Icon(
+                          CupertinoIcons.xmark,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _selectedItems.clear();
+                            _isSelectionMode = false;
+                          });
+                        },
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 10.0,
+                          child: Image.asset(
+                            "assets/backbtn.png",
+                            height: 40.0,
+                            width: 40.0,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                      ),
+                actions: [
+                  if (_isSelectionMode)
+                    widget.playlistId == null
+                        ? IconButton(
+                            icon: const Icon(
+                              CupertinoIcons.delete,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            onPressed: _deleteSelected,
+                          )
+                        : const SizedBox.shrink()
+                  else
+                    widget.playlistId == null
+                        ? IconButton(
+                            icon: const Icon(
+                              CupertinoIcons.delete,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isSelectionMode = true;
+                              });
+                            },
+                          )
+                        : const SizedBox.shrink(),
+                ],
+                expandedHeight: 280.0,
+                floating: true,
+                pinned: true,
+                flexibleSpace: LayoutBuilder(
+                  builder: (BuildContext context, BoxConstraints constraints) {
+                    final double shrinkOffset =
+                        constraints.maxHeight - kToolbarHeight;
+                    const double maxExtent =
+                        280.0; // Should match expandedHeight
+                    const double fadeStart = maxExtent - kToolbarHeight * 2;
+                    const double fadeEnd = maxExtent - kToolbarHeight;
+
+                    final double titleAlignmentShift = 60.0 -
+                        (41.0 *
+                            ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
+                                .clamp(0.0, 1.0));
+
+                    // Calculate the opacity for the app bar background color
+                    final double appBarOpacity =
+                        1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
+
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      fit: StackFit.expand,
+                      children: [
+                        Container(
+                          color: Colors.black.withOpacity(0.5),
+                          child: CachedNetworkImage(
+                            imageUrl: widget.imageUrl != null
+                                ? widget.imageUrl!
+                                : widget.playlistId != null
+                                    // if we pass playlist id we dont use the genrate image we just use the spotify image
+                                    ? playlistImage ?? ""
+                                    : generatedImage ?? "",
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) {
+                              return const SizedBox.shrink();
+                            },
+                            placeholder: (context, url) {
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                        Container(
+                          color: Colors.black.withOpacity(appBarOpacity),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.6),
+                                Colors.black.withOpacity(0.5),
+                                Colors.black.withOpacity(0.5),
+                                Colors.black.withOpacity(0.8),
+                              ],
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 0.0 +
+                              ((shrinkOffset / maxExtent) * maxExtent)
+                                  .clamp(0.0, maxExtent - 6),
+                          left: titleAlignmentShift,
+                          child: _isSelectionMode
+                              ? ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 250),
+                                  child: Text(
+                                    "${_selectedItems.length} selected",
+                                    style: headingTextStyle,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Tooltip(
+                                          message: widget.searchQuery ??
+                                              widget.tagQuery ??
+                                              widget.searchTitle ??
+                                              "",
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                                maxWidth: 250),
+                                            child: Text(
+                                              capitalizeFirst(
+                                                  widget.searchQuery ??
+                                                      widget.tagQuery ??
+                                                      widget.searchTitle ??
+                                                      ""),
+                                              style: headingTextStyle,
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                          ),
+                                        ),
+                                        isLoading
+                                            ? const SizedBox.shrink()
+                                            : ConstrainedBox(
+                                                constraints:
+                                                    const BoxConstraints(
+                                                        maxWidth: 200),
+                                                child: Text(
+                                                  '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                                  style: subtitleTextStyle
+                                                      .copyWith(
+                                                    color: Colors.grey.shade300,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                        ),
                         if (widget.playlistId == null)
                           Positioned(
                             bottom: -30,
