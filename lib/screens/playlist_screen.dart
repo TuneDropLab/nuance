@@ -72,6 +72,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   // the playlist image from spotify; if its a playlist card
   String? playlistImage;
 
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  // }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -128,6 +134,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       vsync: this,
     )..repeat(); // Repeat the animation indefinitely
     _refreshAnimationController.forward();
+
   }
 
   @override
@@ -178,7 +185,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           sessionStateFromProvider.value?.providerToken ??
           "";
 
-      if (widget.imageUrl == null && widget.playlistId == null) {
+      if ( widget.playlistId == null) {
         generatedImage = await AllServices().getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
       }
@@ -250,6 +257,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   bool _isGeneratingMore = false;
 
   Future<void> _generateMore() async {
+    
     if (_isGeneratingMore) return;
 
     setState(() {
@@ -415,7 +423,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                       "",
                                   playlistId: playlist.id ?? "",
                                   imageUrl:
-                                      widget.imageUrl ?? generatedImage ?? "",
+                                     generatedImage ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
 
@@ -877,6 +885,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
     int uniqueArtistsCount =
         getUniqueArtistsCount(recommendations ?? widget.songs ?? []);
+    print("IMAGE URL!!!!!!!!!!!!!!!!!!!!!!!: ${widget.imageUrl}");
 
     return Scaffold(
       bottomNavigationBar: Container(
@@ -1080,8 +1089,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                     turns: _controller,
                                     child: Image.asset(
                                       'assets/whitelogo.png',
-                                      width: 40,
-                                      height: 40,
+                                      width: 20,
+                                      height: 20,
                                     ),
                                   ),
                                 )
