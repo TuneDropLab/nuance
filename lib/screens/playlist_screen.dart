@@ -219,47 +219,40 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           ),
         ),
       ),
-      title: Container(
-        child: _isSelectionMode
-            ? Text(
-                "${_selectedItems.length} selected",
-                style: subtitleTextStyle,
-              )
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Tooltip(
-                    message: widget.searchQuery ??
-                        widget.tagQuery ??
-                        widget.searchTitle ??
-                        "",
-                    child: Text(
-                      capitalizeFirst(widget.searchQuery ??
-                          widget.tagQuery ??
-                          widget.searchTitle ??
-                          ""),
-                      style: headingTextStyle,
+      title: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Tooltip(
+            message: widget.searchQuery ??
+                widget.tagQuery ??
+                widget.searchTitle ??
+                "",
+            child: Text(
+              capitalizeFirst(widget.searchQuery ??
+                  widget.tagQuery ??
+                  widget.searchTitle ??
+                  ""),
+              style: headingTextStyle,
+            ),
+          ),
+          isLoading
+              ? const SizedBox.shrink()
+              : errorList.isNotEmpty
+                  ? Text(
+                      'Error loading details',
+                      style: subtitleTextStyle,
+                    )
+                  : Text(
+                      '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                      style: subtitleTextStyle.copyWith(
+                        color: Colors.grey.shade300,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                  ),
-                  isLoading
-                      ? const SizedBox.shrink()
-                      : errorList.isNotEmpty
-                          ? Text(
-                              'Error loading details',
-                              style: subtitleTextStyle,
-                            )
-                          : Text(
-                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                              style: subtitleTextStyle.copyWith(
-                                color: Colors.grey.shade300,
-                                fontSize: 12,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                ],
-              ),
+        ],
       ),
     );
   }
@@ -617,13 +610,13 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 child: _isSelectionMode
                     ? ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 250),
-                        child: Text(
-                          "${_selectedItems.length} selected",
-                          style: subtitleTextStyle,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      )
+                        child: Transform.translate(
+                          offset: const Offset(0, 0),
+                          child: Text(
+                            "${_selectedItems.length} selected",
+                            style: subtitleTextStyle,
+                          ),
+                        ))
                     : Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -727,6 +720,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     }
   }
 
+  final service = AllServices();
+
   Future<void> _fetchRecommendationsOrPlaylistTracks() async {
     final sessionStateFromProvider = ref.read(sessionProvider);
     setState(() {
@@ -735,7 +730,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     });
 
     try {
-      final service = AllServices();
       final accessToken = widget.sessionState?.value?.accessToken ??
           sessionStateFromProvider.value?.providerToken ??
           "";
@@ -744,7 +738,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           "";
 
       if (widget.playlistId == null) {
-        generatedImage = await AllServices().getGeneratedImage(accessToken,
+        generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
       }
 
@@ -789,7 +783,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       errorList = [];
     });
     try {
-      final service = AllServices();
       final accessToken = widget.sessionState?.value?.accessToken ??
           ref.read(sessionProvider).value?.providerToken ??
           "";
@@ -820,10 +813,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       _isGeneratingMore = true;
     });
 
-    _refreshAnimationController.repeat(); //
+    _refreshAnimationController.repeat();
 
     try {
-      final service = AllServices();
       final sessionStateFromProvider = ref.read(sessionProvider);
       final accessToken = widget.sessionState?.value?.accessToken ??
           sessionStateFromProvider.value?.providerToken ??
@@ -1401,7 +1393,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         final sessionMap = jsonDecode(sessionData);
         final accessToken = sessionMap['access_token'];
         try {
-          final profile = await AllServices().getUserProfile(accessToken);
+          final profile = await service.getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
           await ref
@@ -1503,7 +1495,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                           onPressed: () {
                             isLoading
                                 ? null
-                                : AllServices().shareRecommendation(
+                                : service.shareRecommendation(
                                     context,
                                     widget.searchQuery ??
                                         widget.tagQuery ??
