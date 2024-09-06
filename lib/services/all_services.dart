@@ -455,7 +455,8 @@ class AllServices {
         CustomSnackbar().show(
           message,
           icon: SvgPicture.asset(
-            "assets/spotifylogo.svg",
+            "assets/spotifylogoblack.svg",
+            color: Colors.white,
             height: 20,
           ),
         );

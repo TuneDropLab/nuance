@@ -29,15 +29,6 @@ import 'package:palette_generator/palette_generator.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
-  static const routeName = '/recommendations-result';
-  final String? tagQuery;
-  final String? searchQuery;
-  final String? searchTitle;
-  final String? playlistId;
-  final AsyncValue<SessionData?>? sessionState;
-  final List<SongModel>? songs;
-  final String? imageUrl;
-
   const PlaylistScreen({
     super.key,
     this.searchQuery,
@@ -49,28 +40,50 @@ class PlaylistScreen extends ConsumerStatefulWidget {
     this.imageUrl,
   });
 
+  static const routeName = '/recommendations-result';
+
+  final String? imageUrl;
+  final String? playlistId;
+  final String? searchQuery;
+  final String? searchTitle;
+  final AsyncValue<SessionData?>? sessionState;
+  final List<SongModel>? songs;
+  final String? tagQuery;
+
   @override
   ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
 }
 
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     with TickerProviderStateMixin {
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isPlaying = false;
-  SongModel? _currentSong;
-  String? _loadingPlaylistId;
-  final Color _backgroundColor = Colors.black;
+  int? currentlyPlayingSongId;
+  // how errors are tracked in the page
+  List<String> errorList = [];
+
+  // the generated image; if its a generate playlist card
+  String? generatedImage;
 
 // to control showing loading indicator on the page
   bool isLoading = true;
-  // how errors are tracked in the page
-  List<String> errorList = [];
-  // the controlled list of songs shown on the screen
-  List<SongModel>? recommendations = [];
-  // the generated image; if its a generate playlist card
-  String? generatedImage;
+
   // the playlist image from spotify; if its a playlist card
   String? playlistImage;
+
+  // the controlled list of songs shown on the screen
+  List<SongModel>? recommendations = [];
+
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final Color _backgroundColor = Colors.black;
+  late AnimationController _controller; // Animation controller
+  SongModel? _currentSong;
+  bool _isGeneratingMore = false;
+  bool _isPlaying = false;
+  bool _isSelectionMode = false;
+  String? _loadingPlaylistId;
+  PaletteGenerator? _paletteGenerator;
+  late AnimationController _refreshAnimationController; // Animation controller
+  final Set<String> _selectedItems = {};
+  final bool _stretch = true;
 
   // @override
   // void initState() {
@@ -95,11 +108,24 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         });
       }
     });
+
+    _fetchRecommendationsOrPlaylistTracks().then((_) {
+      if (playlistImage != null && playlistImage!.isNotEmpty) {
+        _updatePaletteGenerator();
+      }
+    });
   }
 
-  late AnimationController _refreshAnimationController; // Animation controller
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
 
-  late AnimationController _controller; // Animation controller
+    _controller.dispose(); // Dispose the controller when the widget is disposed
+
+    _refreshAnimationController
+        .dispose(); // Dispose the controller when the widget is disposed
+    super.dispose();
+  }
 
   // @override
   // void initState() {
@@ -121,7 +147,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   @override
   void initState() {
     super.initState();
-    _updatePaletteGenerator();
 
     // Initialize the animation controller
     _refreshAnimationController = AnimationController(
@@ -134,18 +159,551 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       vsync: this,
     )..repeat(); // Repeat the animation indefinitely
     _refreshAnimationController.forward();
-
   }
 
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
+  String formatMilliseconds(int milliseconds) {
+    Duration duration = Duration(milliseconds: milliseconds);
 
-    _controller.dispose(); // Dispose the controller when the widget is disposed
+    int days = duration.inDays;
+    int hours = duration.inHours % 24;
+    int minutes = duration.inMinutes % 60;
 
-    _refreshAnimationController
-        .dispose(); // Dispose the controller when the widget is disposed
-    super.dispose();
+    if (days > 0) {
+      return '${days}d  ${hours}h  ${minutes}m';
+    } else if (hours > 0) {
+      return '${hours}h  ${minutes}m';
+    } else {
+      return '${minutes}m';
+    }
+  }
+
+  String capitalizeFirst(String s) {
+    if (s.isEmpty) return s;
+    return s.length > 30
+        ? ("${s[0].toUpperCase()}${s.substring(1, 30)}...")
+        : s[0].toUpperCase() + s.substring(1);
+  }
+
+  int getTotalDuration(List<SongModel> songs) {
+    return songs.fold(0, (sum, song) => sum + (song.durationMs ?? 0));
+  }
+
+  int getUniqueArtistsCount(List<SongModel> songs) {
+    Set<String> uniqueArtists = {};
+    for (var song in songs) {
+      if (song.artist != null) {
+        uniqueArtists
+            .addAll(song.artist!.split(',').map((artist) => artist.trim()));
+      }
+    }
+    return uniqueArtists.length;
+  }
+
+  SliverAppBar normalAppBarWithNoImage(
+      BuildContext context, int uniqueArtistsCount, int totalDuration) {
+    return SliverAppBar(
+      backgroundColor: Colors.black,
+      centerTitle: false,
+      leading: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
+        },
+        child: CircleAvatar(
+          backgroundColor: Colors.transparent,
+          radius: 10.0,
+          child: Image.asset(
+            "assets/backbtn.png",
+            height: 40.0,
+            width: 40.0,
+            fit: BoxFit.fill,
+          ),
+        ),
+      ),
+      title: Container(
+        child: _isSelectionMode
+            ? Text(
+                "${_selectedItems.length} selected",
+                style: subtitleTextStyle,
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Tooltip(
+                    message: widget.searchQuery ??
+                        widget.tagQuery ??
+                        widget.searchTitle ??
+                        "",
+                    child: Text(
+                      capitalizeFirst(widget.searchQuery ??
+                          widget.tagQuery ??
+                          widget.searchTitle ??
+                          ""),
+                      style: headingTextStyle,
+                    ),
+                  ),
+                  isLoading
+                      ? const SizedBox.shrink()
+                      : errorList.isNotEmpty
+                          ? Text(
+                              'Error loading details',
+                              style: subtitleTextStyle,
+                            )
+                          : Text(
+                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                              style: subtitleTextStyle.copyWith(
+                                color: Colors.grey.shade300,
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  SliverAppBar spotifyPlaylistAppBar(
+      BuildContext context, int uniqueArtistsCount, int totalDuration) {
+    return SliverAppBar(
+      stretch: false,
+      automaticallyImplyLeading: false,
+      centerTitle: false,
+      backgroundColor:
+          Colors.transparent, // Set to transparent so gradient shows
+      leading: GestureDetector(
+        onTap: () {
+          Navigator.of(context).pop();
+        },
+        child: CircleAvatar(
+          backgroundColor: Colors.transparent,
+          radius: 10.0,
+          child: Image.asset(
+            "assets/backbtn.png",
+            height: 40.0,
+            width: 40.0,
+            fit: BoxFit.fill,
+          ),
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () async {
+            // TODO: GET PLAYLIST URL AND LINK TO IT
+          },
+          icon: SvgPicture.asset(
+            "assets/spotifylogoblack.svg",
+            color: Colors.white,
+            width: 40,
+          ),
+        )
+      ],
+      expandedHeight: 330.0,
+      floating: false,
+      pinned: true,
+      flexibleSpace: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0.0, 0.0),
+            radius: 0.8,
+            colors: [
+              _paletteGenerator?.dominantColor?.color ?? Colors.black,
+              _paletteGenerator?.dominantColor?.color.withAlpha(100) ??
+                  Colors.black,
+              _paletteGenerator?.dominantColor?.color.withAlpha(50) ??
+                  Colors.black,
+              const Color.fromARGB(255, 1, 1, 1),
+            ],
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              center: const Alignment(0.0, 0.0),
+              radius: 0.8,
+              colors: [
+                _paletteGenerator?.dominantColor?.color ?? Colors.black,
+                _paletteGenerator?.dominantColor?.color.withAlpha(100) ??
+                    Colors.black,
+                _paletteGenerator?.dominantColor?.color.withAlpha(50) ??
+                    Colors.black,
+                const Color.fromARGB(255, 1, 1, 1),
+              ],
+            ),
+          ),
+          child: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final double shrinkOffset =
+                  constraints.maxHeight - kToolbarHeight;
+              const double maxExtent = 330.0; // Should match expandedHeight
+              const double fadeStart = maxExtent - kToolbarHeight * 2;
+              const double fadeEnd = maxExtent - kToolbarHeight;
+
+              final double titleAlignmentShift = 60.0 -
+                  (41.0 *
+                      ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
+                          .clamp(0.0, 1.0));
+
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(0.0, 0.0),
+                    radius: 0.8,
+                    colors: [
+                      _paletteGenerator?.dominantColor?.color ?? Colors.black,
+                      _paletteGenerator?.dominantColor?.color.withAlpha(100) ??
+                          Colors.black,
+                      _paletteGenerator?.dominantColor?.color.withAlpha(133) ??
+                          Colors.black,
+                      const Color.fromARGB(255, 1, 1, 1),
+                    ],
+                  ),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  fit: StackFit.expand,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: RadialGradient(
+                          center: const Alignment(0.0, 0.0),
+                          radius: 0.8,
+                          colors: [
+                            _paletteGenerator?.dominantColor?.color ??
+                                Colors.black,
+                            _paletteGenerator?.dominantColor?.color
+                                    .withAlpha(100) ??
+                                Colors.black,
+                            _paletteGenerator?.dominantColor?.color
+                                    .withAlpha(50) ??
+                                Colors.black,
+                            const Color.fromARGB(255, 1, 1, 1),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SafeArea(
+                      child: CachedNetworkImage(
+                        imageUrl: playlistImage ?? "",
+                        imageBuilder: (context, imageProvider) => Container(
+                          margin: const EdgeInsets.only(
+                            top: 60,
+                            bottom: 80,
+                          ),
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: imageProvider,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) {
+                          return const SizedBox.shrink();
+                        },
+                        placeholder: (context, url) {
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                    Positioned(
+                      top: 0.0 +
+                          ((shrinkOffset / maxExtent) * maxExtent)
+                              .clamp(0.0, maxExtent + 26),
+                      left: titleAlignmentShift,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Tooltip(
+                                message: widget.searchQuery ??
+                                    widget.tagQuery ??
+                                    widget.searchTitle ??
+                                    "",
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 250),
+                                  child: Text(
+                                    capitalizeFirst(widget.searchQuery ??
+                                        widget.tagQuery ??
+                                        widget.searchTitle ??
+                                        ""),
+                                    style: headingTextStyle,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(maxWidth: 220),
+                                child: Text(
+                                  '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                  style: subtitleTextStyle.copyWith(
+                                      color: Colors.grey.shade300,
+                                      fontSize: 12),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ).marginOnly(left: 1.5),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  SliverAppBar generatedPlaylistCardAppBar(
+      BuildContext context, int uniqueArtistsCount, int totalDuration) {
+    return SliverAppBar(
+      stretch: false,
+      automaticallyImplyLeading: false,
+      centerTitle: false,
+      backgroundColor: Colors.black,
+      leading: _isSelectionMode
+          ? IconButton(
+              icon: const Icon(
+                CupertinoIcons.xmark,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                setState(() {
+                  _selectedItems.clear();
+                  _isSelectionMode = false;
+                });
+              },
+            )
+          : GestureDetector(
+              onTap: () {
+                Navigator.of(context).pop();
+              },
+              child: CircleAvatar(
+                backgroundColor: Colors.transparent,
+                radius: 10.0,
+                child: Image.asset(
+                  "assets/backbtn.png",
+                  height: 40.0,
+                  width: 40.0,
+                  fit: BoxFit.fill,
+                ),
+              ),
+            ),
+      actions: [
+        if (_isSelectionMode)
+          widget.playlistId == null
+              ? Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        CupertinoIcons.delete,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                      onPressed: _deleteSelected,
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        CupertinoIcons.memories_badge_plus,
+                        size: 28,
+                        color: Colors.white,
+                      ),
+                      onPressed: _generateMore,
+                    ),
+                    // IconButton(
+                    //   onPressed: () {
+                    //     recommendations = [];
+                    //     _generateMore();
+                    //   },
+                    //   icon: SvgPicture.asset(
+                    //     "assets/refresh.svg",
+                    //     height: 30,
+                    //     // color: Colors.,
+                    //   ),
+                    // ),
+                    const SizedBox(
+                      width: 15,
+                    )
+                  ],
+                )
+              : const SizedBox.shrink()
+        else
+          widget.playlistId == null
+              ? IconButton(
+                  icon: const Icon(
+                    CupertinoIcons.list_bullet,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isSelectionMode = true;
+                    });
+                  },
+                )
+              : const SizedBox.shrink(),
+      ],
+      expandedHeight: 280.0,
+      floating: true,
+      pinned: true,
+      flexibleSpace: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final double shrinkOffset = constraints.maxHeight - kToolbarHeight;
+          const double maxExtent = 280.0; // Should match expandedHeight
+          const double fadeStart = maxExtent - kToolbarHeight * 2;
+          const double fadeEnd = maxExtent - kToolbarHeight;
+
+          final double titleAlignmentShift = 60.0 -
+              (41.0 *
+                  ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
+                      .clamp(0.0, 1.0));
+
+          // Calculate the opacity for the app bar background color
+          final double appBarOpacity =
+              1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
+
+          return Stack(
+            clipBehavior: Clip.none,
+            fit: StackFit.expand,
+            children: [
+              Container(
+                color: Colors.black.withOpacity(0.5),
+                child: CachedNetworkImage(
+                  imageUrl: widget.playlistId != null
+                      // if we pass playlist id we dont use the genrate image we just use the spotify image
+                      ? playlistImage ?? ""
+                      : widget.imageUrl ?? generatedImage ?? "",
+                  fit: BoxFit.cover,
+                  errorWidget: (context, url, error) {
+                    return const SizedBox.shrink();
+                  },
+                  placeholder: (context, url) {
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+              Container(
+                color: Colors.black.withOpacity(appBarOpacity),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withOpacity(0.6),
+                      Colors.black.withOpacity(0.5),
+                      Colors.black.withOpacity(0.5),
+                      Colors.black.withOpacity(0.8),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 0.0 +
+                    ((shrinkOffset / maxExtent) * maxExtent)
+                        .clamp(0.0, maxExtent - 6),
+                left: titleAlignmentShift,
+                child: _isSelectionMode
+                    ? ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 250),
+                        child: Text(
+                          "${_selectedItems.length} selected",
+                          style: subtitleTextStyle,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Tooltip(
+                                message: widget.searchQuery ??
+                                    widget.tagQuery ??
+                                    widget.searchTitle ??
+                                    "",
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 250),
+                                  child: Text(
+                                    capitalizeFirst(widget.searchQuery ??
+                                        widget.tagQuery ??
+                                        widget.searchTitle ??
+                                        ""),
+                                    style: headingTextStyle,
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                  ),
+                                ),
+                              ),
+                              isLoading
+                                  ? const SizedBox.shrink()
+                                  : ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 200),
+                                      child: Text(
+                                        '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                                        style: subtitleTextStyle.copyWith(
+                                          color: Colors.grey.shade300,
+                                          fontSize: 12,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                            ],
+                          ),
+                        ],
+                      ),
+              ),
+              if (widget.playlistId == null && widget.songs == null)
+                Positioned(
+                  bottom: -30,
+                  right: 30,
+                  child: Transform.translate(
+                    offset: const Offset(0, 0),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: AnimatedBuilder(
+                        animation: _refreshAnimationController,
+                        builder: (context, child) {
+                          return Transform.rotate(
+                            angle: _refreshAnimationController.value * 2 * pi,
+                            child: child,
+                          );
+                        },
+                        child: IconButton(
+                          onPressed: () {
+                            recommendations = [];
+                            _generateMore();
+                          },
+                          icon: SvgPicture.asset(
+                            "assets/refresh.svg",
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   void _togglePlay(SongModel song) async {
@@ -185,7 +743,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           sessionStateFromProvider.value?.providerToken ??
           "";
 
-      if ( widget.playlistId == null) {
+      if (widget.playlistId == null) {
         generatedImage = await AllServices().getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
       }
@@ -254,13 +812,11 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     }
   }
 
-  bool _isGeneratingMore = false;
-
   Future<void> _generateMore() async {
-    
     if (_isGeneratingMore) return;
 
     setState(() {
+      _isSelectionMode = false;
       _isGeneratingMore = true;
     });
 
@@ -308,9 +864,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       _refreshAnimationController.stop(); // Stop spinning
     }
   }
-
-  final Set<String> _selectedItems = {};
-  bool _isSelectionMode = false;
 
   void _toggleSelection(String songId) {
     setState(() {
@@ -423,7 +976,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                       "",
                                   playlistId: playlist.id ?? "",
                                   imageUrl:
-                                     generatedImage ?? "",
+                                      widget.imageUrl ?? generatedImage ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
                                 );
 
@@ -800,48 +1353,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     );
   }
 
-  String formatMilliseconds(int milliseconds) {
-    Duration duration = Duration(milliseconds: milliseconds);
-
-    int days = duration.inDays;
-    int hours = duration.inHours % 24;
-    int minutes = duration.inMinutes % 60;
-
-    if (days > 0) {
-      return '${days}d  ${hours}h  ${minutes}m';
-    } else if (hours > 0) {
-      return '${hours}h  ${minutes}m';
-    } else {
-      return '${minutes}m';
-    }
-  }
-
-  String capitalizeFirst(String s) {
-    if (s.isEmpty) return s;
-    return s.length > 30
-        ? ("${s[0].toUpperCase()}${s.substring(1, 30)}...")
-        : s[0].toUpperCase() + s.substring(1);
-  }
-
-  int? currentlyPlayingSongId;
-  int getTotalDuration(List<SongModel> songs) {
-    return songs.fold(0, (sum, song) => sum + (song.durationMs ?? 0));
-  }
-
-  int getUniqueArtistsCount(List<SongModel> songs) {
-    Set<String> uniqueArtists = {};
-    for (var song in songs) {
-      if (song.artist != null) {
-        uniqueArtists
-            .addAll(song.artist!.split(',').map((artist) => artist.trim()));
-      }
-    }
-    return uniqueArtists.length;
-  }
-
-  final bool _stretch = true;
-
-  PaletteGenerator? _paletteGenerator;
   // bool isLoading = true;
 
   // @override
@@ -850,42 +1361,81 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   // }
 
   Future<void> _updatePaletteGenerator() async {
-    final imageUrl = playlistImage;
+    // final imageUrl = playlistImage;
 
-    if (imageUrl != null && imageUrl.isNotEmpty) {
+    if (playlistImage != null && (playlistImage ?? "").isNotEmpty) {
       try {
         final paletteGenerator = await PaletteGenerator.fromImageProvider(
-          CachedNetworkImageProvider(imageUrl),
+          CachedNetworkImageProvider((playlistImage ?? "")),
         );
         setState(() {
           _paletteGenerator = paletteGenerator;
-          isLoading = false;
         });
       } catch (e) {
         print('Error generating palette: $e');
         setState(() {
           _paletteGenerator = null;
-          isLoading = false;
         });
       }
     } else {
       setState(() {
         _paletteGenerator = null;
-        isLoading = false;
       });
     }
   }
 
+  Future<void> _authenticate() async {
+    final authUrl = '$baseURL/auth/login';
+    const callbackUrlScheme = "nuance";
+
+    try {
+      final result = await FlutterWebAuth.authenticate(
+        url: authUrl,
+        callbackUrlScheme: callbackUrlScheme,
+      );
+
+      final uri = Uri.parse(result);
+      final sessionData = uri.queryParameters['session'];
+
+      if (sessionData != null) {
+        final sessionMap = jsonDecode(sessionData);
+        final accessToken = sessionMap['access_token'];
+        try {
+          final profile = await AllServices().getUserProfile(accessToken);
+          final name = profile['user']['name'];
+          final email = profile['user']['email'];
+          await ref
+              .read(sessionProvider.notifier)
+              .storeSessionAndSaveToState(sessionData, name, email);
+          await Get.to(
+            () => const HomeScreen(),
+            transition: Transition.fade,
+            curve: Curves.easeInOut,
+          );
+        } catch (error) {
+          debugPrint("Error fetching user profile: $error");
+        }
+      }
+    } on PlatformException catch (e) {
+      setState(() {
+        debugPrint("ERROR MESSAGE: ${e.message}");
+        debugPrint('Error: ${e.message}');
+      });
+    }
+  }
+
+  // bool isHistoryPlaylist = widget.playlistId == null && widget.songs == null;
   @override
   Widget build(BuildContext context) {
-    final sessionData = ref.read(sessionProvider.notifier);
+    // bool for is a history playlist
+    // final sessionData = ref.read(sessionProvider.notifier);
     final sessionState = ref.watch(sessionProvider);
     if (widget.sessionState == null && sessionState.value == null) {}
     ref.invalidate(playlistProvider);
     int totalDuration = getTotalDuration(recommendations ?? widget.songs ?? []);
     int uniqueArtistsCount =
         getUniqueArtistsCount(recommendations ?? widget.songs ?? []);
-    print("IMAGE URL!!!!!!!!!!!!!!!!!!!!!!!: ${widget.imageUrl}");
+    // print("IMAGE URL!!!!!!!!!!!!!!!!!!!!!!!: ${widget.imageUrl}");
 
     return Scaffold(
       bottomNavigationBar: Container(
@@ -1078,19 +1628,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
                     if (index ==
                         (recommendations?.length ?? widget.songs?.length)) {
-                      if (widget.imageUrl == null &&
-                          widget.playlistId == null) {
+                      if (widget.playlistId == null) {
                         return Padding(
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.all(26.0),
                           child: _isGeneratingMore
                               ? SizedBox(
-                                  height: 50,
+                                  height: 30,
                                   child: RotationTransition(
                                     turns: _controller,
                                     child: Image.asset(
+                                      fit: BoxFit.contain,
                                       'assets/whitelogo.png',
-                                      width: 20,
-                                      height: 20,
+                                      width: 10,
+                                      height: 10,
                                     ),
                                   ),
                                 )
@@ -1198,461 +1748,5 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         ),
       ),
     );
-  }
-
-  SliverAppBar normalAppBarWithNoImage(
-      BuildContext context, int uniqueArtistsCount, int totalDuration) {
-    return SliverAppBar(
-      backgroundColor: Colors.black,
-      centerTitle: false,
-      leading: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop();
-        },
-        child: CircleAvatar(
-          backgroundColor: Colors.transparent,
-          radius: 10.0,
-          child: Image.asset(
-            "assets/backbtn.png",
-            height: 40.0,
-            width: 40.0,
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
-      title: Container(
-        child: _isSelectionMode
-            ? Text(
-                "${_selectedItems.length} selected",
-                style: headingTextStyle,
-              )
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Tooltip(
-                    message: widget.searchQuery ??
-                        widget.tagQuery ??
-                        widget.searchTitle ??
-                        "",
-                    child: Text(
-                      capitalizeFirst(widget.searchQuery ??
-                          widget.tagQuery ??
-                          widget.searchTitle ??
-                          ""),
-                      style: headingTextStyle,
-                    ),
-                  ),
-                  isLoading
-                      ? const SizedBox.shrink()
-                      : errorList.isNotEmpty
-                          ? Text(
-                              'Error loading details',
-                              style: subtitleTextStyle,
-                            )
-                          : Text(
-                              '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                              style: subtitleTextStyle,
-                            ),
-                ],
-              ),
-      ),
-    );
-  }
-
-  SliverAppBar spotifyPlaylistAppBar(
-      BuildContext context, int uniqueArtistsCount, int totalDuration) {
-    return SliverAppBar(
-      stretch: false,
-      automaticallyImplyLeading: false,
-      centerTitle: false,
-      backgroundColor:
-          _paletteGenerator?.dominantColor?.color ?? Colors.grey.shade900,
-      leading: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop();
-        },
-        child: CircleAvatar(
-          backgroundColor: Colors.transparent,
-          radius: 10.0,
-          child: Image.asset(
-            "assets/backbtn.png",
-            height: 40.0,
-            width: 40.0,
-            fit: BoxFit.fill,
-          ),
-        ),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () async {
-            // TODO: GET PLAYLIST URL AND LINK TO IT
-            // final url = widget.playlistId;
-            // if (url != null && await canLaunch(url)) {
-            //   await launch(url);
-            // } else {
-            //   // Handle the error if the URL cannot be launched
-            // }
-          },
-          icon: SvgPicture.asset(
-            "assets/spotifylogo.svg",
-            width: 40,
-          ),
-        )
-      ],
-      expandedHeight: 330.0,
-      floating: false,
-      pinned: true,
-      flexibleSpace: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double shrinkOffset = constraints.maxHeight - kToolbarHeight;
-          const double maxExtent = 330.0; // Should match expandedHeight
-          const double fadeStart = maxExtent - kToolbarHeight * 2;
-          const double fadeEnd = maxExtent - kToolbarHeight;
-
-          final double titleAlignmentShift = 60.0 -
-              (41.0 *
-                  ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
-                      .clamp(0.0, 1.0));
-
-          // Calculate the opacity for the app bar background color
-          // final double appBarOpacity =
-          //     1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
-
-          return Stack(
-            clipBehavior: Clip.none,
-            fit: StackFit.expand,
-            children: [
-              SafeArea(
-                child: CachedNetworkImage(
-                  imageUrl: playlistImage ?? "",
-                  imageBuilder: (context, imageProvider) => Container(
-                    margin: const EdgeInsets.only(
-                      top: 60,
-                      bottom: 80,
-                      // left: 20,
-                      // right: 20,
-                    ),
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: imageProvider,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) {
-                    return const SizedBox.shrink();
-                  },
-                  placeholder: (context, url) {
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-              Positioned(
-                top: 0.0 +
-                    ((shrinkOffset / maxExtent) * maxExtent)
-                        .clamp(0.0, maxExtent + 26),
-                left: titleAlignmentShift,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Tooltip(
-                          message: widget.searchQuery ??
-                              widget.tagQuery ??
-                              widget.searchTitle ??
-                              "",
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 250),
-                            child: Text(
-                              capitalizeFirst(widget.searchQuery ??
-                                  widget.tagQuery ??
-                                  widget.searchTitle ??
-                                  ""),
-                              style: headingTextStyle,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                        ),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 200),
-                          child: Text(
-                            '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                            style: subtitleTextStyle.copyWith(
-                              color: Colors.grey.shade300,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  SliverAppBar generatedPlaylistCardAppBar(
-      BuildContext context, int uniqueArtistsCount, int totalDuration) {
-    return SliverAppBar(
-      stretch: false,
-      automaticallyImplyLeading: false,
-      centerTitle: false,
-      backgroundColor: Colors.black,
-      leading: _isSelectionMode
-          ? IconButton(
-              icon: const Icon(
-                CupertinoIcons.xmark,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                setState(() {
-                  _selectedItems.clear();
-                  _isSelectionMode = false;
-                });
-              },
-            )
-          : GestureDetector(
-              onTap: () {
-                Navigator.of(context).pop();
-              },
-              child: CircleAvatar(
-                backgroundColor: Colors.transparent,
-                radius: 10.0,
-                child: Image.asset(
-                  "assets/backbtn.png",
-                  height: 40.0,
-                  width: 40.0,
-                  fit: BoxFit.fill,
-                ),
-              ),
-            ),
-      actions: [
-        if (_isSelectionMode)
-          widget.playlistId == null
-              ? IconButton(
-                  icon: const Icon(
-                    CupertinoIcons.delete,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                  onPressed: _deleteSelected,
-                )
-              : const SizedBox.shrink()
-        else
-          widget.playlistId == null
-              ? IconButton(
-                  icon: const Icon(
-                    CupertinoIcons.delete,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isSelectionMode = true;
-                    });
-                  },
-                )
-              : const SizedBox.shrink(),
-      ],
-      expandedHeight: 280.0,
-      floating: true,
-      pinned: true,
-      flexibleSpace: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double shrinkOffset = constraints.maxHeight - kToolbarHeight;
-          const double maxExtent = 280.0; // Should match expandedHeight
-          const double fadeStart = maxExtent - kToolbarHeight * 2;
-          const double fadeEnd = maxExtent - kToolbarHeight;
-
-          final double titleAlignmentShift = 60.0 -
-              (41.0 *
-                  ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
-                      .clamp(0.0, 1.0));
-
-          // Calculate the opacity for the app bar background color
-          final double appBarOpacity =
-              1 - (shrinkOffset / maxExtent).clamp(-1.1, 1.0);
-
-          return Stack(
-            clipBehavior: Clip.none,
-            fit: StackFit.expand,
-            children: [
-              Container(
-                color: Colors.black.withOpacity(0.5),
-                child: CachedNetworkImage(
-                  imageUrl: widget.imageUrl != null
-                      ? widget.imageUrl!
-                      : widget.playlistId != null
-                          // if we pass playlist id we dont use the genrate image we just use the spotify image
-                          ? playlistImage ?? ""
-                          : generatedImage ?? "",
-                  fit: BoxFit.cover,
-                  errorWidget: (context, url, error) {
-                    return const SizedBox.shrink();
-                  },
-                  placeholder: (context, url) {
-                    return const SizedBox.shrink();
-                  },
-                ),
-              ),
-              Container(
-                color: Colors.black.withOpacity(appBarOpacity),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withOpacity(0.6),
-                      Colors.black.withOpacity(0.5),
-                      Colors.black.withOpacity(0.5),
-                      Colors.black.withOpacity(0.8),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 0.0 +
-                    ((shrinkOffset / maxExtent) * maxExtent)
-                        .clamp(0.0, maxExtent - 6),
-                left: titleAlignmentShift,
-                child: _isSelectionMode
-                    ? ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 250),
-                        child: Text(
-                          "${_selectedItems.length} selected",
-                          style: headingTextStyle,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Tooltip(
-                                message: widget.searchQuery ??
-                                    widget.tagQuery ??
-                                    widget.searchTitle ??
-                                    "",
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 250),
-                                  child: Text(
-                                    capitalizeFirst(widget.searchQuery ??
-                                        widget.tagQuery ??
-                                        widget.searchTitle ??
-                                        ""),
-                                    style: headingTextStyle,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ),
-                              isLoading
-                                  ? const SizedBox.shrink()
-                                  : ConstrainedBox(
-                                      constraints:
-                                          const BoxConstraints(maxWidth: 200),
-                                      child: Text(
-                                        '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                                        style: subtitleTextStyle.copyWith(
-                                          color: Colors.grey.shade300,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                            ],
-                          ),
-                        ],
-                      ),
-              ),
-              if (widget.playlistId == null)
-                Positioned(
-                  bottom: -30,
-                  right: 30,
-                  child: Transform.translate(
-                    offset: const Offset(0, 0),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: AnimatedBuilder(
-                        animation: _refreshAnimationController,
-                        builder: (context, child) {
-                          return Transform.rotate(
-                            angle: _refreshAnimationController.value * 2 * pi,
-                            child: child,
-                          );
-                        },
-                        child: IconButton(
-                          onPressed: () {
-                            recommendations = [];
-                            _generateMore();
-                          },
-                          icon: SvgPicture.asset("assets/refresh.svg"),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _authenticate() async {
-    final authUrl = '$baseURL/auth/login';
-    const callbackUrlScheme = "nuance";
-
-    try {
-      final result = await FlutterWebAuth.authenticate(
-        url: authUrl,
-        callbackUrlScheme: callbackUrlScheme,
-      );
-
-      final uri = Uri.parse(result);
-      final sessionData = uri.queryParameters['session'];
-
-      if (sessionData != null) {
-        final sessionMap = jsonDecode(sessionData);
-        final accessToken = sessionMap['access_token'];
-        try {
-          final profile = await AllServices().getUserProfile(accessToken);
-          final name = profile['user']['name'];
-          final email = profile['user']['email'];
-          await ref
-              .read(sessionProvider.notifier)
-              .storeSessionAndSaveToState(sessionData, name, email);
-          await Get.to(
-            () => const HomeScreen(),
-            transition: Transition.fade,
-            curve: Curves.easeInOut,
-          );
-        } catch (error) {
-          debugPrint("Error fetching user profile: $error");
-        }
-      }
-    } on PlatformException catch (e) {
-      setState(() {
-        debugPrint("ERROR MESSAGE: ${e.message}");
-        debugPrint('Error: ${e.message}');
-      });
-    }
   }
 }

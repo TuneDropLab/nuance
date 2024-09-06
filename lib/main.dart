@@ -137,7 +137,7 @@ class _MyAppState extends State<MyApp> {
         Get.to(() => PlaylistScreen(
               searchTitle: searchTitle,
               songs: songs,
-              imageUrl: image,
+              // imageUrl: image,
               sessionState: sessionData.asData,
             ));
       }

@@ -140,7 +140,8 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                     }
                   },
                   icon: SvgPicture.asset(
-                    "assets/spotifylogo.svg",
+                    "assets/spotifylogoblack.svg",
+                    color: Colors.white,
                     width: 20,
                   ),
                 ),
@@ -276,7 +277,8 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                       }
                     },
                     icon: SvgPicture.asset(
-                      "assets/spotifylogo.svg",
+                      "assets/spotifylogoblack.svg",
+                      color: Colors.white,
                       width: 20,
                     ),
                   ),
