@@ -276,166 +276,108 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         )
       ],
       expandedHeight: 330.0,
-      floating: false,
+      floating: true,
       pinned: true,
-      flexibleSpace: Container(
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: const Alignment(0.0, 0.0),
-            radius: 0.8,
-            colors: [
-              _paletteGenerator?.dominantColor?.color ?? Colors.black,
-              _paletteGenerator?.dominantColor?.color.withAlpha(100) ??
-                  Colors.black,
-              _paletteGenerator?.dominantColor?.color.withAlpha(50) ??
-                  Colors.black,
-              const Color.fromARGB(255, 1, 1, 1),
-            ],
-          ),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: const Alignment(0.0, 0.0),
-              radius: 0.8,
-              colors: [
-                _paletteGenerator?.dominantColor?.color ?? Colors.black,
-                _paletteGenerator?.dominantColor?.color.withAlpha(100) ??
-                    Colors.black,
-                _paletteGenerator?.dominantColor?.color.withAlpha(50) ??
-                    Colors.black,
-                const Color.fromARGB(255, 1, 1, 1),
-              ],
-            ),
-          ),
-          child: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-              final double shrinkOffset =
-                  constraints.maxHeight - kToolbarHeight;
-              const double maxExtent = 330.0; // Should match expandedHeight
-              const double fadeStart = maxExtent - kToolbarHeight * 2;
-              const double fadeEnd = maxExtent - kToolbarHeight;
+      flexibleSpace: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final double shrinkOffset = constraints.maxHeight - kToolbarHeight;
+          const double maxExtent = 330.0; // Should match expandedHeight
+          const double fadeStart = maxExtent - kToolbarHeight * 2;
+          const double fadeEnd = maxExtent - kToolbarHeight;
 
-              final double titleAlignmentShift = 60.0 -
-                  (41.0 *
-                      ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
-                          .clamp(0.0, 1.0));
+          final double titleAlignmentShift = 60.0 -
+              (41.0 *
+                  ((shrinkOffset - fadeStart) / (fadeEnd - fadeStart))
+                      .clamp(0.0, 1.0));
 
-              return Container(
+          return Stack(
+            clipBehavior: Clip.none,
+            fit: StackFit.expand,
+            children: [
+              Container(
                 decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: const Alignment(0.0, 0.0),
-                    radius: 0.8,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                     colors: [
-                      _paletteGenerator?.dominantColor?.color ?? Colors.black,
-                      _paletteGenerator?.dominantColor?.color.withAlpha(100) ??
-                          Colors.black,
-                      _paletteGenerator?.dominantColor?.color.withAlpha(133) ??
-                          Colors.black,
+                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.6) ?? Colors.black,
+                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.7) ?? Colors.black,
                       const Color.fromARGB(255, 1, 1, 1),
                     ],
                   ),
                 ),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  fit: StackFit.expand,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: RadialGradient(
-                          center: const Alignment(0.0, 0.0),
-                          radius: 0.8,
-                          colors: [
-                            _paletteGenerator?.dominantColor?.color ??
-                                Colors.black,
-                            _paletteGenerator?.dominantColor?.color
-                                    .withAlpha(100) ??
-                                Colors.black,
-                            _paletteGenerator?.dominantColor?.color
-                                    .withAlpha(50) ??
-                                Colors.black,
-                            const Color.fromARGB(255, 1, 1, 1),
-                          ],
-                        ),
+              ),
+              SafeArea(
+                child: CachedNetworkImage(
+                  imageUrl: playlistImage ?? "",
+                  imageBuilder: (context, imageProvider) => Container(
+                    margin: const EdgeInsets.only(
+                      top: 60,
+                      bottom: 80,
+                    ),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: imageProvider,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    SafeArea(
-                      child: CachedNetworkImage(
-                        imageUrl: playlistImage ?? "",
-                        imageBuilder: (context, imageProvider) => Container(
-                          margin: const EdgeInsets.only(
-                            top: 60,
-                            bottom: 80,
-                          ),
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.contain,
+                  ),
+                  errorWidget: (context, url, error) {
+                    return const SizedBox.shrink();
+                  },
+                  placeholder: (context, url) {
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+              Positioned(
+                top: 0.0 +
+                    ((shrinkOffset / maxExtent) * maxExtent)
+                        .clamp(0.0, maxExtent + 26),
+                left: titleAlignmentShift,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Tooltip(
+                          message: widget.searchQuery ??
+                              widget.tagQuery ??
+                              widget.searchTitle ??
+                              "",
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 250),
+                            child: Text(
+                              capitalizeFirst(widget.searchQuery ??
+                                  widget.tagQuery ??
+                                  widget.searchTitle ??
+                                  ""),
+                              style: headingTextStyle,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ),
-                        errorWidget: (context, url, error) {
-                          return const SizedBox.shrink();
-                        },
-                        placeholder: (context, url) {
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
-                    Positioned(
-                      top: 0.0 +
-                          ((shrinkOffset / maxExtent) * maxExtent)
-                              .clamp(0.0, maxExtent + 26),
-                      left: titleAlignmentShift,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Tooltip(
-                                message: widget.searchQuery ??
-                                    widget.tagQuery ??
-                                    widget.searchTitle ??
-                                    "",
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 250),
-                                  child: Text(
-                                    capitalizeFirst(widget.searchQuery ??
-                                        widget.tagQuery ??
-                                        widget.searchTitle ??
-                                        ""),
-                                    style: headingTextStyle,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ),
-                              ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(maxWidth: 220),
-                                child: Text(
-                                  '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
-                                  style: subtitleTextStyle.copyWith(
-                                      color: Colors.grey.shade300,
-                                      fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
-                                ),
-                              ).marginOnly(left: 1.5),
-                            ],
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 220),
+                          child: Text(
+                            '$uniqueArtistsCount artists • ${recommendations?.length ?? widget.songs?.length ?? 0} songs • ${formatMilliseconds(totalDuration)}',
+                            style: subtitleTextStyle.copyWith(
+                                color: Colors.grey.shade300, fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
-                        ],
-                      ),
+                        ).marginOnly(left: 1.5),
+                      ],
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -500,7 +442,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                             .toList();
                         dev.log("selectedSongs: $selectedSongs");
                         if (selectedSongs != null && selectedSongs.isNotEmpty) {
-                        dev.log("selectedSongs 2: $selectedSongs");
+                          dev.log("selectedSongs 2: $selectedSongs");
                           _generateMore(seeds: selectedSongs);
                         } else {
                           CustomSnackbar().show("No songs selected");
@@ -1572,169 +1514,159 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       ),
       body: Container(
         color: Colors.black,
-        child: CustomScrollView(
-          slivers: <Widget>[
-            if (!isLoading && widget.playlistId != null)
-              spotifyPlaylistAppBar(context, uniqueArtistsCount, totalDuration),
-            if (!isLoading && widget.playlistId == null)
-              generatedPlaylistCardAppBar(
-                  context, uniqueArtistsCount, totalDuration),
-            // appbar to show when loading is true
-            if (isLoading)
-              normalAppBarWithNoImage(
-                  context, uniqueArtistsCount, totalDuration),
-            SliverPadding(
-              padding: const EdgeInsets.only(
-                top: 25,
-                bottom: 100,
-              ),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    if (isLoading) {
-                      return Container(
-                        height: Get.height * 0.75,
-                        alignment: Alignment.bottomCenter,
-                        child: SpinningSvg(
-                          svgWidget: Image.asset(
-                            'assets/hdlogo.png',
-                            height: 40,
-                          ),
-                          textList: [
-                            widget.searchQuery != null
-                                ? 'Searching for songs...'
-                                : widget.tagQuery != null
-                                    ? 'Generating playlist songs...'
-                                    : widget.searchTitle != null
-                                        ? 'Getting playlist songs...'
-                                        : 'Loading playlist songs...',
-                            'Just a moment...',
-                            'Getting playlist songs...',
-                            'Almost done...',
-                          ],
-                        ),
-                      );
-                    }
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+              !isLoading && widget.playlistId != null
+                  ? spotifyPlaylistAppBar(
+                      context, uniqueArtistsCount, totalDuration)
+                  : !isLoading && widget.playlistId == null
+                      ? generatedPlaylistCardAppBar(
+                          context, uniqueArtistsCount, totalDuration)
+                      : normalAppBarWithNoImage(
+                          context, uniqueArtistsCount, totalDuration)
+            ];
+          },
+          body: ListView.builder(
+            padding: const EdgeInsets.only(
+              top: 25,
+              bottom: 100,
+            ),
+            itemCount: isLoading
+                ? 1
+                : (recommendations?.length ?? widget.songs?.length ?? 0) + 1,
+            itemBuilder: (BuildContext context, int index) {
+              if (isLoading) {
+                return Container(
+                  height: Get.height * 0.75,
+                  alignment: Alignment.bottomCenter,
+                  child: SpinningSvg(
+                    svgWidget: Image.asset(
+                      'assets/hdlogo.png',
+                      height: 40,
+                    ),
+                    textList: [
+                      widget.searchQuery != null
+                          ? 'Searching for songs...'
+                          : widget.tagQuery != null
+                              ? 'Generating playlist songs...'
+                              : widget.searchTitle != null
+                                  ? 'Getting playlist songs...'
+                                  : 'Loading playlist songs...',
+                      'Just a moment...',
+                      'Getting playlist songs...',
+                      'Almost done...',
+                    ],
+                  ),
+                );
+              }
 
-                    if (index ==
-                        (recommendations?.length ?? widget.songs?.length)) {
-                      if (widget.playlistId == null) {
-                        return Padding(
-                          padding: const EdgeInsets.all(26.0),
-                          child: _isGeneratingMore
-                              ? SizedBox(
-                                  height: 30,
-                                  child: RotationTransition(
-                                    turns: _controller,
-                                    child: Image.asset(
-                                      fit: BoxFit.contain,
-                                      'assets/whitelogo.png',
-                                      width: 10,
-                                      height: 10,
-                                    ),
-                                  ),
-                                )
-                              : Center(
-                                  child: SizedBox(
-                                    width: 190,
-                                    child: GeneralButton(
-                                      hasPadding: true,
-                                      backgroundColor: const Color(0xffD9D9D9),
-                                      text: "Generate More",
-                                      color: Colors.black,
-                                      onPressed: _generateMore,
-                                    ),
-                                  ),
-                                ),
-                        );
-                      } else {
-                        return const SizedBox.shrink();
-                      }
-                    }
-
-                    final song =
-                        recommendations?[index] ?? widget.songs![index];
-
-                    return widget.playlistId != null ||
-                            widget.searchQuery != null ||
-                            widget.tagQuery != null
-                        ? Animate(
-                            effects: [
-                              FadeEffect(
-                                delay: Duration(
-                                    milliseconds: (50 * (index % 5)).toInt()),
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                                begin: 0.0,
-                                end: 1.0,
+              if (index == (recommendations?.length ?? widget.songs?.length)) {
+                if (widget.playlistId == null) {
+                  return Padding(
+                    padding: const EdgeInsets.all(26.0),
+                    child: _isGeneratingMore
+                        ? SizedBox(
+                            height: 30,
+                            child: RotationTransition(
+                              turns: _controller,
+                              child: Image.asset(
+                                fit: BoxFit.contain,
+                                'assets/whitelogo.png',
+                                width: 10,
+                                height: 10,
                               ),
-                            ],
-                            child: MusicListTile(
-                              isFromSpotifyPlaylistCard:
-                                  widget.playlistId != null,
-                              isPlaying:
-                                  _isPlaying && _currentSong?.id == song.id,
-                              trailingOnTap: () => _togglePlay(song),
-                              recommendation: song,
-                              onPlaybackStateChanged: (isPlaying) {
-                                setState(() {
-                                  _isPlaying = isPlaying;
-                                });
-                              },
-                              isSelected: _selectedItems.contains(song.id),
-                              onTap: () {
-                                if (_isSelectionMode) {
-                                  _toggleSelection(song.id ?? '');
-                                } else {
-                                  _togglePlay(song);
-                                }
-                              },
-                              onDismissed: () {
-                                setState(() {
-                                  recommendations
-                                      ?.removeWhere((s) => s.id == song.id);
-                                });
-                              },
                             ),
                           )
-                        : MusicListTile(
-                            isFromSpotifyPlaylistCard:
-                                widget.playlistId != null,
-                            isPlaying:
-                                _isPlaying && _currentSong?.id == song.id,
-                            trailingOnTap: () => _togglePlay(song),
-                            recommendation: song,
-                            onPlaybackStateChanged: (isPlaying) {
-                              setState(() {
-                                _isPlaying = isPlaying;
-                              });
-                            },
-                            isSelected: _selectedItems.contains(song.id),
-                            onTap: () {
-                              if (_isSelectionMode) {
-                                _toggleSelection(song.id ?? '');
-                              } else {
-                                _togglePlay(song);
-                              }
-                            },
-                            onDismissed: () {
-                              setState(
-                                () {
-                                  recommendations
-                                      ?.removeWhere((s) => s.id == song.id);
-                                },
-                              );
-                            },
-                          );
-                  },
-                  childCount: isLoading
-                      ? 1
-                      : (recommendations?.length ?? widget.songs?.length ?? 0) +
-                          1,
-                ),
-              ),
-            ),
-          ],
+                        : Center(
+                            child: SizedBox(
+                              width: 190,
+                              child: GeneralButton(
+                                hasPadding: true,
+                                backgroundColor: const Color(0xffD9D9D9),
+                                text: "Generate More",
+                                color: Colors.black,
+                                onPressed: _generateMore,
+                              ),
+                            ),
+                          ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }
+
+              final song = recommendations?[index] ?? widget.songs![index];
+
+              return widget.playlistId != null ||
+                      widget.searchQuery != null ||
+                      widget.tagQuery != null
+                  ? Animate(
+                      effects: [
+                        FadeEffect(
+                          delay: Duration(
+                              milliseconds: (50 * (index % 5)).toInt()),
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
+                          begin: 0.0,
+                          end: 1.0,
+                        ),
+                      ],
+                      child: MusicListTile(
+                        isFromSpotifyPlaylistCard: widget.playlistId != null,
+                        isPlaying: _isPlaying && _currentSong?.id == song.id,
+                        trailingOnTap: () => _togglePlay(song),
+                        recommendation: song,
+                        onPlaybackStateChanged: (isPlaying) {
+                          setState(() {
+                            _isPlaying = isPlaying;
+                          });
+                        },
+                        isSelected: _selectedItems.contains(song.id),
+                        onTap: () {
+                          if (_isSelectionMode) {
+                            _toggleSelection(song.id ?? '');
+                          } else {
+                            _togglePlay(song);
+                          }
+                        },
+                        onDismissed: () {
+                          setState(() {
+                            recommendations
+                                ?.removeWhere((s) => s.id == song.id);
+                          });
+                        },
+                      ),
+                    )
+                  : MusicListTile(
+                      isFromSpotifyPlaylistCard: widget.playlistId != null,
+                      isPlaying: _isPlaying && _currentSong?.id == song.id,
+                      trailingOnTap: () => _togglePlay(song),
+                      recommendation: song,
+                      onPlaybackStateChanged: (isPlaying) {
+                        setState(() {
+                          _isPlaying = isPlaying;
+                        });
+                      },
+                      isSelected: _selectedItems.contains(song.id),
+                      onTap: () {
+                        if (_isSelectionMode) {
+                          _toggleSelection(song.id ?? '');
+                        } else {
+                          _togglePlay(song);
+                        }
+                      },
+                      onDismissed: () {
+                        setState(
+                          () {
+                            recommendations
+                                ?.removeWhere((s) => s.id == song.id);
+                          },
+                        );
+                      },
+                    );
+            },
+          ),
         ),
       ),
     );
