@@ -588,7 +588,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         ],
                       ),
               ),
-              if (widget.playlistId == null && widget.songs == null)
+              if (widget.playlistId == null && widget.songs == null && _isSelectionMode == false)
                 Positioned(
                   bottom: -30,
                   right: 30,
@@ -856,7 +856,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Add to your Library",
+                      "Add to your library",
                       style: headingTextStyle.copyWith(
                         wordSpacing: 0.1,
                         letterSpacing: 0.11,
@@ -1125,7 +1125,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                           width: MediaQuery.of(context).size.width,
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Create New Playlist",
+                            "Create a new playlist",
                             style: headingTextStyle.copyWith(
                               wordSpacing: 0.1,
                               letterSpacing: 0.11,
