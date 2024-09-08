@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:developer' as dev;
 import 'dart:math';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -95,7 +95,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
     ref.invalidate(playlistProvider);
-    _fetchRecommendationsOrPlaylistTracks();
+    // _fetchRecommendationsOrPlaylistTracks();
 
     _audioPlayer.onPlayerStateChanged.listen((playerState) {
       if (playerState == PlayerState.playing) {
@@ -126,23 +126,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         .dispose(); // Dispose the controller when the widget is disposed
     super.dispose();
   }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-
-  //   // Initialize the animation controller
-  //   _controller = AnimationController(
-  //     duration: const Duration(seconds: 2),
-  //     vsync: this,
-  //   )..repeat(); // Repeat the animation indefinitely
-  // }
-
-  // @override
-  // void dispose() {
-  //   _controller.dispose(); // Dispose the controller when the widget is disposed
-  //   super.dispose();
-  // }
 
   @override
   void initState() {
@@ -511,19 +494,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         size: 28,
                         color: Colors.white,
                       ),
-                      onPressed: _generateMore,
+                      onPressed: () {
+                        final selectedSongs = recommendations
+                            ?.where((song) => _selectedItems.contains(song.id))
+                            .toList();
+                        dev.log("selectedSongs: $selectedSongs");
+                        if (selectedSongs != null && selectedSongs.isNotEmpty) {
+                        dev.log("selectedSongs 2: $selectedSongs");
+                          _generateMore(seeds: selectedSongs);
+                        } else {
+                          CustomSnackbar().show("No songs selected");
+                        }
+                      },
                     ),
-                    // IconButton(
-                    //   onPressed: () {
-                    //     recommendations = [];
-                    //     _generateMore();
-                    //   },
-                    //   icon: SvgPicture.asset(
-                    //     "assets/refresh.svg",
-                    //     height: 30,
-                    //     // color: Colors.,
-                    //   ),
-                    // ),
                     const SizedBox(
                       width: 15,
                     )
@@ -573,7 +556,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 color: Colors.black.withOpacity(0.5),
                 child: CachedNetworkImage(
                   imageUrl: widget.playlistId != null
-                      // if we pass playlist id we dont use the genrate image we just use the spotify image
+                      // if we pass playlist id we use the spotify image
                       ? playlistImage ?? ""
                       : widget.imageUrl ?? generatedImage ?? "",
                   fit: BoxFit.cover,
@@ -725,7 +708,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   Future<void> _fetchRecommendationsOrPlaylistTracks() async {
     final sessionStateFromProvider = ref.read(sessionProvider);
     setState(() {
-      isLoading = true;
+      // isLoading = true;
       errorList = [];
     });
 
@@ -737,7 +720,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           sessionStateFromProvider.value?.providerToken ??
           "";
 
-      if (widget.playlistId == null) {
+      if (widget.playlistId == null && widget.songs == null) {
         generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
       }
@@ -753,6 +736,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   : null;
 
       if (mounted) {
+        dev.log("result: $result");
         setState(() {
           if (result != null) {
             if (result is List<SongModel>) {
@@ -760,11 +744,13 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             } else if (result is Map<String, dynamic>) {
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
-              debugPrint("playlistImage playlistImage!!!! $playlistImage");
-              debugPrint("playlistImage result!!!! $result");
+              // debugPrint("playlistImage playlistImage!!!! $playlistImage");
+              // debugPrint("playlistImage result!!!! $result");
             }
           }
-          isLoading = false;
+          setState(() {
+            isLoading = false;
+          });
         });
       }
     } catch (e) {
@@ -805,12 +791,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     }
   }
 
-  Future<void> _generateMore() async {
+  Future<void> _generateMore({
+    List<SongModel>? seeds,
+  }) async {
     if (_isGeneratingMore) return;
 
     setState(() {
       _isSelectionMode = false;
       _isGeneratingMore = true;
+      isLoading = true; // Set isLoading to true to trigger loading interface
     });
 
     _refreshAnimationController.repeat();
@@ -823,7 +812,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
       List<SongModel>? newRecommendations;
 
-      if (widget.searchQuery != null || widget.tagQuery != null) {
+      if (seeds != null && seeds.isNotEmpty) {
+        // Generate new recommendations based on the selected songs
+        newRecommendations = await service.getMoreRecommendations(
+          accessToken,
+          "", // Empty string as we're using seed tracks
+          seeds,
+        );
+      } else if (widget.searchQuery != null || widget.tagQuery != null) {
         newRecommendations = await service.getMoreRecommendations(
           accessToken,
           widget.searchQuery ?? widget.tagQuery ?? "",
@@ -832,13 +828,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       }
 
       if (mounted) {
-        if (newRecommendations != null) {
+        if (newRecommendations != null && newRecommendations.isNotEmpty) {
           setState(() {
-            recommendations = [...?recommendations, ...?newRecommendations];
+            recommendations = newRecommendations;
             _isGeneratingMore = false;
+            isLoading = false;
           });
         } else {
-          CustomSnackbar().show("No more recommendations generated");
+          CustomSnackbar().show("No recommendations generated");
         }
       }
     } catch (e) {
@@ -846,12 +843,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         setState(() {
           errorList.add(e.toString());
           _isGeneratingMore = false;
+          isLoading = false;
         });
-        CustomSnackbar().show("Failed to generate more recommendations");
+        CustomSnackbar().show("Failed to generate recommendations");
       }
     } finally {
       setState(() {
         _isGeneratingMore = false;
+        isLoading = false;
       });
       _refreshAnimationController.stop(); // Stop spinning
     }
@@ -1345,8 +1344,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     );
   }
 
-  // bool isLoading = true;
-
   // @override
   // void initState() {
   //   super.initState();
@@ -1416,7 +1413,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     }
   }
 
-  // bool isHistoryPlaylist = widget.playlistId == null && widget.songs == null;
   @override
   Widget build(BuildContext context) {
     // bool for is a history playlist
@@ -1439,7 +1435,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               if (widget.tagQuery != null)
-                if (!isLoading && sessionState.value?.accessToken != null)
+                if (!isLoading && sessionState.value?.accessToken != null ||
+                    widget.sessionState != null)
                   Animate(
                     child: Row(
                       children: [
@@ -1464,7 +1461,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     ),
                   ),
               if (widget.tagQuery != null)
-                if (!isLoading && sessionState.value?.accessToken != null)
+                if (!isLoading && sessionState.value?.accessToken != null ||
+                    widget.sessionState != null)
                   const CustomDivider().marginOnly(bottom: 5),
               if (!isLoading && sessionState.value?.accessToken != null)
                 Padding(

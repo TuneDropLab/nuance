@@ -35,6 +35,11 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _loadHistory();
   }
 
@@ -149,7 +154,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           return historyAsyncValue.when(
                             data: (history) {
                               if (_isLoading) {
-                                // New condition
                                 return Center(
                                   child: SpinningSvg(
                                     svgWidget: Image.asset(
@@ -338,7 +342,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                             color: Colors.white,
                           ),
                           onPressed: () {
-                            Get.back();
+                            Navigator.pop(context);
                           },
                         ),
                       ],
