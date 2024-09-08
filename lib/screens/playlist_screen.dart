@@ -300,8 +300,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.6) ?? Colors.black,
-                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.7) ?? Colors.black,
+                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.8) ?? Colors.black,
+                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.96) ?? Colors.black,
                       const Color.fromARGB(255, 1, 1, 1),
                     ],
                   ),
