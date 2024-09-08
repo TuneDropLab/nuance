@@ -38,6 +38,7 @@ class PlaylistScreen extends ConsumerStatefulWidget {
     this.sessionState,
     this.songs,
     this.imageUrl,
+    this.playlistUrl,
   });
 
   static const routeName = '/recommendations-result';
@@ -49,6 +50,7 @@ class PlaylistScreen extends ConsumerStatefulWidget {
   final AsyncValue<SessionData?>? sessionState;
   final List<SongModel>? songs;
   final String? tagQuery;
+  final String? playlistUrl;
 
   @override
   ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
@@ -266,7 +268,13 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       actions: [
         IconButton(
           onPressed: () async {
-            // TODO: GET PLAYLIST URL AND LINK TO IT
+            // playlistUrl
+            final url = widget.playlistUrl;
+            if (url != null && await canLaunch(url)) {
+              await launch(url);
+            } else {
+              // Handle the error if the URL cannot be launched
+            }
           },
           icon: SvgPicture.asset(
             "assets/spotifylogoblack.svg",
@@ -300,8 +308,18 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.8) ?? Colors.black,
-                      Color.lerp(_paletteGenerator?.dominantColor?.color ?? Colors.black, Colors.black, 0.96) ?? Colors.black,
+                      Color.lerp(
+                              _paletteGenerator?.dominantColor?.color ??
+                                  Colors.black,
+                              Colors.black,
+                              0.8) ??
+                          Colors.black,
+                      Color.lerp(
+                              _paletteGenerator?.dominantColor?.color ??
+                                  Colors.black,
+                              Colors.black,
+                              0.96) ??
+                          Colors.black,
                       const Color.fromARGB(255, 1, 1, 1),
                     ],
                   ),
@@ -588,7 +606,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         ],
                       ),
               ),
-              if (widget.playlistId == null && widget.songs == null && _isSelectionMode == false)
+              if (widget.playlistId == null &&
+                  widget.songs == null &&
+                  _isSelectionMode == false)
                 Positioned(
                   bottom: -30,
                   right: 30,

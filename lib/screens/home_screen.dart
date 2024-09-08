@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' as math;
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -393,11 +394,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   playlistName: recommendation['name'],
                                   artistNames: recommendation['description'],
                                   onClick: () {
+                                    log("RECOMMEDATION: ${recommendation['external_urls']['spotify']}");
                                     Get.to(
                                       PlaylistScreen(
                                         sessionState: sessionState,
                                         searchTitle: recommendation['name'],
                                         playlistId: recommendation['id'],
+                                        playlistUrl:
+                                            recommendation['external_urls']
+                                                ['spotify'],
                                       ),
                                     );
                                   },
