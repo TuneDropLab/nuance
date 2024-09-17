@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/services/all_services.dart';
-import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
+import 'package:nuance/utils/theme.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
@@ -38,10 +38,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       },
       child: SafeArea(
         child: Scaffold(
+          extendBodyBehindAppBar: true,
           backgroundColor: Colors.black,
           key: lobalKey,
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
           drawerEnableOpenDragGesture: true,
           appBar: AppBar(
             backgroundColor: Colors.black,
@@ -85,14 +84,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               nameController.text = data.user["user_metadata"]["full_name"];
 
-              return Stack(
+              return Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       children: [
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 80),
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -122,7 +120,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   );
                                 }
 
-                                // use a cupertino button for consistency
                                 return CupertinoButton(
                                   padding: const EdgeInsets.all(0),
                                   onPressed: () {},
@@ -220,7 +217,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             fillColor: Colors.grey[900],
                           ),
                           style: const TextStyle(color: Colors.white),
-                          // readOnly: true,
                         ),
                         const SizedBox(height: 20),
                         TextField(
@@ -242,7 +238,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 20),
                         SizedBox(
                           width: Get.width,
-                          // padding: const EdgeInsets.symmetric(vertical: 20),
                           child: GeneralButton(
                             hasPadding: true,
                             text: "Save",
@@ -257,7 +252,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 20),
                         SizedBox(
                           width: Get.width,
-                          // padding: const EdgeInsets.symmetric(vertical: 20),
                           child: GeneralButton(
                               hasPadding: true,
                               text: "Clear history",
@@ -281,23 +275,22 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 );
                               }),
                         ),
+                        const SizedBox(
+                            height: 80), // Add extra space at the bottom
                       ],
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      width: Get.width,
-                      padding: const EdgeInsets.all(20),
-                      child: GeneralButton(
-                        hasPadding: true,
-                        text: "Sign Out",
-                        color: Colors.white,
-                        backgroundColor: Colors.grey.shade800,
-                        onPressed: () {
-                          sessionData.logout();
-                        },
-                      ),
+                  Container(
+                    width: Get.width,
+                    padding: const EdgeInsets.all(20),
+                    child: GeneralButton(
+                      hasPadding: true,
+                      text: "Sign Out",
+                      color: Colors.white,
+                      backgroundColor: Colors.grey.shade800,
+                      onPressed: () {
+                        sessionData.logout();
+                      },
                     ),
                   ),
                 ],
