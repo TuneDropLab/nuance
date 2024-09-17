@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
+// import 'package:music_kit/music_kit.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/playlist_provider.dart';
@@ -26,6 +27,7 @@ import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
 import 'package:palette_generator/palette_generator.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class PlaylistScreen extends ConsumerStatefulWidget {
@@ -45,12 +47,12 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 
   final String? imageUrl;
   final String? playlistId;
+  final String? playlistUrl;
   final String? searchQuery;
   final String? searchTitle;
   final AsyncValue<SessionData?>? sessionState;
   final List<SongModel>? songs;
   final String? tagQuery;
-  final String? playlistUrl;
 
   @override
   ConsumerState<PlaylistScreen> createState() => _PlaylistScreenState();
@@ -74,11 +76,18 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   // the controlled list of songs shown on the screen
   List<SongModel>? recommendations = [];
 
+  final service = AllServices();
+
   final AudioPlayer _audioPlayer = AudioPlayer();
   final Color _backgroundColor = Colors.black;
   late AnimationController _controller; // Animation controller
+  final String _countryCode = '';
   SongModel? _currentSong;
+  // final MusicKit _musicKitPlugin = MusicKit();
+  final String _developerToken = '';
+
   bool _isGeneratingMore = false;
+  bool _isLoading = false; // Loading state
   bool _isPlaying = false;
   bool _isSelectionMode = false;
   String? _loadingPlaylistId;
@@ -344,7 +353,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     return const SizedBox.shrink();
                   },
                   placeholder: (context, url) {
-                    return const SizedBox.shrink();
+                    return Shimmer.fromColors(
+                      baseColor: const Color.fromARGB(131, 158, 158, 158),
+                      highlightColor: Color.fromARGB(50, 224, 224, 224),
+                      child: const SizedBox(
+                        height: 200,
+                        width: 200,
+                      ),
+                    );
                   },
                 ),
               ),
@@ -460,7 +476,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                             .toList();
                         dev.log("selectedSongs: $selectedSongs");
                         if (selectedSongs != null && selectedSongs.isNotEmpty) {
+                          _isSelectionMode = false;
                           dev.log("selectedSongs 2: $selectedSongs");
+                          recommendations = selectedSongs;
                           _generateMore(seeds: selectedSongs);
                         } else {
                           CustomSnackbar().show("No songs selected");
@@ -665,8 +683,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     }
   }
 
-  final service = AllServices();
-
   Future<void> _fetchRecommendationsOrPlaylistTracks() async {
     final sessionStateFromProvider = ref.read(sessionProvider);
     setState(() {
@@ -757,14 +773,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     List<SongModel>? seeds,
   }) async {
     if (_isGeneratingMore) return;
+    _refreshAnimationController.repeat();
 
     setState(() {
       _isSelectionMode = false;
+      _selectedItems.clear();
       _isGeneratingMore = true;
-      isLoading = true; // Set isLoading to true to trigger loading interface
+      // isLoading = true; // Set isLoading to true to trigger loading interface
     });
-
-    _refreshAnimationController.repeat();
 
     try {
       final sessionStateFromProvider = ref.read(sessionProvider);
@@ -792,9 +808,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       if (mounted) {
         if (newRecommendations != null && newRecommendations.isNotEmpty) {
           setState(() {
-            recommendations = newRecommendations;
+            recommendations = [...?recommendations, ...?newRecommendations];
             _isGeneratingMore = false;
-            isLoading = false;
           });
         } else {
           CustomSnackbar().show("No recommendations generated");
@@ -1306,11 +1321,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     );
   }
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  // }
-
   Future<void> _updatePaletteGenerator() async {
     // final imageUrl = playlistImage;
 
@@ -1339,7 +1349,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     final authUrl = '$baseURL/auth/login';
     const callbackUrlScheme = "nuance";
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
+      // First, initialize MusicKit
+      // await _initializeMusicKit();
+
       final result = await FlutterWebAuth.authenticate(
         url: authUrl,
         callbackUrlScheme: callbackUrlScheme,
@@ -1351,28 +1368,90 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       if (sessionData != null) {
         final sessionMap = jsonDecode(sessionData);
         final accessToken = sessionMap['access_token'];
+
         try {
           final profile = await service.getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
-          await ref
-              .read(sessionProvider.notifier)
-              .storeSessionAndSaveToState(sessionData, name, email);
+
+          // Request MusicKit user token
+          // final musicKitUserToken = await _requestMusicKitUserToken();
+
+          // final musicKitData = {
+          //   'musicKitUserToken': musicKitUserToken,
+          //   'developerToken': _developerToken,
+          //   'countryCode': _countryCode,
+          // };
+
+          // await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
+          //       sessionData: sessionData,
+          //       name: name,
+          //       email: email,
+          //       musicKitData: musicKitData,
+          //     );
+
           await Get.to(
             () => const HomeScreen(),
             transition: Transition.fade,
             curve: Curves.easeInOut,
           );
         } catch (error) {
-          debugPrint("Error fetching user profile: $error");
+          debugPrint("Error in profile fetching or MusicKit process: $error");
+          _showErrorSnackBar("Error in authentication process: $error");
         }
       }
     } on PlatformException catch (e) {
+      debugPrint("PlatformException in authentication: ${e.message}");
+      _showErrorSnackBar("Authentication failed: ${e.message}");
+    } catch (e) {
+      debugPrint("Unexpected error in authentication: $e");
+      _showErrorSnackBar("Unexpected error occurred");
+    } finally {
       setState(() {
-        debugPrint("ERROR MESSAGE: ${e.message}");
-        debugPrint('Error: ${e.message}');
+        _isLoading = false;
       });
     }
+  }
+
+  // Future<void> _initializeMusicKit() async {
+  //   try {
+  //     final status = await _musicKitPlugin.authorizationStatus;
+  //     if (status != MusicAuthorizationStatus.authorized) {
+  //       final newStatus = await _musicKitPlugin.requestAuthorizationStatus();
+  //       if (newStatus != MusicAuthorizationStatus.authorized) {
+  //         throw Exception(
+  //             "MusicKit authorization not granted. Status: $newStatus");
+  //       }
+  //     }
+
+  //     _developerToken = await _musicKitPlugin.requestDeveloperToken();
+  //     _countryCode = await _musicKitPlugin.currentCountryCode;
+
+  //     print("MusicKit initialized successfully. Country code: $_countryCode");
+  //   } catch (e) {
+  //     print("Error initializing MusicKit: $e");
+  //     throw Exception("Failed to initialize MusicKit: $e");
+  //   }
+  // }
+
+  // Future<String> _requestMusicKitUserToken() async {
+  //   try {
+  //     final userToken = await _musicKitPlugin.requestUserToken(_developerToken);
+  //     if (userToken.isEmpty) {
+  //       throw Exception("Received null or empty MusicKit user token");
+  //     }
+  //     print("MusicKit user token obtained successfully");
+  //     return userToken;
+  //   } catch (e) {
+  //     print("Error requesting MusicKit user token: $e");
+  //     throw Exception("Failed to obtain MusicKit user token: $e");
+  //   }
+  // }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
