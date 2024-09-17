@@ -31,8 +31,12 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     return null;
   }
 
-  Future<void> storeSessionAndSaveToState(
-      String sessionData, String name, String email) async {
+  Future<void> storeSessionAndSaveToState({
+    required String sessionData,
+    required String name,
+    required String email,
+    Map<String, String>? musicKitData,
+  }) async {
     state = const AsyncLoading();
     try {
       final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
