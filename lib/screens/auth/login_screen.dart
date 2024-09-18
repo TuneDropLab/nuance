@@ -153,7 +153,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         throw Exception("Failed to obtain Apple Music tokens");
       }
 
-      // Store the tokens
+      // Fetch user profile using the tokens
+      final profile = await AllServices().getUserProfile(musicUserToken);
+      final name = profile['user']['name'];
+      final email = profile['user']['email'];
+
+      log('APPLEMUSICFN: User Name: $name');
+      log('APPLEMUSICFN: User Email: $email');
+
+      // Store the tokens and profile data
       final musicKitData = {
         'musicKitUserToken': musicUserToken,
         'developerToken': developerToken,
@@ -162,11 +170,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
       log('APPLEMUSICFN: Storing MusicKit data: $musicKitData');
 
-      // Assuming you have a session provider, save this data
+      // Save session data for Apple Music
       await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
             sessionData: json.encode(musicKitData),
-            name: 'user_name', // Replace with actual user name
-            email: 'user_email', // Replace with actual user email
+            name: name,
+            email: email,
             musicKitData: musicKitData,
           );
 
