@@ -140,6 +140,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       final musicUserToken = uri.queryParameters['musicUserToken'];
       final developerToken = uri.queryParameters['developerToken'];
       final countryCode = uri.queryParameters['countryCode'];
+      final sessionData = uri.queryParameters['session'];
+      debugPrint("Session data received: $sessionData");
+
+      // if (sessionData != null) {
+      final sessionMap = jsonDecode(sessionData!);
+      final accessToken = sessionMap['access_token'];
+      debugPrint("Access token: $accessToken");
 
       log('APPLEMUSICFN: Music User Token: $musicUserToken');
       log('APPLEMUSICFN: Developer Token: $developerToken');
@@ -153,28 +160,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         throw Exception("Failed to obtain Apple Music tokens");
       }
 
-      // Fetch user profile using the tokens
-      final profile = await AllServices().getUserProfile(musicUserToken);
+      // Fetch user profile from AllServices using the musicUserToken
+      final profile = await AllServices()
+          .getUserProfile(accessToken); // Pass musicUserToken as accessToken
       final name = profile['user']['name'];
       final email = profile['user']['email'];
 
-      log('APPLEMUSICFN: User Name: $name');
-      log('APPLEMUSICFN: User Email: $email');
-
-      // Store the tokens and profile data
+      // Store the tokens and user profile
       final musicKitData = {
         'musicKitUserToken': musicUserToken,
         'developerToken': developerToken,
         'countryCode': countryCode,
       };
 
-      log('APPLEMUSICFN: Storing MusicKit data: $musicKitData');
+      log('APPLEMUSICFN: Storing MusicKit data and user profile: $musicKitData');
 
-      // Save session data for Apple Music
       await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
-            sessionData: json.encode(musicKitData),
-            name: name,
-            email: email,
+            sessionData: sessionData,
+            name: name, // Store actual user name from profile
+            email: email, // Store actual user email from profile
             musicKitData: musicKitData,
           );
 
@@ -209,9 +213,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     }
   }
 
-  final String _developerToken = '';
-  final String _userToken = '';
-  final String _countryCode = '';
+  static const String developerToken = '';
+  static const String userToken = '';
+  static const String countryCode0 = '';
 
   @override
   Widget build(BuildContext context) {
@@ -283,12 +287,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text('DeveloperToken: $_developerToken\n',
-                          style: const TextStyle(color: Colors.white60)),
-                      Text('UserToken: $_userToken\n',
-                          style: const TextStyle(color: Colors.white60)),
-                      Text('CountryCode: $_countryCode\n',
-                          style: const TextStyle(color: Colors.white60)),
+                      const Text('DeveloperToken: $developerToken\n',
+                          style: TextStyle(color: Colors.white60)),
+                      const Text('UserToken: $userToken\n',
+                          style: TextStyle(color: Colors.white60)),
+                      const Text('CountryCode: $countryCode0\n',
+                          style: TextStyle(color: Colors.white60)),
                       const SizedBox(height: 8),
                       Padding(
                         padding: EdgeInsets.symmetric(
