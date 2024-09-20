@@ -125,7 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   Future<void> _handleAppleAuthentication() async {
     const musicKitAuthUrl =
-        'http://localhost:3000/apple_music_auth'; // Your actual hosted MusicKit URL
+        'http://localhost:3000/apple-music-auth'; // Your actual hosted MusicKit URL
 
     log('APPLEMUSICFN: Starting Apple Music Authentication...');
 
