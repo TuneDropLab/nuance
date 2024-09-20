@@ -23,6 +23,7 @@ import 'package:nuance/widgets/custom_drawer.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/myindicator.dart';
+import 'package:nuance/widgets/playlist_card.dart';
 import 'package:nuance/widgets/spotify_playlist_card.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:nuance/providers/history_provider.dart';
@@ -386,27 +387,57 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           itemBuilder: (context, index) {
                             if (index < recommendations.length) {
                               final recommendation = recommendations[index];
-                              if (recommendation['type'] == 'playlist') {
-                                return SpotifyPlaylistCard(
-                                  trackListHref: recommendation['tracks']
-                                      ['href'],
-                                  playlistId: recommendation['id'],
-                                  playlistName: recommendation['name'],
-                                  artistNames: recommendation['description'],
-                                  onClick: () {
-                                    log("RECOMMEDATION: ${recommendation['external_urls']['spotify']}");
-                                    Get.to(
-                                      PlaylistScreen(
-                                        sessionState: sessionState,
-                                        searchTitle: recommendation['name'],
-                                        playlistId: recommendation['id'],
-                                        playlistUrl:
-                                            recommendation['external_urls']
-                                                ['spotify'],
-                                      ),
-                                    );
-                                  },
-                                ).marginOnly(bottom: 25);
+                              if (recommendation['type'] == 'playlist' ||
+                                  recommendation['type'] == 'playlists') {
+                                // Check if it's an Apple Music playlist
+                                if (recommendation.containsKey('attributes')) {
+                                  // Apple Music playlist
+                                  final attributes =
+                                      recommendation['attributes'];
+                                  return PlaylistCard(
+                                    trackListHref: attributes['playParams'][
+                                        'id'], // Use playParams id for Apple Music
+                                    playlistId: recommendation['id'],
+                                    playlistName: attributes[
+                                        'name'], // Access name from attributes
+                                    artistNames: attributes['curatorName'] ??
+                                        '', // Use curatorName or fallback
+                                    onClick: () {
+                                      log("RECOMMENDATION: ${attributes['url']}");
+                                      Get.to(
+                                        PlaylistScreen(
+                                          sessionState: sessionState,
+                                          searchTitle: attributes['name'],
+                                          playlistId: recommendation['id'],
+                                          playlistUrl: attributes[
+                                              'url'], // Use the URL from attributes
+                                        ),
+                                      );
+                                    },
+                                  ).marginOnly(bottom: 25);
+                                } else {
+                                  // Spotify playlist
+                                  return PlaylistCard(
+                                    trackListHref: recommendation['tracks']
+                                        ['href'],
+                                    playlistId: recommendation['id'],
+                                    playlistName: recommendation['name'],
+                                    artistNames: recommendation['description'],
+                                    onClick: () {
+                                      log("RECOMMENDATION: ${recommendation['external_urls']['spotify']}");
+                                      Get.to(
+                                        PlaylistScreen(
+                                          sessionState: sessionState,
+                                          searchTitle: recommendation['name'],
+                                          playlistId: recommendation['id'],
+                                          playlistUrl:
+                                              recommendation['external_urls']
+                                                  ['spotify'],
+                                        ),
+                                      );
+                                    },
+                                  ).marginOnly(bottom: 25);
+                                }
                               } else {
                                 return GeneratePlaylistCard(
                                   prompt: recommendation['text'],

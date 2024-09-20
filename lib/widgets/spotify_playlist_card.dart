@@ -15,14 +15,14 @@ import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 
-class SpotifyPlaylistCard extends ConsumerStatefulWidget {
+class PlaylistCard extends ConsumerStatefulWidget {
   final String trackListHref;
   final String playlistName;
   final String playlistId;
   final String artistNames;
   final VoidCallback onClick;
 
-  const SpotifyPlaylistCard({
+  const PlaylistCard({
     required this.trackListHref,
     required this.playlistName,
     required this.playlistId,
@@ -32,10 +32,10 @@ class SpotifyPlaylistCard extends ConsumerStatefulWidget {
   }) : super(key: key);
 
   @override
-  _SpotifyPlaylistCardState createState() => _SpotifyPlaylistCardState();
+  _PlaylistCardState createState() => _PlaylistCardState();
 }
 
-class _SpotifyPlaylistCardState extends ConsumerState<SpotifyPlaylistCard> {
+class _PlaylistCardState extends ConsumerState<PlaylistCard> {
   List<String> artistImages = [];
   late final AnimatedMeshGradientController _controller;
 
