@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
+import 'package:nuance/models/history_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,10 @@ import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 import 'package:nuance/widgets/general_button.dart'; // Import flutter_animate
+
+// import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// final providerTypeProvider = StateProvider<String?>((ref) => null);
 
 class LoginScreen extends ConsumerStatefulWidget {
   static const routeName = '/';
@@ -68,16 +73,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         final sessionMap = jsonDecode(sessionData!);
         final accessToken = sessionMap['access_token'];
         final providerType = sessionMap['provider']; // Get provider type
+        ProviderType.setType(providerType); // Store the provider type
 
-        // Check if the provider is Apple
-        if (providerType == 'apple') {
-          // Modify the AllServices calls to include '/apple'
-          await AllServices().getUserProfile(accessToken);
-          // ... handle Apple-specific logic ...
-        } else {
-          // Handle Spotify or other providers
-          await AllServices().getUserProfile(accessToken);
-        }
+        // Update the provider type in Riverpod
+        // ref.read(providerTypeProvider.notifier).state = providerType;
 
         setState(() {
           _isLoading = true;

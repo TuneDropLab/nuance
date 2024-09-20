@@ -26,3 +26,13 @@ class HistoryModel {
     );
   }
 }
+
+class ProviderType {
+  static String? _type;
+
+  static void setType(String type) {
+    _type = type;
+  }
+
+  static String? get type => _type;
+}
