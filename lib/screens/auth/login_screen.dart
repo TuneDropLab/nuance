@@ -65,48 +65,54 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
         final uri = Uri.parse(result); // Parse the result from Spotify
         final sessionData = uri.queryParameters['session'];
-        debugPrint("Session data received: $sessionData");
+        final sessionMap = jsonDecode(sessionData!);
+        final accessToken = sessionMap['access_token'];
+        final providerType = sessionMap['provider']; // Get provider type
 
-        if (sessionData != null) {
-          final sessionMap = jsonDecode(sessionData);
-          final accessToken = sessionMap['access_token'];
-          debugPrint("Access token: $accessToken");
+        // Check if the provider is Apple
+        if (providerType == 'apple') {
+          // Modify the AllServices calls to include '/apple'
+          await AllServices().getUserProfile(accessToken);
+          // ... handle Apple-specific logic ...
+        } else {
+          // Handle Spotify or other providers
+          await AllServices().getUserProfile(accessToken);
+        }
 
+        setState(() {
+          _isLoading = true;
+        });
+
+        try {
+          final profile = await AllServices().getUserProfile(accessToken);
+          final name = profile['user']['name'];
+          final email = profile['user']['email'];
+
+          // Save session data for Spotify
+          await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
+                sessionData: sessionData,
+                name: name,
+                email: email,
+              );
+
+          await Future.delayed(const Duration(seconds: 2));
+
+          await Get.to(
+            () => const HomeScreen(),
+            transition: Transition.fade,
+            curve: Curves.easeInOut,
+          );
+        } catch (error) {
+          debugPrint("Error during authentication process: $error");
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Authentication failed: ${error.toString()}"),
+            ),
+          );
+        } finally {
           setState(() {
-            _isLoading = true;
+            _isLoading = false;
           });
-
-          try {
-            final profile = await AllServices().getUserProfile(accessToken);
-            final name = profile['user']['name'];
-            final email = profile['user']['email'];
-
-            // Save session data for Spotify
-            await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
-                  sessionData: sessionData,
-                  name: name,
-                  email: email,
-                );
-
-            await Future.delayed(const Duration(seconds: 2));
-
-            await Get.to(
-              () => const HomeScreen(),
-              transition: Transition.fade,
-              curve: Curves.easeInOut,
-            );
-          } catch (error) {
-            debugPrint("Error during authentication process: $error");
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text("Authentication failed: ${error.toString()}"),
-              ),
-            );
-          } finally {
-            setState(() {
-              _isLoading = false;
-            });
-          }
         }
       }
     } on PlatformException catch (e) {

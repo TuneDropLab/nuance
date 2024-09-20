@@ -13,11 +13,20 @@ import 'package:share_plus/share_plus.dart';
 
 class AllServices {
   final CustomSnackbar _customSnackbar = CustomSnackbar();
+  Future<bool> _isAppleProvider(String accessToken) async {
+    // Logic to determine if the provider is Apple based on session data
+    // This could involve making a request to get session data or checking a local state
+    // Return true if Apple, false otherwise
+    return true;
+  }
+
   Future<List<SongModel>> getRecommendations(
       String accessToken, String userMessage) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/gemini/recommendations'),
+        Uri.parse('$baseURL$basePath/gemini/recommendations'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -47,9 +56,12 @@ class AllServices {
 
   Future<List<SongModel>> getMoreRecommendations(String accessToken,
       String userMessage, List<SongModel> currentSongList) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
+
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/gemini/more-recommendations'),
+        Uri.parse('$baseURL$basePath/gemini/more-recommendations'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -83,6 +95,8 @@ class AllServices {
   Future<List<SongModel>> getTrackInfo(
       String accessToken, List<RecommendationModel> songs,
       {List<SongModel>? currentSongList}) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final Map<String, dynamic> requestBody = {
         'songs': songs,
@@ -93,7 +107,7 @@ class AllServices {
       }
 
       final response = await http.post(
-        Uri.parse('$baseURL/spotify/tracks'),
+        Uri.parse('$baseURL$basePath/spotify/tracks'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -114,9 +128,12 @@ class AllServices {
 
   Future<List<PlaylistModel>> getPlaylists(
       String accessToken, String userId) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
+
     try {
       final response = await http.get(
-        Uri.parse('$baseURL/spotify/playlists'),
+        Uri.parse('$baseURL$basePath/spotify/playlists'),
         headers: {
           'Authorization': 'Bearer $accessToken',
         },
@@ -147,9 +164,11 @@ class AllServices {
       String playlistId,
       String image,
       List<String> trackIds) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/spotify/playlists/$playlistId/add'),
+        Uri.parse('$baseURL$basePath/spotify/playlists/$playlistId/add'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -174,9 +193,11 @@ class AllServices {
     String description,
     String imageUrl,
   ) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/spotify/playlists'),
+        Uri.parse('$baseURL$basePath/spotify/playlists'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -214,9 +235,12 @@ class AllServices {
 
   Future<void> setPlaylistCoverImage(
       String accessToken, String playlistId, String imageUrl) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/spotify/playlists/$playlistId/cover-image'),
+        Uri.parse(
+            '$baseURL$basePath/spotify/playlists/$playlistId/cover-image'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -240,9 +264,11 @@ class AllServices {
   }
 
   Future<List<HistoryModel>> getHistory(String accessToken) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.get(
-        Uri.parse('$baseURL/history'),
+        Uri.parse('$baseURL$basePath/history'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -264,9 +290,11 @@ class AllServices {
   }
 
   Future<void> deleteHistory(String accessToken, int id) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.delete(
-        Uri.parse('$baseURL/history/$id'),
+        Uri.parse('$baseURL$basePath/history/$id'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -283,9 +311,11 @@ class AllServices {
   }
 
   Future<void> deleteAllHistory(String accessToken) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.delete(
-        Uri.parse('$baseURL/history'),
+        Uri.parse('$baseURL$basePath/history'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -303,9 +333,11 @@ class AllServices {
 
   Future<List<dynamic>> getSpotifyHomeRecommendations(
       String accessToken) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.get(
-        Uri.parse('$baseURL/spotify/home'),
+        Uri.parse('$baseURL$basePath/spotify/home'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -326,9 +358,11 @@ class AllServices {
   }
 
   Future<List<String>> getTags(String accessToken) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.get(
-        Uri.parse('$baseURL/gemini/tags'),
+        Uri.parse('$baseURL$basePath/gemini/tags'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -350,9 +384,11 @@ class AllServices {
 
   Future<Map<String, dynamic>> fetchPlaylistTracks(
       String accessToken, String providerId, String playlistId) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/spotify/playlist-tracks'),
+        Uri.parse('$baseURL$basePath/spotify/playlist-tracks'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -438,10 +474,12 @@ class AllServices {
 
   Future<void> followSpotifyPlaylist(
       String accessToken, String playlistId) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
         Uri.parse(
-          '$baseURL/spotify/playlists/$playlistId/follow',
+          '$baseURL$basePath/spotify/playlists/$playlistId/follow',
         ),
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -500,9 +538,11 @@ class AllServices {
     String accessToken,
     String name,
   ) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.put(
-        Uri.parse('$baseURL/user/profile'),
+        Uri.parse('$baseURL$basePath/user/profile'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -524,9 +564,11 @@ class AllServices {
     String accessToken,
     String promptMessage,
   ) async {
+    final isAppleProvider = await _isAppleProvider(accessToken);
+    final basePath = isAppleProvider ? '/apple' : '';
     try {
       final response = await http.post(
-        Uri.parse('$baseURL/gemini/image'),
+        Uri.parse('$baseURL$basePath/gemini/image'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
