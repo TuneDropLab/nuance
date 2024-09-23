@@ -48,7 +48,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     super.dispose();
   }
 
-  Future<void> _authenticate(String provider, [String? token]) async {
+  Future<void> _authenticate(String provider) async {
     final authUrl = provider == 'apple'
         ? null // We don't need to use the first Apple login URL since it's handled by MusicKit
         : '$baseURL/auth/login'; // Only use this for Spotify or other providers
@@ -72,7 +72,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         final sessionData = uri.queryParameters['session'];
         final sessionMap = jsonDecode(sessionData!);
         final accessToken = sessionMap['access_token'];
-        final providerType = sessionMap['provider']; // Get provider type
+        final providerType = sessionMap['user']['app_metadata']['provider']; // Get provider type
+        log("Provider Type: $providerType");
         ProviderType.setType(providerType); // Store the provider type
 
         // Update the provider type in Riverpod

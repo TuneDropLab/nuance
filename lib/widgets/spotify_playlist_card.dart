@@ -1,17 +1,12 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:math' as math;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/animated_box.dart';
 import 'package:nuance/widgets/artist_chip.dart';
-import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/session_notifier.dart';
-import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 
