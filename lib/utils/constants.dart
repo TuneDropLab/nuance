@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 const baseURLIos = "http://localhost:3000";
 // const baseURLGeneral = "https://api.discovernuance.com";
-// const baseURLAndroid = "http://10.0.2.2:3000";
-final String baseURL = Platform.isIOS ? baseURLIos : 'http://10.0.2.2:3000';
+const baseURLAndroid = "http://10.0.2.2:3000";
+final String baseURL = Platform.isIOS ? baseURLIos : baseURLAndroid;
 
 // RGB Colors
 const Color kUiGreen = Color(0xFF3D9261);

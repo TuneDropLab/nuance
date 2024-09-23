@@ -1,38 +1,38 @@
 PODS:
   - audioplayers_darwin (0.0.1):
     - Flutter
-  - Firebase/CoreOnly (11.0.0):
-    - FirebaseCore (= 11.0.0)
-  - Firebase/Messaging (11.0.0):
+  - Firebase/CoreOnly (10.7.0):
+    - FirebaseCore (= 10.7.0)
+  - Firebase/Messaging (10.7.0):
     - Firebase/CoreOnly
-    - FirebaseMessaging (~> 11.0.0)
+    - FirebaseMessaging (~> 10.7.0)
   - firebase_core (3.4.0):
-    - Firebase/CoreOnly (= 11.0.0)
+    - Firebase/CoreOnly (= 10.7.0)
     - Flutter
   - firebase_messaging (15.1.0):
-    - Firebase/Messaging (= 11.0.0)
+    - Firebase/Messaging (= 10.7.0)
     - firebase_core
     - Flutter
-  - FirebaseCore (11.0.0):
-    - FirebaseCoreInternal (~> 11.0)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/Logger (~> 8.0)
-  - FirebaseCoreInternal (11.2.0):
-    - "GoogleUtilities/NSData+zlib (~> 8.0)"
-  - FirebaseInstallations (11.2.0):
-    - FirebaseCore (~> 11.0)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
-    - PromisesObjC (~> 2.4)
-  - FirebaseMessaging (11.0.0):
-    - FirebaseCore (~> 11.0)
-    - FirebaseInstallations (~> 11.0)
-    - GoogleDataTransport (~> 10.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/Reachability (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
-    - nanopb (~> 3.30910.0)
+  - FirebaseCore (10.7.0):
+    - FirebaseCoreInternal (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/Logger (~> 7.8)
+  - FirebaseCoreInternal (10.29.0):
+    - "GoogleUtilities/NSData+zlib (~> 7.8)"
+  - FirebaseInstallations (10.29.0):
+    - FirebaseCore (~> 10.0)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/UserDefaults (~> 7.8)
+    - PromisesObjC (~> 2.1)
+  - FirebaseMessaging (10.7.0):
+    - FirebaseCore (~> 10.0)
+    - FirebaseInstallations (~> 10.0)
+    - GoogleDataTransport (~> 9.2)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.8)
+    - GoogleUtilities/Environment (~> 7.8)
+    - GoogleUtilities/Reachability (~> 7.8)
+    - GoogleUtilities/UserDefaults (~> 7.8)
+    - nanopb (< 2.30910.0, >= 2.30908.0)
   - Flutter (1.0.0)
   - flutter_native_splash (0.0.1):
     - Flutter
@@ -40,46 +40,46 @@ PODS:
     - Flutter
   - flutter_web_auth (0.5.0):
     - Flutter
-  - GoogleDataTransport (10.1.0):
-    - nanopb (~> 3.30910.0)
-    - PromisesObjC (~> 2.4)
-  - GoogleUtilities/AppDelegateSwizzler (8.0.2):
+  - GoogleDataTransport (9.4.1):
+    - GoogleUtilities/Environment (~> 7.7)
+    - nanopb (< 2.30911.0, >= 2.30908.0)
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/AppDelegateSwizzler (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Logger
     - GoogleUtilities/Network
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Environment (8.0.2):
+  - GoogleUtilities/Environment (7.13.3):
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Logger (8.0.2):
+    - PromisesObjC (< 3.0, >= 1.2)
+  - GoogleUtilities/Logger (7.13.3):
     - GoogleUtilities/Environment
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Network (8.0.2):
+  - GoogleUtilities/Network (7.13.3):
     - GoogleUtilities/Logger
     - "GoogleUtilities/NSData+zlib"
     - GoogleUtilities/Privacy
     - GoogleUtilities/Reachability
-  - "GoogleUtilities/NSData+zlib (8.0.2)":
+  - "GoogleUtilities/NSData+zlib (7.13.3)":
     - GoogleUtilities/Privacy
-  - GoogleUtilities/Privacy (8.0.2)
-  - GoogleUtilities/Reachability (8.0.2):
+  - GoogleUtilities/Privacy (7.13.3)
+  - GoogleUtilities/Reachability (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - GoogleUtilities/UserDefaults (8.0.2):
+  - GoogleUtilities/UserDefaults (7.13.3):
     - GoogleUtilities/Logger
     - GoogleUtilities/Privacy
-  - nanopb (3.30910.0):
-    - nanopb/decode (= 3.30910.0)
-    - nanopb/encode (= 3.30910.0)
-  - nanopb/decode (3.30910.0)
-  - nanopb/encode (3.30910.0)
+  - nanopb (2.30909.1):
+    - nanopb/decode (= 2.30909.1)
+    - nanopb/encode (= 2.30909.1)
+  - nanopb/decode (2.30909.1)
+  - nanopb/encode (2.30909.1)
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - PromisesObjC (2.4.0)
-  - rive_common (0.0.1):
-    - Flutter
   - Sentry/HybridSDK (8.36.0)
   - sentry_flutter (8.9.0):
     - Flutter
@@ -108,7 +108,6 @@ DEPENDENCIES:
   - flutter_web_auth (from `.symlinks/plugins/flutter_web_auth/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - rive_common (from `.symlinks/plugins/rive_common/ios`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
@@ -148,8 +147,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  rive_common:
-    :path: ".symlinks/plugins/rive_common/ios"
   sentry_flutter:
     :path: ".symlinks/plugins/sentry_flutter/ios"
   share_plus:
@@ -165,24 +162,23 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
-  Firebase: 9f574c08c2396885b5e7e100ed4293d956218af9
-  firebase_core: ceec591a66629daaee82d3321551692c4a871493
-  firebase_messaging: 15d8b557010f3bb7b98d0302e1c7c8fbcd244425
-  FirebaseCore: 3cf438f431f18c12cdf2aaf64434648b63f7e383
-  FirebaseCoreInternal: 0c569513412da9f3b31bd0b340013bbee8f295c5
-  FirebaseInstallations: 771177d89d6c451dc6e50085ec82e2fc77ed0a4a
-  FirebaseMessaging: d2d1d9c62c46dd2db49a952f7deb5b16ad2c9742
+  Firebase: 0219acf760880eeec8ce479895bd7767466d9f81
+  firebase_core: 182ea4b54c63f8c4a725b3d6627332d8a738c33d
+  firebase_messaging: 8503565fe4ce1011dff1f3b2072d9e680c9a434f
+  FirebaseCore: e317665b9d744727a97e623edbbed009320afdd7
+  FirebaseCoreInternal: df84dd300b561c27d5571684f389bf60b0a5c934
+  FirebaseInstallations: 913cf60d0400ebd5d6b63a28b290372ab44590dd
+  FirebaseMessaging: ac9062bcc35ed56e15a0241d8fd317022499baf8
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_native_splash: edf599c81f74d093a4daf8e17bd7a018854bc778
   flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
   flutter_web_auth: c25208760459cec375a3c39f6a8759165ca0fa4d
-  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
-  GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
-  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
+  GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
+  nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
   package_info_plus: 58f0028419748fad15bf008b270aaa8e54380b1c
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
-  rive_common: cbbac3192af00d7341f19dae2f26298e9e37d99e
   Sentry: f8374b5415bc38dfb5645941b3ae31230fbeae57
   sentry_flutter: 0eb93e5279eb41e2392212afe1ccd2fecb4f8cbe
   share_plus: 8875f4f2500512ea181eef553c3e27dba5135aad
@@ -191,6 +187,6 @@ SPEC CHECKSUMS:
   uni_links: d97da20c7701486ba192624d99bffaaffcfc298a
   url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
 
-PODFILE CHECKSUM: 6e168ecd3c9ab54923b37f6c0e5dbd5d9743b3c3
+PODFILE CHECKSUM: e0c0fb98db5c0729c226ef1f69ad0a534ff15120
 
 COCOAPODS: 1.15.2
