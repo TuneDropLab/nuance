@@ -355,7 +355,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   placeholder: (context, url) {
                     return Shimmer.fromColors(
                       baseColor: const Color.fromARGB(131, 158, 158, 158),
-                      highlightColor: Color.fromARGB(50, 224, 224, 224),
+                      highlightColor: const Color.fromARGB(50, 224, 224, 224),
                       child: const SizedBox(
                         height: 200,
                         width: 200,
