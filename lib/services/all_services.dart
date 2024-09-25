@@ -14,10 +14,10 @@ import 'package:share_plus/share_plus.dart';
 class AllServices {
   final CustomSnackbar _customSnackbar = CustomSnackbar();
 
-  Future<bool> _isAppleProvider() async {
-    return ProviderType.type ==
-        'apple';
-  }
+  // Future<bool> _isAppleProvider() async {
+  //   return ProviderType.type ==
+  //       'apple';
+  // }
 
   // Future<bool> _isAppleProvider(String accessToken) async {
   //   // Logic to determine if the provider is Apple based on session data
@@ -27,8 +27,8 @@ class AllServices {
   // }
 
   Future<List<SongModel>> getRecommendations(
-      String accessToken, String userMessage) async {
-    final isAppleProvider = await _isAppleProvider();
+      String accessToken, String userMessage, isAppleProvider) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : 'spotify';
     try {
       final response = await http.post(
@@ -60,9 +60,12 @@ class AllServices {
     }
   }
 
-  Future<List<SongModel>> getMoreRecommendations(String accessToken,
-      String userMessage, List<SongModel> currentSongList) async {
-    final isAppleProvider = await _isAppleProvider();
+  Future<List<SongModel>> getMoreRecommendations(
+      String accessToken,
+      String userMessage,
+      List<SongModel> currentSongList,
+      isAppleProvider) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '';
 
     try {
@@ -100,8 +103,8 @@ class AllServices {
 
   Future<List<SongModel>> getTrackInfo(
       String accessToken, List<RecommendationModel> songs,
-      {List<SongModel>? currentSongList}) async {
-    final isAppleProvider = await _isAppleProvider();
+      {List<SongModel>? currentSongList, isAppleProvider}) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final Map<String, dynamic> requestBody = {
@@ -133,8 +136,8 @@ class AllServices {
   }
 
   Future<List<PlaylistModel>> getPlaylists(
-      String accessToken, String userId) async {
-    final isAppleProvider = await _isAppleProvider();
+      String accessToken, String userId, isAppleProvider) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
 
     try {
@@ -169,8 +172,9 @@ class AllServices {
       String searchQuery,
       String playlistId,
       String image,
+      isAppleProvider,
       List<String> trackIds) async {
-    final isAppleProvider = await _isAppleProvider();
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
@@ -198,8 +202,9 @@ class AllServices {
     String name,
     String description,
     String imageUrl,
+    isAppleProvider,
   ) async {
-    final isAppleProvider = await _isAppleProvider();
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
@@ -218,7 +223,8 @@ class AllServices {
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
         debugPrint("created playlist data: $data");
-        await setPlaylistCoverImage(accessToken, data['id'], imageUrl);
+        await setPlaylistCoverImage(
+            accessToken, data['id'], imageUrl, isAppleProvider);
         return PlaylistModel.fromJson(data);
       } else {
         debugPrint('Failed to create playlist: ${response.body}');
@@ -240,8 +246,12 @@ class AllServices {
   }
 
   Future<void> setPlaylistCoverImage(
-      String accessToken, String playlistId, String imageUrl) async {
-    final isAppleProvider = await _isAppleProvider();
+    String accessToken,
+    String playlistId,
+    String imageUrl,
+    isAppleProvider,
+  ) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
@@ -269,8 +279,8 @@ class AllServices {
   }
 
   Future<List<HistoryModel>> getHistory(String accessToken) async {
-    final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '';
+    // final isAppleProvider = await _isAppleProvider();
+    // final basePath = isAppleProvider ? '/apple-music' : '';
     try {
       final response = await http.get(
         Uri.parse('$baseURL/history'),
@@ -294,9 +304,13 @@ class AllServices {
     }
   }
 
-  Future<void> deleteHistory(String accessToken, int id) async {
-    final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '';
+  Future<void> deleteHistory(
+    String accessToken,
+    int id,
+    isAppleProvider,
+  ) async {
+    // final isAppleProvider = await _isAppleProvider();
+    // final basePath = isAppleProvider ? '/apple-music' : '';
     try {
       final response = await http.delete(
         Uri.parse('$baseURL/history/$id'),
@@ -315,9 +329,9 @@ class AllServices {
     }
   }
 
-  Future<void> deleteAllHistory(String accessToken) async {
-    final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '';
+  Future<void> deleteAllHistory(String accessToken, isAppleProvider) async {
+    // final isAppleProvider = await _isAppleProvider();
+    // final basePath = isAppleProvider ? '/apple-music' : '';
     try {
       final response = await http.delete(
         Uri.parse('$baseURL/history'),
@@ -337,8 +351,10 @@ class AllServices {
   }
 
   Future<List<dynamic>> getSpotifyHomeRecommendations(
-      String accessToken) async {
-    final isAppleProvider = await _isAppleProvider();
+    String accessToken,
+    isAppleProvider,
+  ) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final response = await http.get(
@@ -388,8 +404,12 @@ class AllServices {
   }
 
   Future<Map<String, dynamic>> fetchPlaylistTracks(
-      String accessToken, String providerId, String playlistId) async {
-    final isAppleProvider = await _isAppleProvider();
+    String accessToken,
+    String providerId,
+    String playlistId,
+    isAppleProvider,
+  ) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
@@ -478,8 +498,11 @@ class AllServices {
   }
 
   Future<void> followSpotifyPlaylist(
-      String accessToken, String playlistId) async {
-    final isAppleProvider = await _isAppleProvider();
+    String accessToken,
+    String playlistId,
+    isAppleProvider,
+  ) async {
+    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
