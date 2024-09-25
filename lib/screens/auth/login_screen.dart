@@ -315,27 +315,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // Container(
-                      //   width: Get.width,
-                      //   padding: const EdgeInsets.only(
-                      //     bottom: 10,
-                      //     left: 20,
-                      //     right: 20,
-                      //   ),
-                      //   child: GeneralButton(
-                      //     text: 'Sign in with Apple Music',
-                      //     icon: SvgPicture.asset(
-                      //       'assets/icon4star.svg',
-                      //       width: 10,
-                      //       height: 10,
-                      //     ),
-                      //     backgroundColor: const Color.fromARGB(
-                      //         255, 255, 88, 88), // Apple Music theme
-                      //     onPressed:
-                      //         _isLoading ? () {} : () => _authenticate("apple"),
-                      //     hasPadding: true,
-                      //   ),
-                      // ),
+                      Container(
+                        width: Get.width,
+                        padding: const EdgeInsets.only(
+                          bottom: 10,
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: GeneralButton(
+                          text: 'Sign in with Apple Music',
+                          icon: SvgPicture.asset(
+                            'assets/icon4star.svg',
+                            width: 10,
+                            height: 10,
+                          ),
+                          backgroundColor: const Color.fromARGB(
+                              255, 255, 88, 88), // Apple Music theme
+                          onPressed:
+                              _isLoading ? () {} : () => _authenticate("apple"),
+                          hasPadding: true,
+                        ),
+                      ),
                       Container(
                         width: Get.width,
                         padding: const EdgeInsets.only(

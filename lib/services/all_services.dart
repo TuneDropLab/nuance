@@ -349,6 +349,8 @@ class AllServices {
         },
       );
 
+      debugPrint('url: ${response.request?.url}');
+
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data;
