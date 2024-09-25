@@ -60,7 +60,9 @@ class PlaylistScreen extends ConsumerStatefulWidget {
 
 class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     with TickerProviderStateMixin {
+// }    with TickerProviderStateMixin {
   int? currentlyPlayingSongId;
+
   // how errors are tracked in the page
   List<String> errorList = [];
 
@@ -698,6 +700,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           sessionStateFromProvider.value?.providerToken ??
           "";
 
+      // Retrieve providerType from session data
+      final provider = sessionStateFromProvider.value?.provider;
+
       if (widget.playlistId == null && widget.songs == null) {
         generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
@@ -707,10 +712,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           ? widget.songs!
           : widget.searchQuery != null || widget.tagQuery != null
               ? await service.getRecommendations(
-                  accessToken, widget.searchQuery ?? widget.tagQuery ?? "")
+                  accessToken,
+                  widget.searchQuery ?? widget.tagQuery ?? "",
+                  provider,
+                )
               : widget.playlistId != null
                   ? await service.fetchPlaylistTracks(
-                      accessToken, providerToken, widget.playlistId ?? "")
+                      accessToken,
+                      providerToken,
+                      widget.playlistId ?? "",
+                      provider,
+                    )
                   : null;
 
       if (mounted) {
@@ -751,7 +763,11 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           ref.read(sessionProvider).value?.providerToken ??
           "";
 
-      await service.followSpotifyPlaylist(accessToken, playlistId);
+      final provider = widget.sessionState?.value?.provider ??
+          ref.read(sessionProvider).value?.provider ??
+          "";
+
+      await service.followSpotifyPlaylist(accessToken, playlistId, provider);
 
       if (mounted) {
         setState(() {
@@ -787,21 +803,25 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       final accessToken = widget.sessionState?.value?.accessToken ??
           sessionStateFromProvider.value?.providerToken ??
           "";
+      final provider = widget.sessionState?.value?.provider ??
+          sessionStateFromProvider.value?.providerToken ??
+          "";
 
       List<SongModel>? newRecommendations;
 
       if (seeds != null && seeds.isNotEmpty) {
         // Generate new recommendations based on the selected songs
         newRecommendations = await service.getMoreRecommendations(
-          accessToken,
-          "", // Empty string as we're using seed tracks
-          seeds,
-        );
+            accessToken,
+            "", // Empty string as we're using seed tracks
+            seeds,
+            provider);
       } else if (widget.searchQuery != null || widget.tagQuery != null) {
         newRecommendations = await service.getMoreRecommendations(
           accessToken,
           widget.searchQuery ?? widget.tagQuery ?? "",
           recommendations ?? [],
+          provider,
         );
       }
 
@@ -946,6 +966,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                   imageUrl:
                                       widget.imageUrl ?? generatedImage ?? "",
                                   trackIds: trackIds.map((e) => e).toList(),
+                                  providerType: sessionStateFromProvider
+                                          .value?.provider ??
+                                      "",
                                 );
 
                                 return ListTile(
@@ -1276,6 +1299,11 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                           generatedImage ??
                                           "",
                                       trackIds: trackIds,
+                                      providerType: ref
+                                              .read(sessionProvider)
+                                              .value
+                                              ?.provider ??
+                                          "",
                                     );
                                     ref
                                         .read(addTracksProvider.notifier)
@@ -1454,6 +1482,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     );
   }
 
+  @override
   @override
   Widget build(BuildContext context) {
     // bool for is a history playlist

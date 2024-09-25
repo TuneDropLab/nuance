@@ -44,6 +44,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
         ...sessionJson['user'] as Map<String, dynamic>,
         'name': name,
         'email': email,
+        // 'provider': provider
       };
 
       final updatedSessionJson = {

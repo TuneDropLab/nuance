@@ -6,6 +6,8 @@ class AddTracksParams {
   final String accessToken;
   final String playlistId;
   final List<String> trackIds;
+  // final provider type 
+  final String providerType;
 
   final String searchQuery;
   final String imageUrl;
@@ -16,6 +18,7 @@ class AddTracksParams {
     required this.trackIds,
     required this.searchQuery,
     required this.imageUrl,
+    required this.providerType,
   });
 }
 
@@ -28,12 +31,16 @@ class AddTracksNotifier extends AsyncNotifier<void> {
   Future<void> addTracksToPlaylist(AddTracksParams params) async {
     state = const AsyncValue.loading();
     try {
+      
+      
       await AllServices().addTracksToExistingPlaylist(
         params.accessToken,
         params.searchQuery,
         params.playlistId,
         params.imageUrl,
         params.trackIds,
+        params.providerType,
+
       );
       state = const AsyncValue.data(null);
     } catch (e) {

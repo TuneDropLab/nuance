@@ -108,9 +108,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
 
       final accessToken = sessionData['access_token'];
+      final provider = sessionData[''];
 
       final newRecommendations =
-          await AllServices().getSpotifyHomeRecommendations(accessToken);
+          await AllServices().getSpotifyHomeRecommendations(
+        accessToken,
+        provider,
+      );
 
       setState(() {
         recommendations = List.from(recommendations)

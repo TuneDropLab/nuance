@@ -27,7 +27,9 @@ final deleteHistoryEntryProvider =
     if (sessionData == null) {
       throw Exception('User not authenticated');
     }
-    await AllServices().deleteHistory(sessionData['access_token'], historyId);
+    final accessToken = sessionData['access_token'];
+    // final providerType = sessionData['user']['app_metadata']['provider'];
+    await AllServices().deleteHistory(accessToken, historyId);
   } catch (e) {
     throw Exception('Failed to delete history entry');
   }

@@ -168,12 +168,13 @@ class AllServices {
   }
 
   Future<void> addTracksToExistingPlaylist(
-      String accessToken,
-      String searchQuery,
-      String playlistId,
-      String image,
-      isAppleProvider,
-      List<String> trackIds) async {
+    String accessToken,
+    String searchQuery,
+    String playlistId,
+    String image,
+    List<String> trackIds,
+    isAppleProvider,
+  ) async {
     // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider ? '/apple-music' : '/spotify';
     try {
@@ -307,7 +308,7 @@ class AllServices {
   Future<void> deleteHistory(
     String accessToken,
     int id,
-    isAppleProvider,
+    // isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
     // final basePath = isAppleProvider ? '/apple-music' : '';
@@ -329,7 +330,9 @@ class AllServices {
     }
   }
 
-  Future<void> deleteAllHistory(String accessToken, isAppleProvider) async {
+  Future<void> deleteAllHistory(
+    String accessToken,
+  ) async {
     // final isAppleProvider = await _isAppleProvider();
     // final basePath = isAppleProvider ? '/apple-music' : '';
     try {

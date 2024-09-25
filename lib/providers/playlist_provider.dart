@@ -13,8 +13,10 @@ final playlistProvider = FutureProvider<List<PlaylistModel>>((ref) async {
     }
 
     final userId = sessionData['user']["user_metadata"]["provider_id"];
+    final accessToken = sessionData['access_token'];
+    final providerType = sessionData['user']['app_metadata']['provider'];
     final playlists =
-        await AllServices().getPlaylists(sessionData['access_token'], userId);
+        await AllServices().getPlaylists(accessToken, userId, providerType);
     return playlists;
   } catch (e) {
     throw Exception('Failed to load playlists');
@@ -32,6 +34,8 @@ final createPlaylistProvider =
       throw Exception('User not authenticated');
     }
 
+    // final accessToken = sessionData['access_token'];
+    final providerType = sessionData['user']['app_metadata']['provider'];
     final userId = sessionData['user']["user_metadata"]["provider_id"];
     final newPlaylist = await AllServices().createPlaylist(
       sessionData['access_token'],
@@ -39,6 +43,7 @@ final createPlaylistProvider =
       data['name']!,
       data['description']!,
       data['image']!,
+      providerType,
     );
     return newPlaylist;
   } catch (e) {

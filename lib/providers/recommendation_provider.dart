@@ -13,8 +13,11 @@ final recommendationsProvider =
       throw Exception('User not authenticated');
     }
 
+    final accessToken = sessionData['access_token'];
+    final providerType = sessionData['user']['app_metadata']['provider'];
+
     final theSongs = await AllServices()
-        .getRecommendations(sessionData['access_token'], userMessage);
+        .getRecommendations(accessToken, userMessage, providerType);
 
     return theSongs;
   } catch (e) {

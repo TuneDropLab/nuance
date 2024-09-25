@@ -26,6 +26,7 @@ class AuthService {
     final providerToken = await secureStorage.read(key: 'provider_token');
     final expiresAt = await secureStorage.read(key: 'expires_at');
     final user = await secureStorage.read(key: 'user');
+    final provider = await secureStorage.read(key: 'provider');
 
     if (accessToken != null &&
         refreshToken != null &&
@@ -37,6 +38,7 @@ class AuthService {
         'provider_token': providerToken,
         'expires_at': int.parse(expiresAt),
         'user': jsonDecode(user),
+        'provider': provider,
       };
     }
     return null;

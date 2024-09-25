@@ -7,6 +7,7 @@ class SessionData {
   final String expiresAt;
   final Map<String, dynamic> user;
   final String providerToken;
+  final String provider;
 
   const SessionData({
     required this.accessToken,
@@ -14,6 +15,7 @@ class SessionData {
     required this.expiresAt,
     required this.user,
     required this.providerToken,
+    required this.provider,
   });
 
   SessionData copyWith({
@@ -22,6 +24,7 @@ class SessionData {
     String? expiresAt,
     String? providerToken,
     Map<String, dynamic>? user,
+    String? provider,
   }) {
     return SessionData(
       accessToken: accessToken ?? this.accessToken,
@@ -29,6 +32,7 @@ class SessionData {
       expiresAt: expiresAt ?? this.expiresAt,
       user: user ?? this.user,
       providerToken: providerToken ?? this.providerToken,
+      provider: provider ?? this.provider,
     );
   }
 
@@ -39,6 +43,7 @@ class SessionData {
       expiresAt: json['expires_at'].toString(),
       user: json['user'],
       providerToken: json['provider_token'],
+      provider: json['provider'],
     );
   }
 
@@ -49,6 +54,7 @@ class SessionData {
       'expiresAt': expiresAt,
       'user': user,
       'providerToken': providerToken,
+      'provider': provider,
     };
   }
 }
