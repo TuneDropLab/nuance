@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -358,7 +359,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.get(
         Uri.parse('$baseURL$basePath/home'),
@@ -367,9 +368,6 @@ class AllServices {
           'Content-Type': 'application/json',
         },
       );
-
-      debugPrint('url: ${response.request?.url}');
-
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data;

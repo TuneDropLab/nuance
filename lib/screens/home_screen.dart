@@ -141,10 +141,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await Future.delayed(const Duration(seconds: 2));
     _fetchRecommendations();
   }
+  
 
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
+
+    // final sessionState = ref.watch(sessionProvider);
+    debugPrint('SESSION_STATE: $sessionState');
 
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
 

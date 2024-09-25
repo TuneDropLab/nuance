@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/session_data_model.dart';
@@ -23,6 +25,7 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     try {
       final sessionData = await authService.getSessionData();
       if (sessionData != null) {
+        
         return SessionData.fromJson(sessionData);
       }
     } catch (e) {

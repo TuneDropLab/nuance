@@ -42,14 +42,25 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
   }
 
   Future<void> _fetchArtistsImages({required String playlistId}) async {
+    debugPrint('PLAYLIST_ID: $playlistId');
+    
     try {
       final sessionState = ref.watch(sessionProvider);
+      debugPrint('SESSION_STATE: $sessionState');
+      
+      final provider = sessionState.value?.provider;
+      debugPrint('PROVIDER: $provider');
+      
       final accessToken = sessionState.value?.accessToken ?? '';
-
+      debugPrint('ACCESS_TOKEN: $accessToken');
+      
       final List<String> images = [];
+      
+      final basePath = provider == 'apple' ? '/apple-music' : '/spotify';
+      debugPrint('BASE_PATH: $basePath');
 
       final artistResponse = await http.post(
-        Uri.parse('$baseURL/spotify/artists-images'),
+        Uri.parse('$baseURL$basePath/artists-images'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -57,11 +68,19 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
         body: jsonEncode({'playlistId': playlistId}),
       );
 
+      debugPrint('ARTIST_RESPONSE_BODY: ${artistResponse.body}');
+      debugPrint('ARTIST_RESPONSE_STATUS: ${artistResponse.statusCode}');
+
       if (artistResponse.statusCode == 200) {
         final artistData =
             jsonDecode(artistResponse.body) as Map<String, dynamic>;
+        debugPrint('ARTIST_DATA: $artistData');
+        
         final List<dynamic> artistImagesData = artistData['artistImages'];
+        debugPrint('ARTIST_IMAGES_DATA: $artistImagesData');
+        
         for (final artistImage in artistImagesData) {
+          debugPrint('ADDING_ARTIST_IMAGE: $artistImage');
           images.add(artistImage);
         }
       } else {
@@ -71,9 +90,11 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
       if (mounted) {
         setState(() {
           artistImages = images;
+          debugPrint('SET_ARTIST_IMAGES: $images');
         });
       }
     } catch (e) {
+      debugPrint('FETCH_ERROR: $e');
       throw Exception('Failed to load artist images');
     }
   }

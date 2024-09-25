@@ -43,7 +43,7 @@ class SessionData {
       expiresAt: json['expires_at'].toString(),
       user: json['user'],
       providerToken: json['provider_token'],
-      provider: json['provider'],
+      provider: json['user']['app_metadata']['provider'],
     );
   }
 
