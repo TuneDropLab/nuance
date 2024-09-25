@@ -74,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         final accessToken = sessionMap['access_token'];
         final providerType = sessionMap['user']['app_metadata']['provider']; // Get provider type
         log("Provider Type: $providerType");
-        ProviderType.setType(providerType); // Store the provider type
+        // ProviderType.setType(providerType); // Store the provider type
 
         // Update the provider type in Riverpod
         // ref.read(providerTypeProvider.notifier).state = providerType;
