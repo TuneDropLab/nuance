@@ -30,7 +30,7 @@ class AllServices {
   Future<List<SongModel>> getRecommendations(
       String accessToken, String userMessage, isAppleProvider) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : 'spotify';
+    // final basePath = isAppleProvider ? '/apple-music' : 'spotify';
     try {
       final response = await http.post(
         Uri.parse('$baseURL/gemini/recommendations'),
@@ -67,7 +67,7 @@ class AllServices {
       List<SongModel> currentSongList,
       isAppleProvider) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '';
+    // final basePath = isAppleProvider ? '/apple-music' : '';
 
     try {
       final response = await http.post(
@@ -106,7 +106,7 @@ class AllServices {
       String accessToken, List<RecommendationModel> songs,
       {List<SongModel>? currentSongList, isAppleProvider}) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final Map<String, dynamic> requestBody = {
         'songs': songs,
@@ -139,7 +139,7 @@ class AllServices {
   Future<List<PlaylistModel>> getPlaylists(
       String accessToken, String userId, isAppleProvider) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
 
     try {
       final response = await http.get(
@@ -177,7 +177,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
         Uri.parse('$baseURL$basePath/playlists/$playlistId/add'),
@@ -207,7 +207,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
         Uri.parse('$baseURL$basePath/playlists'),
@@ -254,7 +254,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
         Uri.parse('$baseURL$basePath/playlists/$playlistId/cover-image'),
@@ -411,7 +411,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
         Uri.parse('$baseURL$basePath/playlist-tracks'),
@@ -504,7 +504,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
-    final basePath = isAppleProvider ? '/apple-music' : '/spotify';
+    final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
         Uri.parse(

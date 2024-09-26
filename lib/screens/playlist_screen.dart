@@ -1483,7 +1483,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     // bool for is a history playlist
     // final sessionData = ref.read(sessionProvider.notifier);
