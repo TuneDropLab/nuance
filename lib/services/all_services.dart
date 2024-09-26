@@ -595,10 +595,12 @@ class AllServices {
   ) async {
     // final isAppleProvider = await _isAppleProvider();
     // final basePath = isAppleProvider ? '/apple-music' : '';
+    log("BASE URL FROM GET GENERATED IMAGE: $baseURL");
     try {
       final response = await http.post(
         Uri.parse('$baseURL/gemini/image'),
         headers: {
+          // set referer header
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
@@ -612,6 +614,10 @@ class AllServices {
 
         return image;
       } else {
+        log("Error generating image: ${response.statusCode}");
+        log("Error generating image: ${response.body}");
+        log("Error generating image: ${response.headers}");
+        log("Error generating image: ${response.request}");
         throw Exception('Failed to generate image');
       }
     } catch (e) {
