@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/home_recommedations_provider.dart';
@@ -20,6 +21,7 @@ import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
+import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/myindicator.dart';
@@ -43,6 +45,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _tagQuery = TextEditingController();
   final _generatedRecQuery = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  Future<void> _takePicture() async {
+    final ImagePicker picker = ImagePicker();
+    try {
+      final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+      if (photo != null) {
+        // Here you would typically upload the image to your server
+        // For now, let's just print the path and navigate to an imaginary route
+        print('Image path: ${photo.path}');
+
+        // Navigate to an imaginary route with the image path
+        Get.toNamed('/image-route', arguments: {'imagePath': photo.path});
+      }
+    } catch (e) {
+      print('Error taking picture: $e');
+      CustomSnackbar().show('Failed to take picture');
+    }
+  }
 
   int currentPage = 1;
   bool isLoading = false;
@@ -141,7 +161,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await Future.delayed(const Duration(seconds: 2));
     _fetchRecommendations();
   }
-  
 
   @override
   Widget build(BuildContext context) {
@@ -582,12 +601,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         suffixIcon: Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 20, vertical: 12),
-                          child: GeneralButton(
-                            text: "Generate",
-                            backgroundColor: Colors.white,
-                            onPressed: () {
-                              submit('userMessage');
-                            },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // const Icon(
+                              //   CupertinoIcons.add_circled,
+                              //   color: Colors.white, // Adjust color as needed
+                              //   size: 18, // Adjust size as needed
+                              // ),
+                              // IconButton(
+                              //   onPressed: _takePicture,
+                              //   icon: const Icon(
+                              //     CupertinoIcons.add_circled,
+                              //     color: Colors.grey, // Adjust color as needed
+                              //     size: 18, // Adjust size as needed
+                              //   ),
+                              // ),
+                              GeneralButton(
+                                text: "Generate",
+                                backgroundColor: Colors.white,
+                                onPressed: () {
+                                  submit('userMessage');
+                                },
+                              ),
+                            ],
                           ),
                         ),
                         contentPadding: const EdgeInsets.all(12),

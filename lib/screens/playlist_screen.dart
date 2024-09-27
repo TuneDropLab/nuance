@@ -790,22 +790,29 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   }) async {
     if (_isGeneratingMore) return;
     _refreshAnimationController.repeat();
+    debugPrint("Animation controller refreshed");
 
     setState(() {
       _isSelectionMode = false;
+      debugPrint("Selection mode set to: $_isSelectionMode");
       _selectedItems.clear();
+      debugPrint("Selected items cleared: $_selectedItems");
       _isGeneratingMore = true;
+      debugPrint("Generating more set to1: $_isGeneratingMore");
       // isLoading = true; // Set isLoading to true to trigger loading interface
     });
 
     try {
       final sessionStateFromProvider = ref.read(sessionProvider);
+      debugPrint("Session state from provider: $sessionStateFromProvider");
       final accessToken = widget.sessionState?.value?.accessToken ??
           sessionStateFromProvider.value?.providerToken ??
           "";
+      debugPrint("Access token: $accessToken");
       final provider = widget.sessionState?.value?.provider ??
-          sessionStateFromProvider.value?.providerToken ??
+          sessionStateFromProvider.value?.provider ??
           "";
+      debugPrint("Provider: $provider");
 
       List<SongModel>? newRecommendations;
 
@@ -816,6 +823,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             "", // Empty string as we're using seed tracks
             seeds,
             provider);
+        debugPrint("New recommendations from seeds: $newRecommendations");
       } else if (widget.searchQuery != null || widget.tagQuery != null) {
         newRecommendations = await service.getMoreRecommendations(
           accessToken,
@@ -823,33 +831,43 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           recommendations ?? [],
           provider,
         );
+        debugPrint("New recommendations from search/tag: $newRecommendations");
       }
 
       if (mounted) {
         if (newRecommendations != null && newRecommendations.isNotEmpty) {
           setState(() {
             recommendations = [...?recommendations, ...?newRecommendations];
+            debugPrint("Updated recommendations: $recommendations");
             _isGeneratingMore = false;
+            debugPrint("Generating more set to2: $_isGeneratingMore");
           });
         } else {
           CustomSnackbar().show("No recommendations generated");
         }
       }
     } catch (e) {
+      debugPrint("Error occurred: $e");
       if (mounted) {
         setState(() {
           errorList.add(e.toString());
+          debugPrint("Error list updated: $errorList");
           _isGeneratingMore = false;
+          debugPrint("Generating more set to3: $_isGeneratingMore");
           isLoading = false;
+          debugPrint("Loading set to: $isLoading");
         });
         CustomSnackbar().show("Failed to generate recommendations");
       }
     } finally {
       setState(() {
         _isGeneratingMore = false;
+        // debugPrint("Generating more set to: $_isGeneratingMore");
         isLoading = false;
+        // debugPrint("Loading set to: $isLoading");
       });
       _refreshAnimationController.stop(); // Stop spinning
+      // debugPrint("Animation controller stopped");
     }
   }
 

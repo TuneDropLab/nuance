@@ -66,12 +66,12 @@ class AllServices {
       String userMessage,
       List<SongModel> currentSongList,
       isAppleProvider) async {
-    // final isAppleProvider = await _isAppleProvider();
-    // final basePath = isAppleProvider ? '/apple-music' : '';
+    log("GMRFN: Starting getMoreRecommendations with accessToken: $accessToken, userMessage: $userMessage, currentSongList: $currentSongList, isAppleProvider: $isAppleProvider");
 
     try {
+      log("GMRFN: Sending POST request to $baseURL/more-recommendations");
       final response = await http.post(
-        Uri.parse('$baseURL/more-recommendations'),
+        Uri.parse('$baseURL/gemini/more-recommendations'),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -80,24 +80,31 @@ class AllServices {
             {'userMessage': userMessage, 'currentSongs': currentSongList}),
       );
 
+      log("GMRFN: Received response with status code: ${response.statusCode}");
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+        log("GMRFN: Response body decoded: $data");
 
         final List<dynamic> recommendedSongsJson =
             data['recommendations']['songs'];
+        log("GMRFN: Recommended songs JSON: $recommendedSongsJson");
         final recommendations = recommendedSongsJson
             .map((item) => RecommendationModel.fromJson(item))
             .toList();
+        log("GMRFN: Recommendations mapped: $recommendations");
 
         final trackInfo = await getTrackInfo(accessToken, recommendations,
             currentSongList: currentSongList // Use named parameter here
             );
+        log("GMRFN: Track info retrieved: $trackInfo");
 
         return trackInfo;
       } else {
+        log("GMRFN: Error - Failed to load recommendations, status code: ${response.statusCode}");
         throw Exception('Failed to load recommendations');
       }
     } catch (e) {
+      log("GMRFN: Exception occurred: $e");
       rethrow;
     }
   }
