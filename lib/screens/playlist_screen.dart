@@ -255,6 +255,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
   SliverAppBar spotifyPlaylistAppBar(
       BuildContext context, int uniqueArtistsCount, int totalDuration) {
+    final sessionStateFromProvider = ref.read(sessionProvider);
+    final provider = sessionStateFromProvider.value?.provider;
     return SliverAppBar(
       stretch: false,
       automaticallyImplyLeading: false,
@@ -287,11 +289,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               // Handle the error if the URL cannot be launched
             }
           },
-          icon: SvgPicture.asset(
-            "assets/spotifylogoblack.svg",
-            color: Colors.white,
-            width: 40,
-          ),
+          icon: provider == 'spotify' ? SvgPicture.asset(
+                    "assets/spotifylogoblack.svg",
+                    color: Colors.white,
+                    width: 20,
+                  ) : SvgPicture.asset(
+                    "assets/applemusiclogoblack.svg",
+                    color: Colors.white,
+                    width: 30,
+                  ).marginOnly(right: 8),
         )
       ],
       expandedHeight: 330.0,
@@ -703,9 +709,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       // Retrieve providerType from session data
       final provider = sessionStateFromProvider.value?.provider;
 
+      dev.log("Access token: $accessToken");
+      dev.log("Provider token: $providerToken");
+      dev.log("Provider: $provider");
+
       if (widget.playlistId == null && widget.songs == null) {
+        dev.log("Fetching generated image...");
         generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
+        dev.log("Generated image fetched: $generatedImage");
       }
 
       final result = widget.songs != null
@@ -726,24 +738,24 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   : null;
 
       if (mounted) {
-        dev.log("result: $result");
+        dev.log("Result: $result");
         setState(() {
           if (result != null) {
             if (result is List<SongModel>) {
               recommendations = result;
+              dev.log("Recommendations updated: $recommendations");
             } else if (result is Map<String, dynamic>) {
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
-              // debugPrint("playlistImage playlistImage!!!! $playlistImage");
-              // debugPrint("playlistImage result!!!! $result");
+              dev.log("Playlist image: $playlistImage");
+              dev.log("Playlist tracks: $recommendations");
             }
           }
-          setState(() {
-            isLoading = false;
-          });
+          isLoading = false;
         });
       }
     } catch (e) {
+      dev.log("Error occurred: $e");
       if (mounted) {
         setState(() {
           errorList.add(e.toString());

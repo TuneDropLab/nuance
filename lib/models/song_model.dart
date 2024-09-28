@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 class SongModel {
   final String? id;
   final String? title;
@@ -48,45 +50,113 @@ class SongModel {
   });
 
   factory SongModel.fromJson(Map<String, dynamic> json) {
+    log("SONG MODEL JSON: $json");
     return SongModel(
-      id: (json['id'] ??
-              (json['songId'] is int
-                  ? int.tryParse(json['songId'])
-                  : json['songId']))
-          .toString(),
-      title: json['title'] ?? json['name'],
+      id: json['id']?.toString() ??
+          json['songId']?.toString() ??
+          json['playParams']?['id']?.toString() ??
+          "",
+
+      title: json['title'] ??
+          json['name'] ??
+          json['attributes']?['name'] ??
+          json['trackName'] ??
+          "",
+
       artist: json['artist'] ??
           (json['artists'] != null && (json['artists'] as List).isNotEmpty
               ? json['artists'][0]['name']
-              : null),
-      albumName: json['albumName'] ?? json['album']['name'],
-      albumType: json['albumType'] ?? json['album']['type'],
-      albumUrl: json['albumUrl'] ?? json['album']['external_urls']['spotify'],
-      artworkUrl: json['artworkUrl'] ??
-          (json['album']['images'] != null &&
-                  (json['album']['images'] as List).isNotEmpty
+              : json['attributes']?['artistName']) ??
+          json['artistName'] ??
+          "",
+
+      albumName: json['attributes']?['albumName'] ??
+          json['albumName'] ??
+          json['album']?['name'] ??
+          "",
+
+      albumType: json['attributes']?['albumType'] ??
+          json['albumType'] ??
+          json['album']?['type'] ??
+          "",
+
+      albumUrl: json['attributes']?['albumUrl'] ??
+          json['albumUrl'] ??
+          json['album']?['external_urls']?['spotify'] ??
+          json['url'] ??
+          "",
+
+      artworkUrl: json['attributes']?['artworkUrl'] ??
+          (json['album']?['images'] != null &&
+                  (json['album']?['images'] as List).isNotEmpty
               ? json['album']['images'][0]['url']
-              : null),
-      releaseDate: json['releaseDate'] ?? json['album']['release_date'],
-      totalTracks: json['totalTracks'] ?? json['album']['total_tracks'],
-      discNumber: json['discNumber'] ?? json['disc_number'],
-      durationMs: json['durationMs'] ?? json['duration_ms'],
-      explicit: json['explicit'] ?? json['is_explicit'],
-      isrc: json['isrc'] ?? json['external_ids']['isrc'],
-      trackNumber: json['trackNumber'] ?? json['track_number'],
-      popularity: json['popularity'] ?? json['popularity'],
-      trackUrl: json['trackUrl'] ?? json['external_urls']['spotify'],
-      previewUrl: json['previewUrl'] ?? json['preview_url'],
-      albumUri: json['albumUri'] ?? json['album']['uri'],
+              : json['attributes']?['artwork']?['url']
+                  ?.replaceAll('{w}x{h}', '300x300') ??
+              json['artwork']?['url']
+                  ?.replaceAll('{w}x{h}', '300x300')) ??
+          "",
+
+      releaseDate: json['attributes']?['releaseDate'] ??
+          json['releaseDate'] ??
+          json['album']?['release_date'] ??
+          "",
+
+      totalTracks: json['attributes']?['totalTracks'] ??
+          json['totalTracks'] ??
+          json['album']?['total_tracks'] ??
+          0,
+
+      discNumber: json['attributes']?['discNumber'] ??
+          json['discNumber'] ??
+          json['disc_number'] ??
+          json['discNumber'] ??
+          0,
+
+      durationMs: json['attributes']?['durationMs'] ??
+          json['durationMs'] ??
+          json['duration_ms'] ??
+          json['durationInMillis'] ??
+           0,
+
+      explicit: json['explicit'] ??
+          json['is_explicit'] ??
+          json['contentRating'] == 'explicit' ??
+          false,
+
+      isrc: json['isrc'] ?? json['external_ids']?['isrc'] ?? "",
+
+      trackNumber: json['trackNumber'] ?? json['track_number'] ?? 0,
+
+      popularity: json['popularity'] ?? 0,
+
+      trackUrl: json['trackUrl'] ??
+          json['external_urls']?['spotify'] ??
+          json['url'] ?? json['attributes']['url'] ??
+          "",
+
+      previewUrl: json['previewUrl'] ??
+          json['preview_url'] ??
+          (json['attributes']?['previews'] != null &&
+                  (json['attributes']?['previews'] as List).isNotEmpty
+              ? json['attributes']['previews'][0]['url']
+              : null) ??
+          "",
+
+      albumUri: json['albumUri'] ?? json['album']?['uri'] ?? "",
+
       artistUri: json['artistUri'] is String
           ? json['artistUri']
           : (json['artists'] != null &&
-                  (json['artists'] as List).isNotEmpty &&
-                  json['artists'][0]['uri'] is String
-              ? json['artists'][0]['uri']
-              : null),
-      trackUri: json['trackUri'] ?? json['uri'],
-      promptId: json['promptId'],
+                      (json['artists'] as List).isNotEmpty &&
+                      json['artists'][0]['uri'] is String
+                  ? json['artists'][0]['uri']
+                  : null) ??
+              "",
+
+      trackUri: json['trackUri'] ?? json['uri'] ?? "",
+
+      promptId: json['promptId'] ?? 0,
+
       createdAt:
           json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );

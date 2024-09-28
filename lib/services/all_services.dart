@@ -32,6 +32,8 @@ class AllServices {
     // final isAppleProvider = await _isAppleProvider();
     // final basePath = isAppleProvider ? '/apple-music' : 'spotify';
     try {
+      log("Starting getRecommendations with accessToken: $accessToken, userMessage: $userMessage, isAppleProvider: $isAppleProvider");
+
       final response = await http.post(
         Uri.parse('$baseURL/gemini/recommendations'),
         headers: {
@@ -41,22 +43,30 @@ class AllServices {
         body: jsonEncode({'userMessage': userMessage}),
       );
 
+      log("Received response with status code: ${response.statusCode}");
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+        log("Response body decoded: $data");
 
         final List<dynamic> recommendedSongsJson =
             data['recommendations']['songs'];
+        log("Recommended songs JSON: $recommendedSongsJson");
+
         final recommendations = recommendedSongsJson
             .map((item) => RecommendationModel.fromJson(item))
             .toList();
+        log("Recommendations mapped: $recommendations");
 
-        final trackInfo = await getTrackInfo(accessToken, recommendations);
+        final trackInfo = await getTrackInfo(accessToken, recommendations, isAppleProvider: isAppleProvider);
+        log("Track info retrieved: $trackInfo");
 
         return trackInfo;
       } else {
+        log("Error - Failed to load recommendations, status code: ${response.statusCode}");
         throw Exception('Failed to load recommendations');
       }
     } catch (e) {
+      log("Exception occurred: $e");
       rethrow;
     }
   }
@@ -94,7 +104,8 @@ class AllServices {
         log("GMRFN: Recommendations mapped: $recommendations");
 
         final trackInfo = await getTrackInfo(accessToken, recommendations,
-            currentSongList: currentSongList // Use named parameter here
+            currentSongList: currentSongList, // Use named parameter here,
+            isAppleProvider: isAppleProvider
             );
         log("GMRFN: Track info retrieved: $trackInfo");
 
@@ -112,7 +123,6 @@ class AllServices {
   Future<List<SongModel>> getTrackInfo(
       String accessToken, List<RecommendationModel> songs,
       {List<SongModel>? currentSongList, isAppleProvider}) async {
-    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final Map<String, dynamic> requestBody = {
@@ -123,6 +133,8 @@ class AllServices {
         requestBody['currentSongs'] = currentSongList;
       }
 
+      
+
       final response = await http.post(
         Uri.parse('$baseURL$basePath/tracks'),
         headers: {
@@ -132,13 +144,20 @@ class AllServices {
         body: jsonEncode(requestBody),
       );
 
+      log("Sending request to $baseURL$basePath/tracks with body: $requestBody");
+
+      log("Received response with status code 123333: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         final List<dynamic> trackData = jsonDecode(response.body)['trackInfo'];
+        log("Track data decoded: $trackData");
         return trackData.map((item) => SongModel.fromJson(item)).toList();
       } else {
+        log("Error - Failed to load track info, status code: ${response.statusCode}");
         throw Exception('Failed to load track info');
       }
     } catch (e) {
+      log("Exception occurred: $e");
       rethrow;
     }
   }
@@ -432,13 +451,17 @@ class AllServices {
         }),
       );
 
+      // log("FETCH PLAYLIST TRACKS RESPONSE: $response");
+
       final data = jsonDecode(response.body);
+      // log("FETCH PLAYLIST TRACKS DATA: $data");
       if (response.statusCode == 200) {
-        final playlistImage = data['playlistImage'];
+        final playlistImage = data['playlistImage']?.replaceAll('{w}x{h}', '1024x1024');
+        log("FETCH PLAYLIST TRACKS PLAYLIST IMAGE: $playlistImage");
         final tracks = (data['playlistTracks'] as List)
             .map((e) => SongModel.fromJson(e))
             .toList();
-
+        log("FETCH PLAYLIST TRACKS : $tracks");
         return {
           'playlistImage': playlistImage,
           'playlistTracks': tracks,
@@ -474,7 +497,7 @@ class AllServices {
       final shareLink = body['link'];
 
       final modifiedLink = shareLink.replaceFirst(
-          RegExp(r'^http:\/\/localhost:3000'), 'nuanceapp://');
+          RegExp(r'^http:\/\/(localhost:3000|api\.discovernuance\.com|https:\/\/api\.discovernuance\.com)'), 'nuanceapp://');
       Share.share(
         modifiedLink,
         subject: "Check out this recommendation",
@@ -498,6 +521,7 @@ class AllServices {
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
+      log("GET SHARED RECOMMENDATION BODY: $body");
       final recommendationData = body;
       return recommendationData;
     } else {

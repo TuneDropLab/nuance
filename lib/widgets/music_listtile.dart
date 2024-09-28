@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:nuance/models/song_model.dart';
+import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -38,6 +39,9 @@ class MusicListTile extends ConsumerStatefulWidget {
 class _MusicListTileState extends ConsumerState<MusicListTile> {
   @override
   Widget build(BuildContext context) {
+    //Get the user access token
+    final sessionStateFromProvider = ref.read(sessionProvider);
+    final provider = sessionStateFromProvider.value?.provider;
     return widget.isFromSpotifyPlaylistCard
         ? ListTile(
             leading: GestureDetector(
@@ -139,8 +143,12 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                       // Handle the error if the URL cannot be launched
                     }
                   },
-                  icon: SvgPicture.asset(
+                  icon: provider == 'spotify' ? SvgPicture.asset(
                     "assets/spotifylogoblack.svg",
+                    color: Colors.white,
+                    width: 20,
+                  ) : SvgPicture.asset(
+                    "assets/applemusiclogoblack.svg",
                     color: Colors.white,
                     width: 20,
                   ),
