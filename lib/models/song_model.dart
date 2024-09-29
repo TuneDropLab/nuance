@@ -51,6 +51,7 @@ class SongModel {
 
   factory SongModel.fromJson(Map<String, dynamic> json) {
     log("SONG MODEL JSON: $json");
+
     return SongModel(
       id: json['id']?.toString() ??
           json['songId']?.toString() ??
@@ -86,15 +87,13 @@ class SongModel {
           json['url'] ??
           "",
 
-      artworkUrl: json['attributes']?['artworkUrl'] ??
-          (json['album']?['images'] != null &&
-                  (json['album']?['images'] as List).isNotEmpty
+      artworkUrl: (json['album']?['images'] != null &&
+                  (json['album']?['images'] as List).isNotEmpty)
               ? json['album']['images'][0]['url']
               : json['attributes']?['artwork']?['url']
-                  ?.replaceAll('{w}x{h}', '300x300') ??
+                  ?.replaceAll('{w}x{h}', '500x500') ??
               json['artwork']?['url']
-                  ?.replaceAll('{w}x{h}', '300x300')) ??
-          "",
+                  ?.replaceAll('{w}x{h}', '500x500') ?? json['artworkUrl'] ?? "",
 
       releaseDate: json['attributes']?['releaseDate'] ??
           json['releaseDate'] ??
@@ -115,7 +114,7 @@ class SongModel {
       durationMs: json['attributes']?['durationMs'] ??
           json['durationMs'] ??
           json['duration_ms'] ??
-          json['durationInMillis'] ??
+          json['durationInMillis'] ?? json['attributes']['durationInMillis'] ??
            0,
 
       explicit: json['explicit'] ??
@@ -136,10 +135,8 @@ class SongModel {
 
       previewUrl: json['previewUrl'] ??
           json['preview_url'] ??
-          (json['attributes']?['previews'] != null &&
-                  (json['attributes']?['previews'] as List).isNotEmpty
-              ? json['attributes']['previews'][0]['url']
-              : null) ??
+          json['attributes']?['previews']?[0]?['url'] ??
+          json['previews'][0]['url'] ??
           "",
 
       albumUri: json['albumUri'] ?? json['album']?['uri'] ?? "",

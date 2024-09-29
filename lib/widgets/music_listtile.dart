@@ -39,9 +39,10 @@ class MusicListTile extends ConsumerStatefulWidget {
 class _MusicListTileState extends ConsumerState<MusicListTile> {
   @override
   Widget build(BuildContext context) {
-    //Get the user access token
+    // Get the user access token
     final sessionStateFromProvider = ref.read(sessionProvider);
     final provider = sessionStateFromProvider.value?.provider;
+    debugPrint("Widget artwork: ${widget.recommendation.toJson()}");
     return widget.isFromSpotifyPlaylistCard
         ? ListTile(
             leading: GestureDetector(
@@ -70,9 +71,10 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                       );
                     },
                     errorWidget: (context, url, error) {
+                      print('Error loading image: $error'); // Log the error
                       return Container(
                         alignment: Alignment.center,
-                        child: const CupertinoActivityIndicator(),
+                        child: const Icon(Icons.error, color: Colors.red),
                       );
                     },
                   ),
@@ -143,15 +145,17 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                       // Handle the error if the URL cannot be launched
                     }
                   },
-                  icon: provider == 'spotify' ? SvgPicture.asset(
-                    "assets/spotifylogoblack.svg",
-                    color: Colors.white,
-                    width: 20,
-                  ) : SvgPicture.asset(
-                    "assets/applemusiclogoblack.svg",
-                    color: Colors.white,
-                    width: 20,
-                  ),
+                  icon: provider == 'spotify'
+                      ? SvgPicture.asset(
+                          "assets/spotifylogoblack.svg",
+                          color: Colors.white,
+                          width: 20,
+                        )
+                      : SvgPicture.asset(
+                          "assets/applemusiclogoblack.svg",
+                          color: Colors.white,
+                          width: 20,
+                        ),
                 ),
                 CircleAvatar(
                   backgroundColor: const Color(0xff191919),
@@ -210,9 +214,10 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                         );
                       },
                       errorWidget: (context, url, error) {
+                        print('Error loading image: $error'); // Log the error
                         return Container(
                           alignment: Alignment.center,
-                          child: const CupertinoActivityIndicator(),
+                          child: const Icon(Icons.error, color: Colors.red),
                         );
                       },
                     ),
@@ -284,11 +289,17 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                         // Handle the error if the URL cannot be launched
                       }
                     },
-                    icon: SvgPicture.asset(
-                      "assets/spotifylogoblack.svg",
-                      color: Colors.white,
-                      width: 20,
-                    ),
+                    icon: provider == 'spotify'
+                        ? SvgPicture.asset(
+                            "assets/spotifylogoblack.svg",
+                            color: Colors.white,
+                            width: 20,
+                          )
+                        : SvgPicture.asset(
+                            "assets/applemusiclogoblack.svg",
+                            color: Colors.white,
+                            width: 20,
+                          ),
                   ),
                   CircleAvatar(
                     backgroundColor: const Color(0xff191919),

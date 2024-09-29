@@ -478,26 +478,39 @@ class AllServices {
     }
   }
 
-  Future<void> shareRecommendation(BuildContext context, String playlistName,
-      List<dynamic> songs, String playlistImageUrl) async {
+  Future<void> shareRecommendation(
+    BuildContext context,
+    String playlistName,
+    List<SongModel> songs, // Changed to List<SongModel> for better type safety
+    String playlistImageUrl,
+    String playlistId, // Added playlistId parameter
+  ) async {
     final url = Uri.parse('$baseURL/share/generate');
+
+    // Serialize songs to include necessary URIs
+    final serializedSongs = songs.map((song) => song.toJson()).toList();
+
     final recommendationData = {
       'searchQuery': playlistName,
-      'songs': songs,
+      'songs': serializedSongs,
       'image': playlistImageUrl,
+      'playlistId': playlistId, // Include playlistId in the data
     };
-    final response = await http.post(url,
-        body: jsonEncode({
-          'recommendationData': recommendationData,
-        }),
-        headers: {'Content-Type': 'application/json'});
+
+    final response = await http.post(
+      url,
+      body: jsonEncode({
+        'recommendationData': recommendationData,
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
       final shareLink = body['link'];
 
       final modifiedLink = shareLink.replaceFirst(
-          RegExp(r'^http:\/\/(localhost:3000|api\.discovernuance\.com|https:\/\/api\.discovernuance\.com)'), 'nuanceapp://');
+          RegExp(r'^http:\/\/localhost:3000|api\.discovernuance\.com|https:\/\/api\.discovernuance\.com'), 'nuanceapp://');
       Share.share(
         modifiedLink,
         subject: "Check out this recommendation",
@@ -507,7 +520,7 @@ class AllServices {
         ),
       );
     } else {
-      CustomSnackbar().show(
+      _customSnackbar.show(
         'Failed to generate share link',
       );
     }

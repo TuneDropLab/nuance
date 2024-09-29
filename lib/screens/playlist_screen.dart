@@ -344,7 +344,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               ),
               SafeArea(
                 child: CachedNetworkImage(
-                  imageUrl: playlistImage ?? "",
+                  imageUrl: playlistImage ?? widget.imageUrl ?? "",
                   imageBuilder: (context, imageProvider) => Container(
                     margin: const EdgeInsets.only(
                       top: 60,
@@ -461,7 +461,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             ),
       actions: [
         if (_isSelectionMode)
-          widget.playlistId == null
+          (widget.playlistId == null || widget.playlistId == "")
               ? Row(
                   children: [
                     IconButton(
@@ -500,7 +500,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 )
               : const SizedBox.shrink()
         else
-          widget.playlistId == null
+          (widget.playlistId == null || widget.playlistId == "")
               ? IconButton(
                   icon: const Icon(
                     CupertinoIcons.list_bullet,
@@ -632,7 +632,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         ],
                       ),
               ),
-              if (widget.playlistId == null &&
+              if ((widget.playlistId == null || widget.playlistId == "") &&
                   widget.songs == null &&
                   _isSelectionMode == false)
                 Positioned(
@@ -713,7 +713,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       dev.log("Provider token: $providerToken");
       dev.log("Provider: $provider");
 
-      if (widget.playlistId == null && widget.songs == null) {
+      if ((widget.playlistId == null || widget.playlistId == "") && widget.songs == null) {
         dev.log("Fetching generated image...");
         generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
@@ -748,7 +748,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
               dev.log("Playlist image: $playlistImage");
-              dev.log("Playlist tracks: $recommendations");
+              dev.log("Playlist tracks: ${recommendations?.map((e) => e.toJson()).toList()}");
             }
           }
           isLoading = false;
@@ -1603,7 +1603,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                         generatedImage ??
                                         playlistImage ??
                                         "",
+                                    widget.playlistId ?? "",
                                   );
+                                  
                           },
                         ),
                       ),
@@ -1677,7 +1679,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               !isLoading && widget.playlistId != null
                   ? spotifyPlaylistAppBar(
                       context, uniqueArtistsCount, totalDuration)
-                  : !isLoading && widget.playlistId == null
+                  : !isLoading && (widget.playlistId == null || widget.playlistId == "")
                       ? generatedPlaylistCardAppBar(
                           context, uniqueArtistsCount, totalDuration)
                       : normalAppBarWithNoImage(
@@ -1719,7 +1721,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               }
 
               if (index == (recommendations?.length ?? widget.songs?.length)) {
-                if (widget.playlistId == null) {
+                if ((widget.playlistId == null || widget.playlistId == "")) {
                   return Padding(
                     padding: const EdgeInsets.all(26.0),
                     child: _isGeneratingMore
