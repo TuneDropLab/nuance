@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:nuance/models/apple_playlist_model.dart';
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/models/song_model.dart';
@@ -57,7 +58,8 @@ class AllServices {
             .toList();
         log("Recommendations mapped: $recommendations");
 
-        final trackInfo = await getTrackInfo(accessToken, recommendations, isAppleProvider: isAppleProvider);
+        final trackInfo = await getTrackInfo(accessToken, recommendations,
+            isAppleProvider: isAppleProvider);
         log("Track info retrieved: $trackInfo");
 
         return trackInfo;
@@ -105,8 +107,7 @@ class AllServices {
 
         final trackInfo = await getTrackInfo(accessToken, recommendations,
             currentSongList: currentSongList, // Use named parameter here,
-            isAppleProvider: isAppleProvider
-            );
+            isAppleProvider: isAppleProvider);
         log("GMRFN: Track info retrieved: $trackInfo");
 
         return trackInfo;
@@ -132,8 +133,6 @@ class AllServices {
       if (currentSongList != null) {
         requestBody['currentSongs'] = currentSongList;
       }
-
-      
 
       final response = await http.post(
         Uri.parse('$baseURL$basePath/tracks'),
@@ -162,7 +161,7 @@ class AllServices {
     }
   }
 
-  Future<List<PlaylistModel>> getPlaylists(
+  Future<List<dynamic>> getPlaylists(
       String accessToken, String userId, isAppleProvider) async {
     // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
@@ -178,13 +177,19 @@ class AllServices {
       if (response.statusCode == 200) {
         final List<dynamic> playlistData =
             jsonDecode(response.body)['playlists'];
-
+        log("playlistData: $playlistData");
         // Filter playlists to only include those created by the user
-        final userPlaylists = playlistData
-            .where((item) => item['owner']['id'] == userId)
-            .map((item) => PlaylistModel.fromJson(item))
-            .toList();
 
+        final userPlaylists = isAppleProvider == 'apple'
+            ? playlistData
+                .where((item) => item['attributes']['canEdit'] == true)
+                .map((item) => ApplePlaylistModel.fromJson(item))
+                .toList()
+            : playlistData
+                .where((item) => item['owner']['id'] == userId)
+                .map((item) => PlaylistModel.fromJson(item))
+                .toList();
+        log("userPlaylists: $userPlaylists");
         return userPlaylists;
       } else {
         throw Exception('Failed to load playlists');
@@ -224,7 +229,7 @@ class AllServices {
     }
   }
 
-  Future<PlaylistModel> createPlaylist(
+  Future<dynamic> createPlaylist(
     String accessToken,
     String userId,
     String name,
@@ -232,7 +237,6 @@ class AllServices {
     String imageUrl,
     isAppleProvider,
   ) async {
-    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(
@@ -249,11 +253,17 @@ class AllServices {
       );
 
       if (response.statusCode == 201) {
-        final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
+        final responseBody = jsonDecode(response.body);
+        if (responseBody is List) {
+          throw Exception('Unexpected response format: List<dynamic>');
+        }
+        final Map<String, dynamic> data = responseBody['playlist'];
         debugPrint("created playlist data: $data");
-        await setPlaylistCoverImage(
-            accessToken, data['id'], imageUrl, isAppleProvider);
-        return PlaylistModel.fromJson(data);
+        if (isAppleProvider == 'spotify') {
+          await setPlaylistCoverImage(
+              accessToken, data['id'], imageUrl, isAppleProvider);
+        }
+        return isAppleProvider == 'apple' ? ApplePlaylistModel.fromJson(data) : PlaylistModel.fromJson(data);
       } else {
         debugPrint('Failed to create playlist: ${response.body}');
         throw Exception('Failed to create playlist');
@@ -456,7 +466,8 @@ class AllServices {
       final data = jsonDecode(response.body);
       // log("FETCH PLAYLIST TRACKS DATA: $data");
       if (response.statusCode == 200) {
-        final playlistImage = data['playlistImage']?.replaceAll('{w}x{h}', '1024x1024');
+        final playlistImage =
+            data['playlistImage']?.replaceAll('{w}x{h}', '1024x1024');
         log("FETCH PLAYLIST TRACKS PLAYLIST IMAGE: $playlistImage");
         final tracks = (data['playlistTracks'] as List)
             .map((e) => SongModel.fromJson(e))
@@ -510,7 +521,9 @@ class AllServices {
       final shareLink = body['link'];
 
       final modifiedLink = shareLink.replaceFirst(
-          RegExp(r'^http:\/\/localhost:3000|api\.discovernuance\.com|https:\/\/api\.discovernuance\.com'), 'nuanceapp://');
+          RegExp(
+              r'^http:\/\/localhost:3000|api\.discovernuance\.com|https:\/\/api\.discovernuance\.com'),
+          'nuanceapp://');
       Share.share(
         modifiedLink,
         subject: "Check out this recommendation",
@@ -565,11 +578,17 @@ class AllServices {
       if (response.statusCode == 200) {
         CustomSnackbar().show(
           message,
-          icon: SvgPicture.asset(
-            "assets/spotifylogoblack.svg",
-            color: Colors.white,
-            height: 20,
-          ),
+          icon: isAppleProvider == 'apple'
+              ? SvgPicture.asset(
+                  "assets/applemusiclogoblack.svg",
+                  color: Colors.white,
+                  height: 20,
+                )
+              : SvgPicture.asset(
+                  "assets/spotifylogoblack.svg",
+                  color: Colors.white,
+                  height: 20,
+                ),
         );
       } else {
         throw Exception('Failed to follow playlist: $message');

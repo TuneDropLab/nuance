@@ -3,7 +3,7 @@ import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/services/all_services.dart';
 
-final playlistProvider = FutureProvider<List<PlaylistModel>>((ref) async {
+final playlistProvider = FutureProvider<List<dynamic>>((ref) async {
   try {
     final authService = ref.read(authServiceProvider);
     final sessionData = await authService.getSessionData();

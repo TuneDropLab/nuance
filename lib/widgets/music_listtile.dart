@@ -42,7 +42,6 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
     // Get the user access token
     final sessionStateFromProvider = ref.read(sessionProvider);
     final provider = sessionStateFromProvider.value?.provider;
-    debugPrint("Widget artwork: ${widget.recommendation.toJson()}");
     return widget.isFromSpotifyPlaylistCard
         ? ListTile(
             leading: GestureDetector(

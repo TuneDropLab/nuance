@@ -289,15 +289,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               // Handle the error if the URL cannot be launched
             }
           },
-          icon: provider == 'spotify' ? SvgPicture.asset(
-                    "assets/spotifylogoblack.svg",
-                    color: Colors.white,
-                    width: 20,
-                  ) : SvgPicture.asset(
-                    "assets/applemusiclogoblack.svg",
-                    color: Colors.white,
-                    width: 30,
-                  ).marginOnly(right: 8),
+          icon: provider == 'spotify'
+              ? SvgPicture.asset(
+                  "assets/spotifylogoblack.svg",
+                  color: Colors.white,
+                  width: 20,
+                )
+              : SvgPicture.asset(
+                  "assets/applemusiclogoblack.svg",
+                  color: Colors.white,
+                  width: 30,
+                ).marginOnly(right: 8),
         )
       ],
       expandedHeight: 330.0,
@@ -713,7 +715,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       dev.log("Provider token: $providerToken");
       dev.log("Provider: $provider");
 
-      if ((widget.playlistId == null || widget.playlistId == "") && widget.songs == null) {
+      if ((widget.playlistId == null || widget.playlistId == "") &&
+          widget.songs == null) {
         dev.log("Fetching generated image...");
         generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
@@ -748,7 +751,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
               dev.log("Playlist image: $playlistImage");
-              dev.log("Playlist tracks: ${recommendations?.map((e) => e.toJson()).toList()}");
+              dev.log(
+                  "Playlist tracks: ${recommendations?.map((e) => e.toJson()).toList()}");
             }
           }
           isLoading = false;
@@ -964,11 +968,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
                     // final addTracksState = ref.watch(addTracksProvider);
-                    final trackIds = recommendations
-                        .map((song) => song.trackUri ?? "")
-                        .toList();
 
                     final sessionStateFromProvider = ref.read(sessionProvider);
+                    final provider = sessionStateFromProvider.value?.provider;
+
+                    final trackIds = recommendations.map((song) {
+                      if (provider == 'spotify') {
+                        return song.trackUri ?? "";
+                      } else {
+                        return song.id ?? "";
+                      }
+                    }).toList();
+
+                    dev.log("TRACK IDs: ${trackIds.join(', ')}");
 
                     return playlistsState.when(
                       data: (playlists) {
@@ -982,6 +994,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                 final playlist = playlists[index];
                                 final isCurrentLoading =
                                     _loadingPlaylistId == playlist.id;
+                                dev.log("IDDDDD:   ${playlist.id}");
                                 final params = AddTracksParams(
                                   accessToken:
                                       widget.sessionState?.value!.accessToken ??
@@ -1026,18 +1039,33 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                       },
                                       errorWidget: (context, url, error) {
                                         return Container(
-                                          alignment: Alignment.center,
-                                          child: const Icon(Icons.error),
+                                          width: 40.0,
+                                          height: 40.0,
+                                          decoration: const BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(5.0)),
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                              colors: [
+                                                Color.fromARGB(
+                                                    255, 215, 129, 0),
+                                                Color.fromARGB(
+                                                    255, 255, 222, 59),
+                                              ],
+                                            ),
+                                            color: Colors.orange,
+                                          ),
                                         );
                                       }),
                                   title: Text(
                                     playlist.name ?? "",
                                     style: const TextStyle(color: Colors.white),
                                   ),
-                                  subtitle: Text(
-                                    "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} ",
-                                    style: subtitleTextStyle,
-                                  ),
+                                  // subtitle: Text(
+                                  //   "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} ",
+                                  //   style: subtitleTextStyle,
+                                  // ),
                                   onTap: () {
                                     if (widget.sessionState?.value
                                                 ?.accessToken !=
@@ -1605,7 +1633,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                         "",
                                     widget.playlistId ?? "",
                                   );
-                                  
                           },
                         ),
                       ),
@@ -1679,7 +1706,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               !isLoading && widget.playlistId != null
                   ? spotifyPlaylistAppBar(
                       context, uniqueArtistsCount, totalDuration)
-                  : !isLoading && (widget.playlistId == null || widget.playlistId == "")
+                  : !isLoading &&
+                          (widget.playlistId == null || widget.playlistId == "")
                       ? generatedPlaylistCardAppBar(
                           context, uniqueArtistsCount, totalDuration)
                       : normalAppBarWithNoImage(
