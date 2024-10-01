@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/services/all_services.dart';
 
@@ -31,19 +32,18 @@ class AddTracksNotifier extends AsyncNotifier<void> {
   Future<void> addTracksToPlaylist(AddTracksParams params) async {
     state = const AsyncValue.loading();
     try {
-      
-      
+      log("Adding tracks with params: $params");
       await AllServices().addTracksToExistingPlaylist(
         params.accessToken,
         params.searchQuery,
         params.playlistId,
         params.imageUrl,
         params.trackIds,
-        params.providerType,
-
+        params.providerType, // Ensure this is passed
       );
       state = const AsyncValue.data(null);
     } catch (e) {
+      log("Error adding tracks: $e");
       state = AsyncValue.error(e, StackTrace.current);
     }
   }

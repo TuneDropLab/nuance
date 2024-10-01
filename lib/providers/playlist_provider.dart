@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
@@ -23,10 +26,9 @@ final playlistProvider = FutureProvider<List<dynamic>>((ref) async {
   }
 });
 
-final createPlaylistProvider =
-    FutureProvider.family<PlaylistModel, Map<String, String>>(
-        (ref, data) async {
+final createPlaylistProvider = FutureProvider.family<dynamic, Map<String, String>>((ref, data) async {
   try {
+    debugPrint("(createPlaylistProviderFN) HErreeeeee");
     final authService = ref.read(authServiceProvider);
     final sessionData = await authService.getSessionData();
 
@@ -34,19 +36,25 @@ final createPlaylistProvider =
       throw Exception('User not authenticated');
     }
 
-    // final accessToken = sessionData['access_token'];
     final providerType = sessionData['user']['app_metadata']['provider'];
     final userId = sessionData['user']["user_metadata"]["provider_id"];
+    log("(createPlaylistProviderFN) providerType 22222222: $providerType");
+    log("(createPlaylistProviderFN) Name: $data");
+    log("(createPlaylistProviderFN) Description: ${data['description']}");
+    log("(createPlaylistProviderFN) Image: ${data['image']}");
     final newPlaylist = await AllServices().createPlaylist(
       sessionData['access_token'],
       userId,
       data['name']!,
       data['description']!,
       data['image']!,
-      providerType,
+      providerType, // Ensure this is passed
     );
+
+    debugPrint("NEW PLAYLIST $newPlaylist");
     return newPlaylist;
   } catch (e) {
-    throw Exception('Failed to create playlist');
+    debugPrint('Failed to create playlist, $e');
+    throw Exception('Failed to create playlist, $e');
   }
 });

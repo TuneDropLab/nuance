@@ -220,7 +220,10 @@ class AllServices {
             {'trackIds': trackIds, 'query': searchQuery, 'imageUrl': image}),
       );
 
+      log("RESPONSE STATUS FOR ADDTRACKS: ${response.statusCode}");
+
       if (response.statusCode == 200) {
+        log("ADDED SONG for : $response");
       } else {
         throw Exception('Failed to add tracks to playlist');
       }
@@ -235,10 +238,11 @@ class AllServices {
     String name,
     String description,
     String imageUrl,
-    isAppleProvider,
+    String isAppleProvider, // Update parameter name
   ) async {
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
+      log("(CreatePlaylistFN) Start");
       final response = await http.post(
         Uri.parse('$baseURL$basePath/playlists'),
         headers: {
@@ -252,17 +256,20 @@ class AllServices {
         }),
       );
 
+      log("(CreatePlaylistFN) STATUS CODE  ${response.statusCode}");
+      log("(CreatePlaylistFN) RESPONSE BODY ${response.body}");
+
       if (response.statusCode == 201) {
         final responseBody = jsonDecode(response.body);
-        if (responseBody is List) {
-          throw Exception('Unexpected response format: List<dynamic>');
-        }
-        final Map<String, dynamic> data = responseBody['playlist'];
+        log("RESPONSE: $responseBody");
+        final Map<String, dynamic> data = responseBody['playlist'][0];
         debugPrint("created playlist data: $data");
         if (isAppleProvider == 'spotify') {
           await setPlaylistCoverImage(
               accessToken, data['id'], imageUrl, isAppleProvider);
         }
+        log("DATTTAAA $data");
+        log("Apple Playlist Model: ${PlaylistModel.fromJson(data)}");
         return isAppleProvider == 'apple' ? ApplePlaylistModel.fromJson(data) : PlaylistModel.fromJson(data);
       } else {
         debugPrint('Failed to create playlist: ${response.body}');
