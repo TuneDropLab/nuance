@@ -94,8 +94,8 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           // Search bar
                           Expanded(
                             child: AnimatedTextField(
+                              animationDuration: const Duration(seconds: 2),
                               maxLines: 1,
-                              animationDuration: const Duration(seconds: 8),
                               onTapOutside: (event) {
                                 FocusManager.instance.primaryFocus?.unfocus();
                               },

@@ -243,7 +243,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Scaffold(
           backgroundColor: Colors.black,
           key: globalKey,
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
           drawerEnableOpenDragGesture: true,
           drawer: MyCustomDrawer(sessionState: sessionState),
           appBar: AppBar(
@@ -522,7 +523,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: tags.isNotEmpty
                           ? ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (context, index) {
@@ -533,8 +535,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   const Color(0xff8E33F5),
                                   const Color(0xff0088FF),
                                 ];
-                                final Color randomColor =
-                                    colors[math.Random().nextInt(colors.length)];
+                                final Color randomColor = colors[
+                                    math.Random().nextInt(colors.length)];
                                 return InkWell(
                                   onTap: () {
                                     _tagQuery.text = tags[index];
@@ -549,7 +551,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         horizontal: 10, vertical: 10),
                                     label: Text(tags[index]),
                                     backgroundColor: Colors.grey[900],
-                                    labelStyle: const TextStyle(color: Colors.white),
+                                    labelStyle:
+                                        const TextStyle(color: Colors.white),
                                   ),
                                 );
                               },
@@ -559,21 +562,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               itemCount: tags.length,
                             )
                           : ListView.separated(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
                               itemCount: 5, // Number of shimmer items
                               itemBuilder: (context, index) {
                                 return Shimmer.fromColors(
-                                  baseColor: const Color.fromARGB(51, 255, 255, 255),
-                                  highlightColor: const Color.fromARGB(65, 255, 255, 255),
+                                  baseColor:
+                                      const Color.fromARGB(51, 255, 255, 255),
+                                  highlightColor:
+                                      const Color.fromARGB(65, 255, 255, 255),
                                   child: Chip(
                                     side: BorderSide.none,
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 10, vertical: 10),
                                     label: const Text("Loading..."),
                                     backgroundColor: Colors.grey[900],
-                                    labelStyle: const TextStyle(color: Colors.white),
+                                    labelStyle:
+                                        const TextStyle(color: Colors.white),
                                   ),
                                 );
                               },
@@ -585,7 +592,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const CustomDivider(),
                     const SizedBox(height: 5),
                     AnimatedTextField(
-                      animationDuration: const Duration(milliseconds: 98000),
+                      animationDuration: const Duration(seconds: 2),
                       animationType: Animationtype.slide,
                       focusNode: focusNode,
                       onTapOutside: (event) {

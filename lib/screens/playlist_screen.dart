@@ -1254,7 +1254,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         const SizedBox(height: 20),
                         SizedBox(
                           child: AnimatedTextField(
-                            animationDuration: 4000.ms,
+                            animationDuration: const Duration(seconds: 2),
                             onTapOutside: (event) {
                               FocusManager.instance.primaryFocus?.unfocus();
                             },
@@ -1284,6 +1284,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         ),
                         const SizedBox(height: 20),
                         AnimatedTextField(
+                          animationDuration: const Duration(seconds: 2),
                           onTapOutside: (event) {
                             FocusManager.instance.primaryFocus?.unfocus();
                           },
