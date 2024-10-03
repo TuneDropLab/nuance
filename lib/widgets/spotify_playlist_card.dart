@@ -198,20 +198,34 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
                               baseColor: const Color.fromARGB(69, 0, 0, 0),
                               highlightColor:
                                   const Color.fromARGB(121, 0, 0, 0),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: List.generate(7, (index) {
-                                  return Positioned(
-                                      left: index * 34.0,
-                                      child: const CircleAvatar(
-                                        radius: 30,
-                                        child: CircleAvatar(
-                                          radius: 28.0,
-                                          backgroundColor:
-                                              Color.fromARGB(85, 0, 0, 0),
-                                        ),
-                                      ));
-                                }),
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // Calculate total width of the shimmer stack
+                                  double totalWidth = (7 - 1) * 34.0 + 40.0; // 7 is the number of shimmer circles
+
+                                  return Stack(
+                                    alignment: Alignment.center,
+                                    children: List.generate(
+                                      7,
+                                      (index) {
+                                        return Positioned(
+                                          left: (constraints.maxWidth -
+                                                      totalWidth) /
+                                                  2 +
+                                              index * 34.0,
+                                          child: const CircleAvatar(
+                                            radius: 30,
+                                            child: CircleAvatar(
+                                              radius: 28.0,
+                                              backgroundColor:
+                                                  Color.fromARGB(85, 0, 0, 0),
+                                            ),
+                                          )
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
                               ),
                             )
                           : Container(
