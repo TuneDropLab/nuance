@@ -262,7 +262,7 @@ class AllServices {
       if (response.statusCode == 201) {
         final responseBody = jsonDecode(response.body);
         log("RESPONSE: $responseBody");
-        final Map<String, dynamic> data = responseBody['playlist'][0];
+        final Map<String, dynamic> data = isAppleProvider == 'apple' ? responseBody['playlist'][0] : responseBody['playlist'];
         debugPrint("created playlist data: $data");
         if (isAppleProvider == 'spotify') {
           await setPlaylistCoverImage(
