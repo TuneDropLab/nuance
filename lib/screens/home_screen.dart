@@ -68,16 +68,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool isLoading = false;
   bool isMoreLoading = false;
   List<dynamic> recommendations = [];
+  List<dynamic> tags = [];
 
   @override
   void initState() {
     super.initState();
+    recommendations.clear();
+    
     _scrollController.addListener(_onScroll);
     _fetchRecommendations();
   }
 
   @override
   void dispose() {
+    recommendations.clear();
     _scrollController.dispose();
     super.dispose();
   }

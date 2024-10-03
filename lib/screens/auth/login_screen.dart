@@ -7,6 +7,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/history_model.dart';
+import 'package:nuance/providers/home_recommedations_provider.dart';
+import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,6 +51,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _authenticate(String provider) async {
+    ref.invalidate(recommendationTagsProvider);
+    ref.invalidate(spotifyHomeRecommendationsProvider);
     final authUrl = provider == 'apple'
         ? null // We don't need to use the first Apple login URL since it's handled by MusicKit
         : '$baseURL/auth/login'; // Only use this for Spotify or other providers
@@ -336,28 +340,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           hasPadding: true,
                         ),
                       ),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.only(
-                          bottom: 50,
-                          left: 20,
-                          right: 20,
-                        ),
-                        child: GeneralButton(
-                          text: 'Sign in with Spotify',
-                          icon: SvgPicture.asset(
-                            'assets/icon4star.svg',
-                            width: 10,
-                            height: 10,
-                          ),
-                          backgroundColor:
-                              const Color.fromARGB(255, 79, 162, 114),
-                          onPressed: _isLoading
-                              ? () {}
-                              : () => _authenticate('spotify'),
-                          hasPadding: true,
-                        ),
-                      ),
+                      // Container(
+                      //   width: Get.width,
+                      //   padding: const EdgeInsets.only(
+                      //     bottom: 50,
+                      //     left: 20,
+                      //     right: 20,
+                      //   ),
+                      //   child: GeneralButton(
+                      //     text: 'Sign in with Spotify',
+                      //     icon: SvgPicture.asset(
+                      //       'assets/icon4star.svg',
+                      //       width: 10,
+                      //       height: 10,
+                      //     ),
+                      //     backgroundColor:
+                      //         const Color.fromARGB(255, 79, 162, 114),
+                      //     onPressed: _isLoading
+                      //         ? () {}
+                      //         : () => _authenticate('spotify'),
+                      //     hasPadding: true,
+                      //   ),
+                      // ),
                     ],
                   ),
                 ],
