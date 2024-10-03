@@ -84,10 +84,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         // ref.read(providerTypeProvider.notifier).state = providerType;
 
         setState(() {
-          _isLoading = true;
+          _isLoading = true; // Start loading state
         });
 
         try {
+          // Start spinning animation after web view closes
+          _controller.repeat(); // Start the spinning animation
+
           final profile = await AllServices().getUserProfile(accessToken);
           final name = profile['user']['name'];
           final email = profile['user']['email'];
@@ -98,6 +101,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 name: name,
                 email: email,
               );
+
+          // Stop spinning animation after profile is fetched
+          _controller.stop(); // Stop the spinning animation
 
           await Future.delayed(const Duration(seconds: 2));
 
@@ -115,7 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           );
         } finally {
           setState(() {
-            _isLoading = false;
+            _isLoading = false; // Reset loading state
           });
         }
       }
@@ -340,6 +346,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           hasPadding: true,
                         ),
                       ),
+                      // TODO: SPOTIFY FUNCTIONALITY
                       // Container(
                       //   width: Get.width,
                       //   padding: const EdgeInsets.only(
