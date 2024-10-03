@@ -255,6 +255,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
   SliverAppBar spotifyPlaylistAppBar(
       BuildContext context, int uniqueArtistsCount, int totalDuration) {
+    final sessionStateFromProvider = ref.read(sessionProvider);
+    final provider = sessionStateFromProvider.value?.provider;
     return SliverAppBar(
       stretch: false,
       automaticallyImplyLeading: false,
@@ -287,11 +289,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               // Handle the error if the URL cannot be launched
             }
           },
-          icon: SvgPicture.asset(
-            "assets/spotifylogoblack.svg",
-            color: Colors.white,
-            width: 40,
-          ),
+          icon: provider == 'spotify'
+              ? SvgPicture.asset(
+                  "assets/spotifylogoblack.svg",
+                  color: Colors.white,
+                  width: 20,
+                )
+              : SvgPicture.asset(
+                  "assets/applemusiclogoblack.svg",
+                  color: Colors.white,
+                  width: 30,
+                ).marginOnly(right: 8),
         )
       ],
       expandedHeight: 330.0,
@@ -338,7 +346,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               ),
               SafeArea(
                 child: CachedNetworkImage(
-                  imageUrl: playlistImage ?? "",
+                  imageUrl: playlistImage ?? widget.imageUrl ?? "",
                   imageBuilder: (context, imageProvider) => Container(
                     margin: const EdgeInsets.only(
                       top: 60,
@@ -455,7 +463,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             ),
       actions: [
         if (_isSelectionMode)
-          widget.playlistId == null
+          (widget.playlistId == null || widget.playlistId == "")
               ? Row(
                   children: [
                     IconButton(
@@ -494,7 +502,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 )
               : const SizedBox.shrink()
         else
-          widget.playlistId == null
+          (widget.playlistId == null || widget.playlistId == "")
               ? IconButton(
                   icon: const Icon(
                     CupertinoIcons.list_bullet,
@@ -626,7 +634,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         ],
                       ),
               ),
-              if (widget.playlistId == null &&
+              if ((widget.playlistId == null || widget.playlistId == "") &&
                   widget.songs == null &&
                   _isSelectionMode == false)
                 Positioned(
@@ -703,9 +711,16 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       // Retrieve providerType from session data
       final provider = sessionStateFromProvider.value?.provider;
 
-      if (widget.playlistId == null && widget.songs == null) {
+      dev.log("Access token: $accessToken");
+      dev.log("Provider token: $providerToken");
+      dev.log("Provider: $provider");
+
+      if ((widget.playlistId == null || widget.playlistId == "") &&
+          widget.songs == null) {
+        dev.log("Fetching generated image...");
         generatedImage = await service.getGeneratedImage(accessToken,
             widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
+        dev.log("Generated image fetched: $generatedImage");
       }
 
       final result = widget.songs != null
@@ -726,24 +741,25 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   : null;
 
       if (mounted) {
-        dev.log("result: $result");
+        dev.log("Result: $result");
         setState(() {
           if (result != null) {
             if (result is List<SongModel>) {
               recommendations = result;
+              dev.log("Recommendations updated: $recommendations");
             } else if (result is Map<String, dynamic>) {
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
-              // debugPrint("playlistImage playlistImage!!!! $playlistImage");
-              // debugPrint("playlistImage result!!!! $result");
+              dev.log("Playlist image: $playlistImage");
+              dev.log(
+                  "Playlist tracks: ${recommendations?.map((e) => e.toJson()).toList()}");
             }
           }
-          setState(() {
-            isLoading = false;
-          });
+          isLoading = false;
         });
       }
     } catch (e) {
+      dev.log("Error occurred: $e");
       if (mounted) {
         setState(() {
           errorList.add(e.toString());
@@ -952,11 +968,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
                     // final addTracksState = ref.watch(addTracksProvider);
-                    final trackIds = recommendations
-                        .map((song) => song.trackUri ?? "")
-                        .toList();
 
                     final sessionStateFromProvider = ref.read(sessionProvider);
+                    final provider = sessionStateFromProvider.value?.provider;
+
+                    final trackIds = recommendations.map((song) {
+                      if (provider == 'spotify') {
+                        return song.trackUri ?? "";
+                      } else {
+                        return song.id ?? "";
+                      }
+                    }).toList();
+
+                    dev.log("TRACK IDs: ${trackIds.join(', ')}");
 
                     return playlistsState.when(
                       data: (playlists) {
@@ -970,6 +994,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                 final playlist = playlists[index];
                                 final isCurrentLoading =
                                     _loadingPlaylistId == playlist.id;
+                                dev.log("IDDDDD:   ${playlist.id}");
                                 final params = AddTracksParams(
                                   accessToken:
                                       widget.sessionState?.value!.accessToken ??
@@ -1014,18 +1039,33 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                       },
                                       errorWidget: (context, url, error) {
                                         return Container(
-                                          alignment: Alignment.center,
-                                          child: const Icon(Icons.error),
+                                          width: 40.0,
+                                          height: 40.0,
+                                          decoration: const BoxDecoration(
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(5.0)),
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topLeft,
+                                              end: Alignment.bottomRight,
+                                              colors: [
+                                                Color.fromARGB(
+                                                    255, 215, 129, 0),
+                                                Color.fromARGB(
+                                                    255, 255, 222, 59),
+                                              ],
+                                            ),
+                                            color: Colors.orange,
+                                          ),
                                         );
                                       }),
                                   title: Text(
                                     playlist.name ?? "",
                                     style: const TextStyle(color: Colors.white),
                                   ),
-                                  subtitle: Text(
-                                    "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} ",
-                                    style: subtitleTextStyle,
-                                  ),
+                                  // subtitle: Text(
+                                  //   "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} ",
+                                  //   style: subtitleTextStyle,
+                                  // ),
                                   onTap: () {
                                     if (widget.sessionState?.value
                                                 ?.accessToken !=
@@ -1146,106 +1186,77 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   }
 
   void _showCreatePlaylistForm(
-      BuildContext context, WidgetRef ref, List<String> trackIds) {
-    final nameController = TextEditingController(
-        text: "${widget.searchQuery ?? widget.tagQuery ?? widget.searchTitle}");
-    final descriptionController = TextEditingController();
-    bool isLoading = false;
+    BuildContext context, WidgetRef ref, List<String> trackIds) {
+  final nameController = TextEditingController(
+      text: "${widget.searchQuery ?? widget.tagQuery ?? widget.searchTitle}");
+  final descriptionController = TextEditingController();
+  bool isLoading = false;
 
-    showModalBottomSheet(
-      backgroundColor: const Color.fromARGB(255, 22, 22, 22),
-      useSafeArea: true,
-      showDragHandle: true,
-      useRootNavigator: true,
-      routeSettings: const RouteSettings(name: '/add_playlists'),
-      context: context,
-      isDismissible: !isLoading,
-      isScrollControlled: true,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Container(
-              height: MediaQuery.of(context).size.height * 0.8,
-              padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(25.0),
-                  topRight: Radius.circular(25.0),
-                ),
+  showModalBottomSheet(
+    backgroundColor: const Color.fromARGB(255, 22, 22, 22),
+    useSafeArea: true,
+    showDragHandle: true,
+    useRootNavigator: true,
+    routeSettings: const RouteSettings(name: '/add_playlists'),
+    context: context,
+    isDismissible: !isLoading,
+    isScrollControlled: true,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.8,
+            padding: const EdgeInsets.symmetric(horizontal: 15.0),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(25.0),
+                topRight: Radius.circular(25.0),
               ),
-              child: isLoading
-                  ? Center(
-                      child: SpinningSvg(
-                        svgWidget: Image.asset(
-                          'assets/hdlogo.png',
-                          height: 40,
-                        ),
-                        textList: [
-                          widget.searchQuery != null
-                              ? 'Adding playlist songs...'
-                              : widget.tagQuery != null
-                                  ? 'Generating playlist songs...'
-                                  : widget.searchTitle != null
-                                      ? 'Getting playlist songs...'
-                                      : 'Loading playlist songs...',
-                          'Just a moment...',
-                          'Getting playlist songs...',
-                          'Almost done...',
-                        ],
+            ),
+            child: isLoading
+                ? Center(
+                    child: SpinningSvg(
+                      svgWidget: Image.asset(
+                        'assets/hdlogo.png',
+                        height: 40,
                       ),
-                    )
-                  : Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            "Create a new playlist",
-                            style: headingTextStyle.copyWith(
-                              wordSpacing: 0.1,
-                              letterSpacing: 0.11,
-                              fontSize: 18,
-                            ),
+                      textList: [
+                        widget.searchQuery != null
+                            ? 'Adding playlist songs...'
+                            : widget.tagQuery != null
+                                ? 'Generating playlist songs...'
+                                : widget.searchTitle != null
+                                    ? 'Getting playlist songs...'
+                                    : 'Loading playlist songs...',
+                        'Just a moment...',
+                        'Getting playlist songs...',
+                        'Almost done...',
+                      ],
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Create a new playlist",
+                          style: headingTextStyle.copyWith(
+                            wordSpacing: 0.1,
+                            letterSpacing: 0.11,
+                            fontSize: 18,
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        SizedBox(
-                          child: AnimatedTextField(
-                            animationDuration: 4000.ms,
-                            onTapOutside: (event) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
-                            controller: nameController,
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
-                                borderSide: BorderSide.none,
-                              ),
-                              fillColor: Color.fromARGB(98, 34, 34, 34),
-                              filled: true,
-                              contentPadding: EdgeInsets.all(12),
-                            ),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                            hintTextStyle: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                            hintTexts: const ['Enter playlist name'],
-                            onSubmitted: (value) {},
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        AnimatedTextField(
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        child: AnimatedTextField(
+                          animationDuration: 4000.ms,
                           onTapOutside: (event) {
                             FocusManager.instance.primaryFocus?.unfocus();
                           },
-                          controller: descriptionController,
+                          controller: nameController,
                           decoration: const InputDecoration(
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.all(
@@ -1265,107 +1276,156 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                             color: Colors.white,
                             fontSize: 14,
                           ),
-                          hintTexts: const ['Description'],
+                          hintTexts: const ['Enter playlist name'],
                           onSubmitted: (value) {},
                         ),
-                        const Spacer(),
-                        Container(
-                          width: Get.width,
-                          margin: const EdgeInsets.only(bottom: 30),
-                          child: GeneralButton(
-                            text: "Add to Library",
-                            backgroundColor: const Color(0xffD9D9D9),
-                            hasPadding: true,
-                            icon: Icon(
-                              Icons.check,
-                              size: 18,
-                              color: Colors.grey.shade800,
+                      ),
+                      const SizedBox(height: 20),
+                      AnimatedTextField(
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(10),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              final name = nameController.text.trim();
-                              final description =
-                                  descriptionController.text.trim();
-                              if (name.isNotEmpty) {
-                                final Map<String, String> data = {
-                                  'name': name,
-                                  'description': description.isEmpty
-                                      ? "Powered by Nuance"
-                                      : description,
-                                  'image':
-                                      widget.imageUrl ?? generatedImage ?? "",
-                                };
-                                ref
-                                    .read(createPlaylistProvider(data).future)
-                                    .then((newPlaylist) {
-                                  if (widget.sessionState?.value?.accessToken !=
-                                      null) {
-                                    setState(() {
-                                      _loadingPlaylistId = newPlaylist.id;
-                                    });
-                                    final params = AddTracksParams(
-                                      accessToken: widget
-                                          .sessionState!.value!.accessToken,
-                                      searchQuery: widget.searchQuery ??
-                                          widget.tagQuery ??
-                                          widget.searchTitle ??
-                                          "",
-                                      playlistId: newPlaylist.id ?? "",
-                                      imageUrl: widget.imageUrl ??
-                                          generatedImage ??
-                                          "",
-                                      trackIds: trackIds,
-                                      providerType: ref
-                                              .read(sessionProvider)
-                                              .value
-                                              ?.provider ??
-                                          "",
-                                    );
-                                    ref
-                                        .read(addTracksProvider.notifier)
-                                        .addTracksToPlaylist(params);
-                                    Get.back();
-                                    Get.back();
+                            borderSide: BorderSide.none,
+                          ),
+                          fillColor: Color.fromARGB(98, 34, 34, 34),
+                          filled: true,
+                          contentPadding: EdgeInsets.all(12),
+                        ),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        hintTextStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        hintTexts: const ['Description'],
+                        onSubmitted: (value) {},
+                      ),
+                      const Spacer(),
+                      Container(
+                        width: Get.width,
+                        margin: const EdgeInsets.only(bottom: 30),
+                        child: GeneralButton(
+                          text: "Add to Library",
+                          backgroundColor: const Color(0xffD9D9D9),
+                          hasPadding: true,
+                          icon: Icon(
+                            Icons.check,
+                            size: 18,
+                            color: Colors.grey.shade800,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            final name = nameController.text.trim();
+                            final description =
+                                descriptionController.text.trim();
+                            if (name.isNotEmpty) {
+                              final Map<String, String> data = {
+                                'name': name,
+                                'description': description.isEmpty
+                                    ? "Powered by Nuance"
+                                    : description,
+                                'image':
+                                    widget.imageUrl ?? generatedImage ?? "",
+                              };
+                              dev.log("CREATE PLAYLIST DATA screen: $data");
+                              dev.log("CREATE PLAYLIST DATA name: ${data["name"]}");
+
+                              // Call the createPlaylistProvider
+                              ref
+                                  .read(createPlaylistProvider(data).future)
+                                  .then((newPlaylist) {
+                                // Playlist created successfully
+                                if (widget.sessionState?.value?.accessToken !=
+                                    null) {
+                                  setState(() {
+                                    _loadingPlaylistId = newPlaylist.id;
+                                  });
+
+                                  final params = AddTracksParams(
+                                    accessToken: widget
+                                        .sessionState!.value!.accessToken,
+                                    searchQuery: widget.searchQuery ??
+                                        widget.tagQuery ??
+                                        widget.searchTitle ??
+                                        "",
+                                    playlistId: newPlaylist.id ?? "",
+                                    imageUrl: widget.imageUrl ??
+                                        generatedImage ??
+                                        "",
+                                    trackIds: trackIds,
+                                    providerType: ref
+                                            .read(sessionProvider)
+                                            .value
+                                            ?.provider ??
+                                        "",
+                                  );
+
+                                  // Add tracks to playlist
+                                  ref
+                                      .read(addTracksProvider.notifier)
+                                      .addTracksToPlaylist(params)
+                                      .then((_) {
+                                    Get.back(); 
+                                    Get.back(); // Close modal
                                     CustomSnackbar().show(
                                       'Successfully created ${newPlaylist.name} playlist.',
                                     );
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                  } else {
+                                  }).catchError((error) {
+                                    // Handle error in adding tracks
+                                    debugPrint(
+                                        "Error adding tracks: $error");
                                     CustomSnackbar().show(
-                                      "No access token found.",
+                                      "Failed to add tracks to playlist: $error",
                                     );
-                                  }
-                                }).catchError((error) {
-                                  setState(() {
-                                    isLoading = false;
                                   });
+                                } else {
                                   CustomSnackbar().show(
-                                    "Failed to create playlist: $error",
+                                    "No access token found.",
                                   );
-                                });
-                              } else {
+                                }
+                              }).catchError((error) {
+                                // Handle error in playlist creation
+                                debugPrint("Error creating playlist: $error");
+                                CustomSnackbar().show(
+                                  "Failed to create playlist: $error",
+                                );
+                              }).whenComplete(() {
+                                // Reset loading state
                                 setState(() {
                                   isLoading = false;
                                 });
-                                CustomSnackbar().show(
-                                  'Please provide a name for the playlist',
-                                );
-                              }
-                            },
-                          ),
+                              });
+                            } else {
+                              // Reset loading state
+                              setState(() {
+                                isLoading = false;
+                              });
+                              CustomSnackbar().show(
+                                'Please provide a name for the playlist',
+                              );
+                            }
+                          },
                         ),
-                      ],
-                    ),
-            );
-          },
-        );
-      },
-    );
-  }
+                      ),
+                    ],
+                  ),
+          );
+        },
+      );
+    },
+  );
+}
+
 
   Future<void> _updatePaletteGenerator() async {
     // final imageUrl = playlistImage;
@@ -1591,6 +1651,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                         generatedImage ??
                                         playlistImage ??
                                         "",
+                                    widget.playlistId ?? "",
                                   );
                           },
                         ),
@@ -1660,12 +1721,14 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       body: Container(
         color: Colors.black,
         child: NestedScrollView(
+          physics: isLoading ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
               !isLoading && widget.playlistId != null
                   ? spotifyPlaylistAppBar(
                       context, uniqueArtistsCount, totalDuration)
-                  : !isLoading && widget.playlistId == null
+                  : !isLoading &&
+                          (widget.playlistId == null || widget.playlistId == "")
                       ? generatedPlaylistCardAppBar(
                           context, uniqueArtistsCount, totalDuration)
                       : normalAppBarWithNoImage(
@@ -1707,7 +1770,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               }
 
               if (index == (recommendations?.length ?? widget.songs?.length)) {
-                if (widget.playlistId == null) {
+                if ((widget.playlistId == null || widget.playlistId == "")) {
                   return Padding(
                     padding: const EdgeInsets.all(26.0),
                     child: _isGeneratingMore

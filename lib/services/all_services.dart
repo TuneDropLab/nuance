@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
+import 'package:nuance/models/apple_playlist_model.dart';
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/models/song_model.dart';
@@ -32,6 +33,8 @@ class AllServices {
     // final isAppleProvider = await _isAppleProvider();
     // final basePath = isAppleProvider ? '/apple-music' : 'spotify';
     try {
+      log("Starting getRecommendations with accessToken: $accessToken, userMessage: $userMessage, isAppleProvider: $isAppleProvider");
+
       final response = await http.post(
         Uri.parse('$baseURL/gemini/recommendations'),
         headers: {
@@ -41,22 +44,31 @@ class AllServices {
         body: jsonEncode({'userMessage': userMessage}),
       );
 
+      log("Received response with status code: ${response.statusCode}");
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+        log("Response body decoded: $data");
 
         final List<dynamic> recommendedSongsJson =
             data['recommendations']['songs'];
+        log("Recommended songs JSON: $recommendedSongsJson");
+
         final recommendations = recommendedSongsJson
             .map((item) => RecommendationModel.fromJson(item))
             .toList();
+        log("Recommendations mapped: $recommendations");
 
-        final trackInfo = await getTrackInfo(accessToken, recommendations);
+        final trackInfo = await getTrackInfo(accessToken, recommendations,
+            isAppleProvider: isAppleProvider);
+        log("Track info retrieved: $trackInfo");
 
         return trackInfo;
       } else {
+        log("Error - Failed to load recommendations, status code: ${response.statusCode}");
         throw Exception('Failed to load recommendations');
       }
     } catch (e) {
+      log("Exception occurred: $e");
       rethrow;
     }
   }
@@ -94,8 +106,8 @@ class AllServices {
         log("GMRFN: Recommendations mapped: $recommendations");
 
         final trackInfo = await getTrackInfo(accessToken, recommendations,
-            currentSongList: currentSongList // Use named parameter here
-            );
+            currentSongList: currentSongList, // Use named parameter here,
+            isAppleProvider: isAppleProvider);
         log("GMRFN: Track info retrieved: $trackInfo");
 
         return trackInfo;
@@ -112,7 +124,6 @@ class AllServices {
   Future<List<SongModel>> getTrackInfo(
       String accessToken, List<RecommendationModel> songs,
       {List<SongModel>? currentSongList, isAppleProvider}) async {
-    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final Map<String, dynamic> requestBody = {
@@ -132,18 +143,25 @@ class AllServices {
         body: jsonEncode(requestBody),
       );
 
+      log("Sending request to $baseURL$basePath/tracks with body: $requestBody");
+
+      log("Received response with status code 123333: ${response.statusCode}");
+
       if (response.statusCode == 200) {
         final List<dynamic> trackData = jsonDecode(response.body)['trackInfo'];
+        log("Track data decoded: $trackData");
         return trackData.map((item) => SongModel.fromJson(item)).toList();
       } else {
+        log("Error - Failed to load track info, status code: ${response.statusCode}");
         throw Exception('Failed to load track info');
       }
     } catch (e) {
+      log("Exception occurred: $e");
       rethrow;
     }
   }
 
-  Future<List<PlaylistModel>> getPlaylists(
+  Future<List<dynamic>> getPlaylists(
       String accessToken, String userId, isAppleProvider) async {
     // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
@@ -159,13 +177,19 @@ class AllServices {
       if (response.statusCode == 200) {
         final List<dynamic> playlistData =
             jsonDecode(response.body)['playlists'];
-
+        log("playlistData: $playlistData");
         // Filter playlists to only include those created by the user
-        final userPlaylists = playlistData
-            .where((item) => item['owner']['id'] == userId)
-            .map((item) => PlaylistModel.fromJson(item))
-            .toList();
 
+        final userPlaylists = isAppleProvider == 'apple'
+            ? playlistData
+                .where((item) => item['attributes']['canEdit'] == true)
+                .map((item) => ApplePlaylistModel.fromJson(item))
+                .toList()
+            : playlistData
+                .where((item) => item['owner']['id'] == userId)
+                .map((item) => PlaylistModel.fromJson(item))
+                .toList();
+        log("userPlaylists: $userPlaylists");
         return userPlaylists;
       } else {
         throw Exception('Failed to load playlists');
@@ -196,7 +220,10 @@ class AllServices {
             {'trackIds': trackIds, 'query': searchQuery, 'imageUrl': image}),
       );
 
+      log("RESPONSE STATUS FOR ADDTRACKS: ${response.statusCode}");
+
       if (response.statusCode == 200) {
+        log("ADDED SONG for : $response");
       } else {
         throw Exception('Failed to add tracks to playlist');
       }
@@ -205,17 +232,17 @@ class AllServices {
     }
   }
 
-  Future<PlaylistModel> createPlaylist(
+  Future<dynamic> createPlaylist(
     String accessToken,
     String userId,
     String name,
     String description,
     String imageUrl,
-    isAppleProvider,
+    String isAppleProvider, // Update parameter name
   ) async {
-    // final isAppleProvider = await _isAppleProvider();
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
+      log("(CreatePlaylistFN) Start");
       final response = await http.post(
         Uri.parse('$baseURL$basePath/playlists'),
         headers: {
@@ -229,12 +256,21 @@ class AllServices {
         }),
       );
 
+      log("(CreatePlaylistFN) STATUS CODE  ${response.statusCode}");
+      log("(CreatePlaylistFN) RESPONSE BODY ${response.body}");
+
       if (response.statusCode == 201) {
-        final Map<String, dynamic> data = jsonDecode(response.body)['playlist'];
+        final responseBody = jsonDecode(response.body);
+        log("RESPONSE: $responseBody");
+        final Map<String, dynamic> data = responseBody['playlist'][0];
         debugPrint("created playlist data: $data");
-        await setPlaylistCoverImage(
-            accessToken, data['id'], imageUrl, isAppleProvider);
-        return PlaylistModel.fromJson(data);
+        if (isAppleProvider == 'spotify') {
+          await setPlaylistCoverImage(
+              accessToken, data['id'], imageUrl, isAppleProvider);
+        }
+        log("DATTTAAA $data");
+        log("Apple Playlist Model: ${PlaylistModel.fromJson(data)}");
+        return isAppleProvider == 'apple' ? ApplePlaylistModel.fromJson(data) : PlaylistModel.fromJson(data);
       } else {
         debugPrint('Failed to create playlist: ${response.body}');
         throw Exception('Failed to create playlist');
@@ -366,6 +402,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
+    // log("PROVIDERRR: $isAppleProvider");
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.get(
@@ -375,6 +412,7 @@ class AllServices {
           'Content-Type': 'application/json',
         },
       );
+      
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data;
@@ -432,13 +470,18 @@ class AllServices {
         }),
       );
 
+      // log("FETCH PLAYLIST TRACKS RESPONSE: $response");
+
       final data = jsonDecode(response.body);
+      // log("FETCH PLAYLIST TRACKS DATA: $data");
       if (response.statusCode == 200) {
-        final playlistImage = data['playlistImage'];
+        final playlistImage =
+            data['playlistImage']?.replaceAll('{w}x{h}', '1024x1024');
+        log("FETCH PLAYLIST TRACKS PLAYLIST IMAGE: $playlistImage");
         final tracks = (data['playlistTracks'] as List)
             .map((e) => SongModel.fromJson(e))
             .toList();
-
+        log("FETCH PLAYLIST TRACKS : $tracks");
         return {
           'playlistImage': playlistImage,
           'playlistTracks': tracks,
@@ -455,26 +498,41 @@ class AllServices {
     }
   }
 
-  Future<void> shareRecommendation(BuildContext context, String playlistName,
-      List<dynamic> songs, String playlistImageUrl) async {
+  Future<void> shareRecommendation(
+    BuildContext context,
+    String playlistName,
+    List<SongModel> songs, // Changed to List<SongModel> for better type safety
+    String playlistImageUrl,
+    String playlistId, // Added playlistId parameter
+  ) async {
     final url = Uri.parse('$baseURL/share/generate');
+
+    // Serialize songs to include necessary URIs
+    final serializedSongs = songs.map((song) => song.toJson()).toList();
+
     final recommendationData = {
       'searchQuery': playlistName,
-      'songs': songs,
+      'songs': serializedSongs,
       'image': playlistImageUrl,
+      'playlistId': playlistId, // Include playlistId in the data
     };
-    final response = await http.post(url,
-        body: jsonEncode({
-          'recommendationData': recommendationData,
-        }),
-        headers: {'Content-Type': 'application/json'});
+
+    final response = await http.post(
+      url,
+      body: jsonEncode({
+        'recommendationData': recommendationData,
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
       final shareLink = body['link'];
 
       final modifiedLink = shareLink.replaceFirst(
-          RegExp(r'^http:\/\/localhost:3000'), 'nuanceapp://');
+          RegExp(
+              r'^http:\/\/localhost:3000|api\.discovernuance\.com|https:\/\/api\.discovernuance\.com'),
+          'nuanceapp://');
       Share.share(
         modifiedLink,
         subject: "Check out this recommendation",
@@ -484,7 +542,7 @@ class AllServices {
         ),
       );
     } else {
-      CustomSnackbar().show(
+      _customSnackbar.show(
         'Failed to generate share link',
       );
     }
@@ -498,6 +556,7 @@ class AllServices {
 
     if (response.statusCode == 200) {
       final body = jsonDecode(response.body);
+      log("GET SHARED RECOMMENDATION BODY: $body");
       final recommendationData = body;
       return recommendationData;
     } else {
@@ -528,11 +587,17 @@ class AllServices {
       if (response.statusCode == 200) {
         CustomSnackbar().show(
           message,
-          icon: SvgPicture.asset(
-            "assets/spotifylogoblack.svg",
-            color: Colors.white,
-            height: 20,
-          ),
+          icon: isAppleProvider == 'apple'
+              ? SvgPicture.asset(
+                  "assets/applemusiclogoblack.svg",
+                  color: Colors.white,
+                  height: 20,
+                )
+              : SvgPicture.asset(
+                  "assets/spotifylogoblack.svg",
+                  color: Colors.white,
+                  height: 20,
+                ),
         );
       } else {
         throw Exception('Failed to follow playlist: $message');
