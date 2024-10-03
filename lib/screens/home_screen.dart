@@ -74,7 +74,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     recommendations.clear();
-    
+    tags.clear();
     _scrollController.addListener(_onScroll);
     _fetchRecommendations();
   }
@@ -82,6 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     recommendations.clear();
+    tags.clear();
     _scrollController.dispose();
     super.dispose();
   }
@@ -96,6 +97,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _fetchRecommendations() async {
     setState(() {
       recommendations.clear();
+      tags.clear(); // Clear tags here
       isLoading = true;
     });
     try {
@@ -108,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     } catch (e) {
       debugPrint("ERROR initial fetch: $e");
-      throw Exception('Failed to load intial recommendations');
+      throw Exception('Failed to load initial recommendations');
     } finally {
       setState(() {
         isLoading = false;
@@ -160,6 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() {
       ref.invalidate(spotifyHomeRecommendationsProvider);
       ref.invalidate(historyProvider);
+      tags.clear(); // Clear tags here as well
     });
 
     await Future.delayed(const Duration(seconds: 2));
@@ -169,11 +172,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-
-    // final sessionState = ref.watch(sessionProvider);
-    debugPrint('SESSION_STATE: $sessionState');
-
     final tagsRecommendations = ref.watch(recommendationTagsProvider);
+
+    // Update the tags list when data is available
+    tagsRecommendations.when(
+      data: (data) {
+        setState(() {
+          tags = data; // Update the tags list with the fetched data
+        });
+      },
+      error: (error, stack) {
+        debugPrint("Error loading tags: $error");
+      },
+      loading: () {
+        // Optionally handle loading state
+      },
+    );
 
     final List<LinearGradient> cardGradients = List.generate(
       recommendations.length,
@@ -229,8 +243,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Scaffold(
           backgroundColor: Colors.black,
           key: globalKey,
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           drawerEnableOpenDragGesture: true,
           drawer: MyCustomDrawer(sessionState: sessionState),
           appBar: AppBar(
@@ -507,86 +520,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Expanded(
-                      child: tagsRecommendations.when(
-                        data: (data) {
-                          return ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemBuilder: (context, index) {
-                              final List<Color> colors = [
-                                const Color(0xffFFBB00),
-                                const Color(0xffFF4500),
-                                const Color(0xffFF006D),
-                                const Color(0xff8E33F5),
-                                const Color(0xff0088FF),
-                              ];
-                              final Color randomColor =
-                                  colors[math.Random().nextInt(colors.length)];
-                              return InkWell(
-                                onTap: () {
-                                  _tagQuery.text = data[index];
-                                  submit('tagQuery');
-                                },
-                                child: Chip(
-                                  side: BorderSide.none,
-                                  avatar: SvgPicture.asset(
-                                      "assets/icon4star.svg",
-                                      color: randomColor),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 10),
-                                  label: Text(data[index]),
-                                  backgroundColor: Colors.grey[900],
-                                  labelStyle:
-                                      const TextStyle(color: Colors.white),
-                                ),
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return const SizedBox(width: 5);
-                            },
-                            itemCount: data.length,
-                          );
-                        },
-                        error: (error, stackTrace) {
-                          return Center(
-                            child: Text(
-                              "Error loading tags",
-                              style: subtitleTextStyle.copyWith(
-                                color: Colors.grey,
-                              ),
+                      child: tags.isNotEmpty
+                          ? ListView.separated(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) {
+                                final List<Color> colors = [
+                                  const Color(0xffFFBB00),
+                                  const Color(0xffFF4500),
+                                  const Color(0xffFF006D),
+                                  const Color(0xff8E33F5),
+                                  const Color(0xff0088FF),
+                                ];
+                                final Color randomColor =
+                                    colors[math.Random().nextInt(colors.length)];
+                                return InkWell(
+                                  onTap: () {
+                                    _tagQuery.text = tags[index];
+                                    submit('tagQuery');
+                                  },
+                                  child: Chip(
+                                    side: BorderSide.none,
+                                    avatar: SvgPicture.asset(
+                                        "assets/icon4star.svg",
+                                        color: randomColor),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    label: Text(tags[index]),
+                                    backgroundColor: Colors.grey[900],
+                                    labelStyle: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 5);
+                              },
+                              itemCount: tags.length,
+                            )
+                          : ListView.separated(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: 5, // Number of shimmer items
+                              itemBuilder: (context, index) {
+                                return Shimmer.fromColors(
+                                  baseColor: const Color.fromARGB(51, 255, 255, 255),
+                                  highlightColor: const Color.fromARGB(65, 255, 255, 255),
+                                  child: Chip(
+                                    side: BorderSide.none,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 10),
+                                    label: const Text("Loading..."),
+                                    backgroundColor: Colors.grey[900],
+                                    labelStyle: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (context, index) {
+                                return const SizedBox(width: 5);
+                              },
                             ),
-                          );
-                        },
-                        loading: () {
-                          return ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shrinkWrap: true,
-                            scrollDirection: Axis.horizontal,
-                            itemCount: 9,
-                            itemBuilder: (context, index) {
-                              return Shimmer.fromColors(
-                                baseColor:
-                                    const Color.fromARGB(51, 255, 255, 255),
-                                highlightColor:
-                                    const Color.fromARGB(65, 255, 255, 255),
-                                child: Chip(
-                                  side: BorderSide.none,
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 10),
-                                  label: const Text("             "),
-                                  backgroundColor: Colors.grey[900],
-                                  labelStyle:
-                                      const TextStyle(color: Colors.white),
-                                ),
-                              );
-                            },
-                            separatorBuilder: (context, index) {
-                              return const SizedBox(width: 5);
-                            },
-                          );
-                        },
-                      ),
                     ),
                     const CustomDivider(),
                     const SizedBox(height: 5),
