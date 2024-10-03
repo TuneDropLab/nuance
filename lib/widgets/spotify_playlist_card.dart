@@ -43,19 +43,19 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
 
   Future<void> _fetchArtistsImages({required String playlistId}) async {
     debugPrint('PLAYLIST_ID: $playlistId');
-    
+
     try {
       final sessionState = ref.watch(sessionProvider);
       debugPrint('SESSION_STATE: $sessionState');
-      
+
       final provider = sessionState.value?.provider;
       debugPrint('PROVIDER: $provider');
-      
+
       final accessToken = sessionState.value?.accessToken ?? '';
       debugPrint('ACCESS_TOKEN: $accessToken');
-      
+
       final List<String> images = [];
-      
+
       final basePath = provider == 'apple' ? '/apple-music' : '/spotify';
       debugPrint('BASE_PATH: $basePath');
 
@@ -75,10 +75,10 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
         final artistData =
             jsonDecode(artistResponse.body) as Map<String, dynamic>;
         debugPrint('ARTIST_DATA: $artistData');
-        
+
         final List<dynamic> artistImagesData = artistData['artistImages'];
         debugPrint('ARTIST_IMAGES_DATA: $artistImagesData');
-        
+
         for (final artistImage in artistImagesData) {
           debugPrint('ADDING_ARTIST_IMAGE: $artistImage');
           images.add(artistImage);
@@ -190,46 +190,58 @@ class _PlaylistCardState extends ConsumerState<PlaylistCard> {
                   colors: getRandomPastelColors(),
                   options: getRandomGradientOptions(),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 14),
-                    height: 90,
-                    child: artistImages.isEmpty
-                        ? Shimmer.fromColors(
-                            baseColor: const Color.fromARGB(69, 0, 0, 0),
-                            highlightColor: const Color.fromARGB(121, 0, 0, 0),
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: List.generate(7, (index) {
-                                return Positioned(
-                                    left: index * 34.0,
-                                    child: const CircleAvatar(
-                                      radius: 30,
-                                      child: CircleAvatar(
-                                        radius: 28.0,
-                                        backgroundColor:
-                                            Color.fromARGB(85, 0, 0, 0),
-                                      ),
-                                    ));
-                              }),
-                            ),
-                          )
-                        : Center(
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: List.generate(
-                                artistImages.length,
-                                (index) {
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14),
+                      height: 90,
+                      child: artistImages.isEmpty
+                          ? Shimmer.fromColors(
+                              baseColor: const Color.fromARGB(69, 0, 0, 0),
+                              highlightColor:
+                                  const Color.fromARGB(121, 0, 0, 0),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: List.generate(7, (index) {
                                   return Positioned(
-                                    left: index * 34.0,
-                                    child: ArtistChip(
-                                      imageUrl: artistImages[index],
+                                      left: index * 34.0,
+                                      child: const CircleAvatar(
+                                        radius: 30,
+                                        child: CircleAvatar(
+                                          radius: 28.0,
+                                          backgroundColor:
+                                              Color.fromARGB(85, 0, 0, 0),
+                                        ),
+                                      ));
+                                }),
+                              ),
+                            )
+                          : Container(
+                              // color: Colors.pink,
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  // Calculate total width of the stack of chips
+                                  double totalWidth =
+                                      (artistImages.length - 1) * 34.0 + 40.0;
+
+                                  return Stack(
+                                    alignment: Alignment.center,
+                                    children: List.generate(
+                                      artistImages.length,
+                                      (index) {
+                                        return Positioned(
+                                          left: (constraints.maxWidth -
+                                                      totalWidth) /
+                                                  2 +
+                                              index * 30.0,
+                                          child: ArtistChip(
+                                            imageUrl: artistImages[index],
+                                          ),
+                                        );
+                                      },
                                     ),
                                   );
                                 },
                               ),
-                            ),
-                          ),
-                  ),
+                            )),
                 ),
               ),
               const SizedBox(height: 20),

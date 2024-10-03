@@ -14,7 +14,7 @@ class ArtistChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      radius: 30,
+      radius: 31,
       backgroundColor: Colors.white.withOpacity(0.3),
       child: CircleAvatar(
         radius: 30 - borderWidth,
