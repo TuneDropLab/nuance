@@ -128,7 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       }
 
       final accessToken = sessionData['access_token'];
-      final provider = sessionData[''];
+      final provider = sessionData['user']['app_metadata']['provider'];
 
       final newRecommendations =
           await AllServices().getSpotifyHomeRecommendations(

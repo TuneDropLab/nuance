@@ -402,6 +402,7 @@ class AllServices {
     isAppleProvider,
   ) async {
     // final isAppleProvider = await _isAppleProvider();
+    // log("PROVIDERRR: $isAppleProvider");
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.get(
@@ -411,6 +412,7 @@ class AllServices {
           'Content-Type': 'application/json',
         },
       );
+      
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data;
