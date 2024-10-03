@@ -30,8 +30,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   final TextEditingController _searchController = TextEditingController();
   List<HistoryModel> _localHistory = [];
 
-  bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -40,24 +38,12 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadHistory();
+    _loadHistory(); // Load history when dependencies change
   }
 
   void _loadHistory() {
-    setState(() {
-      _isLoading = true;
-      _localHistory = [];
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.refresh(historyProvider).whenData((_) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
-      });
-    });
+    _localHistory = []; // Clear local history
+    ref.read(historyProvider); // Trigger the provider to load data
   }
 
   @override
@@ -153,22 +139,8 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                           final historyAsyncValue = ref.watch(historyProvider);
                           return historyAsyncValue.when(
                             data: (history) {
-                              if (_isLoading) {
-                                return Center(
-                                  child: SpinningSvg(
-                                    svgWidget: Image.asset(
-                                      'assets/hdlogo.png',
-                                      height: 40,
-                                    ),
-                                    textList: const [
-                                      'Loading your history ...',
-                                      'Just a moment ...',
-                                      'Almost done ...',
-                                    ],
-                                  ),
-                                );
-                              }
-
+                              _localHistory =
+                                  history; // Update local history here
                               if (history.isEmpty) {
                                 return Center(
                                   child: Text(
@@ -180,15 +152,6 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                 );
                               }
 
-                              _localHistory = history;
-
-                              Future.microtask(() {
-                                if (mounted) {
-                                  setState(() {
-                                    _localHistory = history;
-                                  });
-                                }
-                              });
                               return ValueListenableBuilder<TextEditingValue>(
                                 valueListenable: _searchController,
                                 builder: (context, value, __) {
@@ -219,67 +182,63 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                       final historyItem =
                                           filteredHistory[index];
                                       return ListTile(
-                                          title: Text(
-                                            historyItem.searchQuery ?? '',
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
-                                              color: Colors.white,
-                                            ),
+                                        title: Text(
+                                          historyItem.searchQuery ?? '',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.white,
                                           ),
-                                          subtitle: Text(
-                                            _formatRelativeTime(
-                                              historyItem.createdAt ??
-                                                  DateTime.now(),
-                                            ),
-                                            style: subtitleTextStyle,
+                                        ),
+                                        subtitle: Text(
+                                          _formatRelativeTime(
+                                            historyItem.createdAt ??
+                                                DateTime.now(),
                                           ),
-                                          // minLeadingWidth: 30,
-                                          leading: historyItem.recommendations
-                                                      ?.isNotEmpty ??
-                                                  false
-                                              ? SizedBox(
-                                                  height: 50,
-                                                  width: 50,
-                                                  child: ArtworkSwitcher(
-                                                    artworks: historyItem
-                                                        .recommendations!
-                                                        .map(
-                                                          (song) =>
-                                                              song.artworkUrl ??
-                                                              "",
-                                                        )
-                                                        .toList(),
-                                                  ),
-                                                )
-                                              : const Icon(
-                                                  Icons.square,
-                                                  color: Colors.white,
+                                          style: subtitleTextStyle,
+                                        ),
+                                        leading: historyItem.recommendations
+                                                    ?.isNotEmpty ??
+                                                false
+                                            ? SizedBox(
+                                                height: 50,
+                                                width: 50,
+                                                child: ArtworkSwitcher(
+                                                  artworks: historyItem
+                                                      .recommendations!
+                                                      .map((song) =>
+                                                          song.artworkUrl ?? "")
+                                                      .toList(),
                                                 ),
-                                          contentPadding: EdgeInsets.zero,
-                                          onTap: () {
-                                            Get.to(
-                                              () => PlaylistScreen(
-                                                searchTitle:
-                                                    historyItem.searchQuery,
-                                                sessionState:
-                                                    widget.sessionState,
-                                                songs: historyItem
-                                                    .recommendations!,
-                                                imageUrl: historyItem.imageUrl,
+                                              )
+                                            : const Icon(
+                                                Icons.square,
+                                                color: Colors.white,
                                               ),
-                                            );
-                                          },
-                                          trailing: IconButton(
-                                            icon: const Icon(
-                                              CupertinoIcons.delete,
-                                              size: 16,
-                                              color: Colors.white,
+                                        contentPadding: EdgeInsets.zero,
+                                        onTap: () {
+                                          Get.to(
+                                            () => PlaylistScreen(
+                                              searchTitle:
+                                                  historyItem.searchQuery,
+                                              sessionState: widget.sessionState,
+                                              songs:
+                                                  historyItem.recommendations!,
+                                              imageUrl: historyItem.imageUrl,
                                             ),
-                                            onPressed: () {
-                                              _deleteHistoryItem(historyItem);
-                                            },
-                                          ));
+                                          );
+                                        },
+                                        trailing: IconButton(
+                                          icon: const Icon(
+                                            CupertinoIcons.delete,
+                                            size: 16,
+                                            color: Colors.white,
+                                          ),
+                                          onPressed: () {
+                                            _deleteHistoryItem(historyItem);
+                                          },
+                                        ),
+                                      );
                                     },
                                   );
                                 },
