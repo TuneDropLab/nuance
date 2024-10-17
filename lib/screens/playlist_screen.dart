@@ -502,7 +502,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 )
               : const SizedBox.shrink()
         else
-          (widget.playlistId == null || widget.playlistId == "")
+          ((widget.playlistId == null || widget.playlistId == "") && (widget.searchTitle == null || widget.searchTitle == ""))
               ? IconButton(
                   icon: const Icon(
                     CupertinoIcons.list_bullet,
@@ -1775,7 +1775,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               }
 
               if (index == (recommendations?.length ?? widget.songs?.length)) {
-                if ((widget.playlistId == null || widget.playlistId == "")) {
+                if ((widget.playlistId == null || widget.playlistId == "" ) && (widget.searchTitle == null || widget.searchTitle == "")) {
                   return Padding(
                     padding: const EdgeInsets.all(26.0),
                     child: _isGeneratingMore

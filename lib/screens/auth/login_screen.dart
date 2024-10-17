@@ -76,7 +76,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         final sessionData = uri.queryParameters['session'];
         final sessionMap = jsonDecode(sessionData!);
         final accessToken = sessionMap['access_token'];
-        final providerType = sessionMap['user']['app_metadata']['provider']; // Get provider type
+        final providerType =
+            sessionMap['user']['app_metadata']['provider']; // Get provider type
         log("Provider Type: $providerType");
         // ProviderType.setType(providerType); // Store the provider type
 
@@ -135,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   Future<void> _handleAppleAuthentication() async {
     const musicKitAuthUrl =
-        'http://localhost:3000/apple-music-auth'; // Your actual hosted MusicKit URL
+        '$baseURL/apple-music-auth'; // Your actual hosted MusicKit URL
 
     log('APPLEMUSICFN: Starting Apple Music Authentication...');
 
@@ -168,6 +169,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       log('APPLEMUSICFN: Developer Token: $developerToken');
       log('APPLEMUSICFN: Country Code: $countryCode');
 
+      setState(() {
+        _isLoading = true; // Start loading state
+      });
       // Check if tokens are missing
       if (musicUserToken == null ||
           developerToken == null ||
@@ -226,6 +230,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     } catch (e) {
       log('APPLEMUSICFN: ERROR - $e');
       throw Exception("Apple Music authentication failed: $e");
+    } finally {
+      setState(() {
+        _isLoading = false; // Reset loading state
+      });
     }
   }
 
@@ -334,11 +342,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                         child: GeneralButton(
                           text: 'Sign in with Apple Music',
+                          color: Colors.white,
                           icon: SvgPicture.asset(
                             'assets/icon4star.svg',
                             width: 10,
                             height: 10,
-                          ),
+                          ),  
                           backgroundColor: const Color.fromARGB(
                               255, 255, 88, 88), // Apple Music theme
                           onPressed:
