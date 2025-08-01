@@ -1,5 +1,5 @@
+import 'dart:convert';
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,10 +19,13 @@ import 'package:nuance/utils/theme.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize Firebase Messaging
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -124,28 +127,20 @@ class _MyAppState extends State<MyApp> {
       final searchTitle = jsonData['searchQuery'] as String?;
       final songsData = jsonData['songs'] as List<dynamic>?;
       final image = jsonData['image'] as String?;
-      final playlistId = jsonData['playlistId'] as String?; // Retrieve playlistId
-      debugPrint("PLAYLIST ID: $playlistId");
-      debugPrint("SONGS DATA: $songsData");
+      // log('Shared Recommendation: $jsonData');
       if (songsData != null) {
         final songs =
             songsData.map((song) => SongModel.fromJson(song)).toList();
 
         // Get the session state from the provider
+
         final container = ProviderContainer();
         final sessionData = container.read(sessionProvider);
-        playlistId == null || playlistId == ""
-            ? Get.to(() => PlaylistScreen(
-                  searchTitle: searchTitle,
-                  songs: songs,
-                  imageUrl: image,
-                  sessionState: sessionData.asData,
-                ))
-            : Get.to(() => PlaylistScreen(
-                  searchTitle: searchTitle,
+
+        Get.to(() => PlaylistScreen(
+              searchTitle: searchTitle,
               songs: songs,
               imageUrl: image,
-              playlistId: playlistId, // Pass playlistId to PlaylistScreen
               sessionState: sessionData.asData,
             ));
       }

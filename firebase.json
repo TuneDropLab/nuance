@@ -1,1 +1,48 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"nuancedemo-789d4","appId":"1:111351014313:android:6158799cc0877bad26dab8","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"nuancedemo-789d4","appId":"1:111351014313:ios:55ee759e42f51e8f26dab8","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"nuance-ec8ce","appId":"1:597861685440:ios:e86c14d39629435488f525","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"nuancedemo-789d4","configurations":{"android":"1:111351014313:android:6158799cc0877bad26dab8","ios":"1:111351014313:ios:55ee759e42f51e8f26dab8"}}}}}}
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "nuancedemo-789d4",
+                    "appId": "1:111351014313:android:6158799cc0877bad26dab8",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "nuancedemo-789d4",
+                    "appId": "1:111351014313:ios:55ee759e42f51e8f26dab8",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "macos": {
+                "default": {
+                    "projectId": "nuance-ec8ce",
+                    "appId": "1:597861685440:ios:e86c14d39629435488f525",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "macos/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "nuancedemo-789d4",
+                    "configurations": {
+                        "android": "1:111351014313:android:6158799cc0877bad26dab8",
+                        "ios": "1:111351014313:ios:55ee759e42f51e8f26dab8"
+                    }
+                }
+            }
+        }
+    },
+    "hosting": {
+        "public": "build/web",
+        "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    }
+}
