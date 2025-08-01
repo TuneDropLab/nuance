@@ -19,10 +19,13 @@ import 'package:nuance/utils/theme.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize Firebase Messaging
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
@@ -124,7 +127,8 @@ class _MyAppState extends State<MyApp> {
       final searchTitle = jsonData['searchQuery'] as String?;
       final songsData = jsonData['songs'] as List<dynamic>?;
       final image = jsonData['image'] as String?;
-      final playlistId = jsonData['playlistId'] as String?; // Retrieve playlistId
+      final playlistId =
+          jsonData['playlistId'] as String?; // Retrieve playlistId
       debugPrint("PLAYLIST ID: $playlistId");
       debugPrint("SONGS DATA: $songsData");
       if (songsData != null) {
@@ -143,11 +147,11 @@ class _MyAppState extends State<MyApp> {
                 ))
             : Get.to(() => PlaylistScreen(
                   searchTitle: searchTitle,
-              songs: songs,
-              imageUrl: image,
-              playlistId: playlistId, // Pass playlistId to PlaylistScreen
-              sessionState: sessionData.asData,
-            ));
+                  songs: songs,
+                  imageUrl: image,
+                  playlistId: playlistId, // Pass playlistId to PlaylistScreen
+                  sessionState: sessionData.asData,
+                ));
       }
     }
   }
