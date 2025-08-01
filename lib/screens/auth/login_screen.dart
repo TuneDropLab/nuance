@@ -55,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     ref.invalidate(spotifyHomeRecommendationsProvider);
     final authUrl = provider == 'apple'
         ? null // We don't need to use the first Apple login URL since it's handled by MusicKit
-        : '$baseURL/auth/spotify'; // Use the Spotify OAuth endpoint
+        : '$baseURL/auth/login'; // Use the Spotify login endpoint
 
     const callbackUrlScheme = "nuance"; // Custom URL scheme
 
@@ -136,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   Future<void> _handleAppleAuthentication() async {
     final musicKitAuthUrl =
-        '$baseURL/apple-music-auth'; // Use the deployed backend URL
+        '$baseURL/auth/apple/login'; // Use the Apple Music login endpoint
 
     log('APPLEMUSICFN: Starting Apple Music Authentication...');
 
@@ -347,7 +347,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             'assets/icon4star.svg',
                             width: 10,
                             height: 10,
-                          ),  
+                          ),
                           backgroundColor: const Color.fromARGB(
                               255, 255, 88, 88), // Apple Music theme
                           onPressed:
