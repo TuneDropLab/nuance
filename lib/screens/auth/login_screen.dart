@@ -55,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     ref.invalidate(spotifyHomeRecommendationsProvider);
     final authUrl = provider == 'apple'
         ? null // We don't need to use the first Apple login URL since it's handled by MusicKit
-        : '$baseURL/auth/login'; // Only use this for Spotify or other providers
+        : '$baseURL/auth/spotify'; // Use the Spotify OAuth endpoint
 
     const callbackUrlScheme = "nuance"; // Custom URL scheme
 
@@ -76,7 +76,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         final sessionData = uri.queryParameters['session'];
         final sessionMap = jsonDecode(sessionData!);
         final accessToken = sessionMap['access_token'];
-        final providerType = sessionMap['user']['app_metadata']['provider']; // Get provider type
+        final providerType =
+            sessionMap['user']['app_metadata']['provider']; // Get provider type
         log("Provider Type: $providerType");
         // ProviderType.setType(providerType); // Store the provider type
 
@@ -134,8 +135,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _handleAppleAuthentication() async {
-    const musicKitAuthUrl =
-        'http://localhost:3000/apple-music-auth'; // Your actual hosted MusicKit URL
+    final musicKitAuthUrl =
+        '$baseURL/apple-music-auth'; // Use the deployed backend URL
 
     log('APPLEMUSICFN: Starting Apple Music Authentication...');
 
@@ -325,50 +326,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 32),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.only(
-                          bottom: 10,
-                          left: 20,
-                          right: 20,
-                        ),
-                        child: GeneralButton(
-                          text: 'Sign in with Apple Music',
-                          icon: SvgPicture.asset(
-                            'assets/icon4star.svg',
-                            width: 10,
-                            height: 10,
-                          ),
-                          backgroundColor: const Color.fromARGB(
-                              255, 255, 88, 88), // Apple Music theme
-                          onPressed:
-                              _isLoading ? () {} : () => _authenticate("apple"),
-                          hasPadding: true,
-                        ),
-                      ),
-                      // TODO: SPOTIFY FUNCTIONALITY
                       // Container(
                       //   width: Get.width,
                       //   padding: const EdgeInsets.only(
-                      //     bottom: 50,
+                      //     bottom: 10,
                       //     left: 20,
                       //     right: 20,
                       //   ),
                       //   child: GeneralButton(
-                      //     text: 'Sign in with Spotify',
+                      //     text: 'Sign in with Apple Music',
                       //     icon: SvgPicture.asset(
                       //       'assets/icon4star.svg',
                       //       width: 10,
                       //       height: 10,
                       //     ),
-                      //     backgroundColor:
-                      //         const Color.fromARGB(255, 79, 162, 114),
-                      //     onPressed: _isLoading
-                      //         ? () {}
-                      //         : () => _authenticate('spotify'),
+                      //     backgroundColor: const Color.fromARGB(
+                      //         255, 255, 88, 88), // Apple Music theme
+                      //     onPressed:
+                      //         _isLoading ? () {} : () => _authenticate("apple"),
                       //     hasPadding: true,
                       //   ),
                       // ),
+                      // TODO: SPOTIFY FUNCTIONALITY
+                      Container(
+                        width: Get.width,
+                        padding: const EdgeInsets.only(
+                          bottom: 50,
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: GeneralButton(
+                          text: 'Sign in with Spotify',
+                          icon: SvgPicture.asset(
+                            'assets/icon4star.svg',
+                            width: 10,
+                            height: 10,
+                          ),
+                          backgroundColor:
+                              const Color.fromARGB(255, 79, 162, 114),
+                          onPressed: _isLoading
+                              ? () {}
+                              : () => _authenticate('spotify'),
+                          hasPadding: true,
+                        ),
+                      ),
                     ],
                   ),
                 ],

@@ -1,11 +1,24 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 
-const baseURLIos = "http://localhost:3000";
-// const baseURLGeneral = "https://api.discovernuance.com";
-const baseURLAndroid = "http://10.0.2.2:3000";
-final String baseURL = Platform.isIOS ? baseURLIos : baseURLAndroid;
+const baseURLIos =
+    "https://nuance-backend-q2ua0ode6-es-projects-041031ea.vercel.app";
+const baseURLGeneral =
+    "https://nuance-backend-q2ua0ode6-es-projects-041031ea.vercel.app";
+const baseURLAndroid =
+    "https://nuance-backend-q2ua0ode6-es-projects-041031ea.vercel.app";
+
+String get baseURL {
+  if (kIsWeb) {
+    return baseURLGeneral;
+  }
+  if (Platform.isIOS) {
+    return baseURLIos;
+  }
+  return baseURLAndroid;
+}
 
 // RGB Colors
 const Color kUiGreen = Color(0xFF3D9261);
