@@ -3,12 +3,9 @@ import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
 
-const baseURLIos =
-    "https://nuance-backend-q2ua0ode6-es-projects-041031ea.vercel.app";
-const baseURLGeneral =
-    "https://nuance-backend-q2ua0ode6-es-projects-041031ea.vercel.app";
-const baseURLAndroid =
-    "https://nuance-backend-q2ua0ode6-es-projects-041031ea.vercel.app";
+const baseURLIos = "https://nuance-backend.vercel.app";
+const baseURLGeneral = "https://nuance-backend.vercel.app";
+const baseURLAndroid = "https://nuance-backend.vercel.app";
 
 String get baseURL {
   if (kIsWeb) {

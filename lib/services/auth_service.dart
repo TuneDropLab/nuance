@@ -18,6 +18,8 @@ class AuthService {
         key: 'expires_at', value: sessionJson['expires_at'].toString());
     await secureStorage.write(
         key: 'user', value: jsonEncode(sessionJson['user']));
+    await secureStorage.write(
+        key: 'provider', value: sessionJson['provider']?.toString() ?? 'itunes');
   }
 
   Future<Map<String, dynamic>?> getSessionData() async {

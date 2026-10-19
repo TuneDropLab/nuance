@@ -20,6 +20,7 @@ import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/services/all_services.dart';
+import 'package:nuance/services/itunes_service.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
@@ -718,27 +719,53 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       if ((widget.playlistId == null || widget.playlistId == "") &&
           widget.songs == null) {
         dev.log("Fetching generated image...");
-        generatedImage = await service.getGeneratedImage(accessToken,
-            widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
-        dev.log("Generated image fetched: $generatedImage");
+        try {
+          if (provider != 'itunes') {
+            generatedImage = await service.getGeneratedImage(accessToken,
+                widget.searchTitle ?? widget.searchQuery ?? widget.tagQuery ?? "");
+            dev.log("Generated image fetched: $generatedImage");
+          }
+        } catch (e) {
+          dev.log("Generated image skipped or offline: $e");
+        }
       }
 
-      final result = widget.songs != null
-          ? widget.songs!
-          : widget.searchQuery != null || widget.tagQuery != null
-              ? await service.getRecommendations(
-                  accessToken,
-                  widget.searchQuery ?? widget.tagQuery ?? "",
-                  provider,
-                )
-              : widget.playlistId != null
-                  ? await service.fetchPlaylistTracks(
-                      accessToken,
-                      providerToken,
-                      widget.playlistId ?? "",
-                      provider,
-                    )
-                  : null;
+      final itunesService = ItunesService();
+      dynamic result;
+
+      if (widget.songs != null) {
+        result = widget.songs!;
+      } else if (provider == 'itunes' || provider == 'guest') {
+        result = await itunesService.getRecommendations(
+          widget.searchQuery ?? widget.tagQuery ?? widget.searchTitle ?? "",
+        );
+      } else if (widget.searchQuery != null || widget.tagQuery != null) {
+        try {
+          result = await service.getRecommendations(
+            accessToken,
+            widget.searchQuery ?? widget.tagQuery ?? "",
+            provider,
+          );
+        } catch (e) {
+          dev.log("Backend recommendation failed, falling back to iTunes: $e");
+          result = await itunesService.getRecommendations(
+            widget.searchQuery ?? widget.tagQuery ?? "",
+          );
+        }
+      } else if (widget.playlistId != null) {
+        try {
+          result = await service.fetchPlaylistTracks(
+            accessToken,
+            providerToken,
+            widget.playlistId ?? "",
+            provider,
+          );
+        } catch (e) {
+          result = await itunesService.getRecommendations(
+            widget.searchTitle ?? "Top Hits",
+          );
+        }
+      }
 
       if (mounted) {
         dev.log("Result: $result");

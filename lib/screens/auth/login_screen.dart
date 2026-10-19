@@ -358,7 +358,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       Container(
                         width: Get.width,
                         padding: const EdgeInsets.only(
-                          bottom: 50,
+                          bottom: 20,
                           left: 20,
                           right: 20,
                         ),
@@ -375,6 +375,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               ? () {}
                               : () => _authenticate('spotify'),
                           hasPadding: true,
+                        ),
+                      ),
+                      Container(
+                        width: Get.width,
+                        padding: const EdgeInsets.only(
+                          bottom: 35,
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: TextButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () async {
+                                  setState(() => _isLoading = true);
+                                  await ref
+                                      .read(sessionProvider.notifier)
+                                      .startGuestSession();
+                                  Get.offAll(() => const HomeScreen());
+                                },
+                          child: const Text(
+                            "Try Instant Preview (No Login Needed)",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
                         ),
                       ),
                     ],

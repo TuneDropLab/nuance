@@ -16,6 +16,7 @@ import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/services/all_services.dart';
+import 'package:nuance/services/itunes_service.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
@@ -101,6 +102,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       isLoading = true;
     });
     try {
+      final session = await ref.read(authServiceProvider).getSessionData();
+      final provider = session?['provider'];
+
+      if (provider == 'itunes' || provider == 'guest') {
+        final itunesRecs =
+            await ItunesService().searchTracks("top hip hop hits", limit: 6);
+        setState(() {
+          recommendations = itunesRecs;
+          isLoading = false;
+        });
+        return;
+      }
+
       final newRecommendations =
           await ref.read(spotifyHomeRecommendationsProvider.future);
 
@@ -109,12 +123,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         isLoading = false;
       });
     } catch (e) {
-      debugPrint("ERROR initial fetch: $e");
-      throw Exception('Failed to load initial recommendations');
+      debugPrint("Falling back to iTunes trending tracks: $e");
+      try {
+        final fallbackRecs =
+            await ItunesService().searchTracks("top hits", limit: 6);
+        setState(() {
+          recommendations = fallbackRecs;
+          isLoading = false;
+        });
+      } catch (err) {
+        debugPrint("Fallback error: $err");
+      }
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -133,8 +158,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         throw Exception('User not authenticated');
       }
 
+      final provider = sessionData['provider'];
+      if (provider == 'itunes' || provider == 'guest') {
+        final moreItunes =
+            await ItunesService().searchTracks("chill lo fi beats", limit: 6);
+        setState(() {
+          recommendations.addAll(moreItunes);
+          currentPage++;
+          isMoreLoading = false;
+        });
+        return;
+      }
+
       final accessToken = sessionData['access_token'];
-      final provider = sessionData['user']['app_metadata']['provider'];
 
       final newRecommendations =
           await AllServices().getSpotifyHomeRecommendations(
@@ -150,11 +186,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     } catch (e) {
       debugPrint("ERROR extra fetch: $e");
-      throw Exception('Failed to load more recommendations');
+      try {
+        final moreItunes =
+            await ItunesService().searchTracks("afrobeats trending", limit: 6);
+        setState(() {
+          recommendations.addAll(moreItunes);
+          currentPage++;
+          isMoreLoading = false;
+        });
+      } catch (err) {
+        debugPrint("More fallback error: $err");
+      }
     } finally {
-      setState(() {
-        isMoreLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isMoreLoading = false;
+        });
+      }
     }
   }
 

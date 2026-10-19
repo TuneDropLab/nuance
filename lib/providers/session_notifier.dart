@@ -65,6 +65,30 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     }
   }
 
+  Future<void> startGuestSession() async {
+    state = const AsyncLoading();
+    try {
+      final guestSession = {
+        'access_token': 'guest_token_123',
+        'refresh_token': 'guest_refresh_token_123',
+        'provider_token': 'guest_provider_token_123',
+        'expires_at': DateTime.now().millisecondsSinceEpoch + 86400000,
+        'provider': 'itunes',
+        'user': {
+          'id': 'guest_tester',
+          'name': 'Guest Tester',
+          'email': 'tester@nuance.app',
+          'app_metadata': {'provider': 'itunes'},
+          'user_metadata': {'full_name': 'Guest Tester'},
+        }
+      };
+      await authService.storeSessionData(jsonEncode(guestSession));
+      state = AsyncData(SessionData.fromJson(guestSession));
+    } catch (e) {
+      state = AsyncError(e, StackTrace.current);
+    }
+  }
+
   Future<void> updateUserName(String name) async {
     state = const AsyncLoading();
     try {

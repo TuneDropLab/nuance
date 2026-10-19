@@ -49,6 +49,29 @@ class SongModel {
     this.createdAt,
   });
 
+  factory SongModel.fromItunes(Map<String, dynamic> json) {
+    final artwork = (json['artworkUrl100'] as String?)
+            ?.replaceAll('100x100bb', '600x600bb') ??
+        json['artworkUrl600'] ??
+        json['artworkUrl100'] ??
+        '';
+
+    return SongModel(
+      id: json['trackId']?.toString() ?? '',
+      title: json['trackName'] ?? '',
+      artist: json['artistName'] ?? '',
+      albumName: json['collectionName'] ?? '',
+      albumUrl: json['collectionViewUrl'] ?? '',
+      artworkUrl: artwork,
+      previewUrl: json['previewUrl'] ?? '',
+      trackUrl: json['trackViewUrl'] ?? '',
+      durationMs: json['trackTimeMillis'] ?? 0,
+      releaseDate: json['releaseDate'] ?? '',
+      explicit: json['trackExplicitness'] == 'explicit',
+      trackNumber: json['trackNumber'] ?? 1,
+    );
+  }
+
   factory SongModel.fromJson(Map<String, dynamic> json) {
     log("SONG MODEL JSON: $json");
 
