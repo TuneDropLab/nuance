@@ -22,16 +22,39 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
-  // Initialize Firebase Messaging
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // Guard against white screen on unhandled widget errors
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Text(
+          'An error occurred. Please refresh.',
+          style: TextStyle(color: Colors.white70),
+        ),
+      ),
+    );
+  };
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    }
+  } catch (e) {
+    debugPrint("Firebase initializeApp error (non-fatal): $e");
+  }
 
   final container = ProviderContainer();
   final authService = container.read(authServiceProvider);
-  final sessionData = await authService.getSessionData();
+  Map<String, dynamic>? sessionData;
+  try {
+    sessionData = await authService.getSessionData();
+  } catch (e) {
+    debugPrint("Failed to get session data (non-fatal): $e");
+  }
 
   runApp(
     ProviderScope(
@@ -59,14 +82,16 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   StreamSubscription? _sub;
-  bool? _isFirstRun;
+  bool? _isFirstRun = kIsWeb ? false : null;
 
   @override
   void initState() {
     super.initState();
     _checkFirstRun();
     _initUniLinks();
-    _initFirebaseMessaging();
+    if (!kIsWeb) {
+      _initFirebaseMessaging();
+    }
   }
 
   Future<void> _checkFirstRun() async {
@@ -105,6 +130,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initFirebaseMessaging() async {
+    if (kIsWeb) return;
     try {
       await FirebaseMessaging.instance.requestPermission();
       final token = await FirebaseMessaging.instance.getToken().catchError((e) {

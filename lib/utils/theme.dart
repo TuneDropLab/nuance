@@ -9,7 +9,7 @@ class AppTheme {
   static CupertinoThemeData get lightTheme {
     return CupertinoThemeData(
       primaryColor: primaryColor,
-      scaffoldBackgroundColor: CupertinoColors.white,
+      scaffoldBackgroundColor: const Color(0xFF000000),
       textTheme: CupertinoTextThemeData(
         primaryColor: textColor,
         navTitleTextStyle: GoogleFonts.anekBangla(
@@ -31,7 +31,7 @@ class AppTheme {
           ),
         ),
       ),
-      barBackgroundColor: CupertinoColors.white,
+      barBackgroundColor: const Color(0xFF000000),
       primaryContrastingColor: secondaryColor,
     );
   }

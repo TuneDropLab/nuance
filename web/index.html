@@ -39,21 +39,25 @@
         <!-- This script adds the flutter initialization JS code -->
         <script src="flutter.js" defer=""></script>
 
+        <meta name="theme-color" content="#000000" />
+        <meta name="color-scheme" content="dark" />
         <meta
             content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
             name="viewport"
         />
 
         <style id="splash-screen-style">
-            html {
+            html, body {
                 height: 100%;
-            }
-
-            body {
                 margin: 0;
                 min-height: 100%;
-                background-color: #000000;
-                background-size: 100% 100%;
+                background-color: #000000 !important;
+                background: #000000 !important;
+                color-scheme: dark;
+            }
+
+            flt-glass-pane, flt-scene-host {
+                background-color: #000000 !important;
             }
 
             #splash {
@@ -118,13 +122,23 @@
         </style>
         <script id="splash-screen-script">
             function removeSplashFromWeb() {
-                document.getElementById("splash")?.remove();
-                document.getElementById("splash-branding")?.remove();
-                document.body.style.background = "transparent";
+                var splash = document.getElementById("splash");
+                if (splash) {
+                    splash.style.opacity = "0";
+                    setTimeout(function() {
+                        splash.remove();
+                    }, 400);
+                }
+                var branding = document.getElementById("splash-branding");
+                if (branding) {
+                    branding.remove();
+                }
+                document.body.style.backgroundColor = "#000000";
+                document.body.style.background = "#000000";
             }
         </script>
     </head>
-    <body>
+    <body style="background-color: #000000; background: #000000;">
         <picture id="splash">
             <source
                 srcset="
@@ -154,12 +168,12 @@
 
         <script>
             function initFlutter() {
-                // Ensure splash removes after timeout as safety guarantee
-                setTimeout(function () {
+                // Safety fallback timeout after 12s in case engine hangs
+                var safetyTimer = setTimeout(function () {
                     if (typeof removeSplashFromWeb === "function") {
                         removeSplashFromWeb();
                     }
-                }, 3500);
+                }, 12000);
 
                 if (!window._flutter || !window._flutter.loader) {
                     console.error("Flutter loader not available");
@@ -177,12 +191,14 @@
                                 return appRunner.runApp();
                             })
                             .then(function () {
+                                clearTimeout(safetyTimer);
                                 if (typeof removeSplashFromWeb === "function") {
                                     removeSplashFromWeb();
                                 }
                             })
                             .catch(function (err) {
                                 console.error("Engine run error:", err);
+                                clearTimeout(safetyTimer);
                                 if (typeof removeSplashFromWeb === "function") {
                                     removeSplashFromWeb();
                                 }
