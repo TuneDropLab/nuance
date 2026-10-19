@@ -9,7 +9,6 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/screens/settings_page.dart';
-import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/general_button.dart';
@@ -43,7 +42,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
 
   void _loadHistory() {
     _localHistory = []; // Clear local history
-    ref.refresh(historyProvider); // Refresh the provider to load data
+    ref.invalidate(historyProvider); // Refresh the provider to load data
   }
 
   @override
@@ -409,7 +408,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
           if (historyItem.id != null) {
             await ref.read(deleteHistoryEntryProvider(historyItem.id!).future);
           }
-          ref.refresh(historyProvider);
+          ref.invalidate(historyProvider);
         },
       ),
     );

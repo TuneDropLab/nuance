@@ -8,12 +8,13 @@ import 'package:nuance/services/all_services.dart';
 final guestHistoryProvider = StateProvider<List<HistoryModel>>((ref) => []);
 
 final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
+  final guestHistory = ref.watch(guestHistoryProvider);
   try {
     final authService = ref.read(authServiceProvider);
     final sessionData = await authService.getSessionData();
 
     if (sessionData == null) {
-      return ref.watch(guestHistoryProvider);
+      return guestHistory;
     }
 
     final accessToken = sessionData['access_token']?.toString() ?? '';
@@ -24,7 +25,7 @@ final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
 
     if (isGuest) {
       // Return local transient history for guest mode
-      return ref.watch(guestHistoryProvider);
+      return guestHistory;
     }
 
     // Authenticated account: fetch persistent history from backend
@@ -33,7 +34,7 @@ final historyProvider = FutureProvider<List<HistoryModel>>((ref) async {
   } catch (e) {
     log('historyProvider error: $e');
     // Graceful fallback to local transient history
-    return ref.watch(guestHistoryProvider);
+    return guestHistory;
   }
 });
 

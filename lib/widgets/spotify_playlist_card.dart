@@ -32,12 +32,10 @@ class PlaylistCard extends ConsumerStatefulWidget {
 
 class _PlaylistCardState extends ConsumerState<PlaylistCard> {
   List<String> artistImages = [];
-  late final AnimatedMeshGradientController _controller;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _controller = AnimatedMeshGradientController();
     _fetchArtistsImages(playlistId: widget.playlistId);
   }
 

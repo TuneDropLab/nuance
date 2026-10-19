@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/services/all_services.dart';
 

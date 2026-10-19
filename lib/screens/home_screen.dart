@@ -9,6 +9,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nuance/services/vibe_cam_service.dart';
+import 'package:nuance/widgets/vibe_cam/vibe_cam_scanner_sheet.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/widgets/music_listtile.dart';
@@ -21,7 +23,6 @@ import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_drawer.dart';
-import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/generate_playlist_card.dart';
 import 'package:nuance/widgets/myindicator.dart';
@@ -46,22 +47,265 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _generatedRecQuery = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
-  Future<void> _takePicture() async {
-    final ImagePicker picker = ImagePicker();
-    try {
-      final XFile? photo = await picker.pickImage(source: ImageSource.camera);
-      if (photo != null) {
-        // Here you would typically upload the image to your server
-        // For now, let's just print the path and navigate to an imaginary route
-        print('Image path: ${photo.path}');
+  Future<void> _openVibeCamPicker() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF14141B).withValues(alpha: 0.96),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border.all(
+            color: const Color(0xFFFF7043).withValues(alpha: 0.35),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "📸 VIBE CAM",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.2,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Snap your atmosphere, lighting, and scene into a tailored soundscape",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.65),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF7043).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(CupertinoIcons.camera_fill,
+                    color: Color(0xFFFF7043)),
+              ),
+              title: const Text(
+                "Take Photo",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text(
+                "Capture current room, view, or atmosphere",
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+              onTap: () async {
+                Navigator.of(ctx).pop();
+                final file =
+                    await VibeCamService().pickImage(ImageSource.camera);
+                if (file != null && mounted) {
+                  final bytes = await file.readAsBytes();
+                  VibeCamScannerSheet.show(context, imageBytes: bytes);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE040FB).withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(CupertinoIcons.photo_fill_on_rectangle_fill,
+                    color: Color(0xFFE040FB)),
+              ),
+              title: const Text(
+                "Choose from Library / Files",
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+              subtitle: const Text(
+                "Select existing photo, sunset, or aesthetic scene",
+                style: TextStyle(color: Colors.white54, fontSize: 12),
+              ),
+              onTap: () async {
+                Navigator.of(ctx).pop();
+                final file =
+                    await VibeCamService().pickImage(ImageSource.gallery);
+                if (file != null && mounted) {
+                  final bytes = await file.readAsBytes();
+                  VibeCamScannerSheet.show(context, imageBytes: bytes);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-        // Navigate to an imaginary route with the image path
-        Get.toNamed('/image-route', arguments: {'imagePath': photo.path});
-      }
-    } catch (e) {
-      print('Error taking picture: $e');
-      CustomSnackbar().show('Failed to take picture');
-    }
+  Widget _buildVibeCamFeatureCard() {
+    return GestureDetector(
+      onTap: _openVibeCamPicker,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 25),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF2A1635),
+              Color(0xFF140D1E),
+              Color(0xFF0F0B18),
+            ],
+          ),
+          border: Border.all(
+            color: const Color(0xFFE040FB).withValues(alpha: 0.35),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFE040FB).withValues(alpha: 0.25),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                bottom: -20,
+                child: Container(
+                  width: 140,
+                  height: 140,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFFFF7043).withValues(alpha: 0.3),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFF7043), Color(0xFFE040FB)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFE040FB).withValues(alpha: 0.4),
+                            blurRadius: 14,
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          CupertinoIcons.camera_viewfinder,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE040FB)
+                                      .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: const Color(0xFFE040FB)
+                                        .withValues(alpha: 0.5),
+                                  ),
+                                ),
+                                child: const Text(
+                                  "VISION ➜ SOUND",
+                                  style: TextStyle(
+                                    color: Color(0xFFFF80AB),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            "Vibe Cam",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "Snap room atmosphere, lighting & mood into a soundscape",
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(
+                      CupertinoIcons.chevron_right,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   int currentPage = 1;
@@ -416,10 +660,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         controller: _scrollController,
                         interactive: true,
                         child: ListView.builder(
-                          itemCount: recommendations.length + 1,
+                          itemCount: recommendations.length + 2,
                           itemBuilder: (context, index) {
-                            if (index < recommendations.length) {
-                              final recommendation = recommendations[index];
+                            if (index == 0) {
+                              return _buildVibeCamFeatureCard();
+                            }
+                            final recIndex = index - 1;
+                            if (recIndex < recommendations.length) {
+                              final recommendation = recommendations[recIndex];
                               if (recommendation is SongModel) {
                                 return MusicListTile(
                                   recommendation: recommendation,
@@ -483,7 +731,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 return GeneratePlaylistCard(
                                   prompt: recommendation['text'],
                                   image: recommendation['image'],
-                                  gradient: cardGradients[index],
+                                  gradient: cardGradients[recIndex % cardGradients.length],
                                   onClick: () {
                                     _generatedRecQuery.text =
                                         recommendation['text'];
@@ -607,19 +855,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // const Icon(
-                              //   CupertinoIcons.add_circled,
-                              //   color: Colors.white, // Adjust color as needed
-                              //   size: 18, // Adjust size as needed
-                              // ),
-                              // IconButton(
-                              //   onPressed: _takePicture,
-                              //   icon: const Icon(
-                              //     CupertinoIcons.add_circled,
-                              //     color: Colors.grey, // Adjust color as needed
-                              //     size: 18, // Adjust size as needed
-                              //   ),
-                              // ),
+                              GestureDetector(
+                                onTap: _openVibeCamPicker,
+                                child: Container(
+                                  padding: const EdgeInsets.all(7),
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFF7043),
+                                        Color(0xFFE040FB)
+                                      ],
+                                    ),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFE040FB)
+                                            .withValues(alpha: 0.45),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    CupertinoIcons.camera_fill,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
                               GeneralButton(
                                 text: "Generate",
                                 backgroundColor: Colors.white,

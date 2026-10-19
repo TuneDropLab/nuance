@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:animated_hint_textfield/animated_hint_textfield.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -11,7 +11,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
 // import 'package:music_kit/music_kit.dart';
 import 'package:nuance/models/history_model.dart';
@@ -21,7 +20,6 @@ import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
-import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/services/itunes_service.dart';
 import 'package:nuance/utils/constants.dart';
@@ -30,6 +28,7 @@ import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:nuance/widgets/general_button.dart';
 import 'package:nuance/widgets/loader.dart';
 import 'package:nuance/widgets/music_listtile.dart';
+import 'package:nuance/widgets/retro_export/retro_export_dialog.dart';
 import 'package:palette_generator/palette_generator.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,10 +44,12 @@ class PlaylistScreen extends ConsumerStatefulWidget {
     this.songs,
     this.imageUrl,
     this.playlistUrl,
+    this.imageBytes,
   });
 
   static const routeName = '/recommendations-result';
 
+  final Uint8List? imageBytes;
   final String? imageUrl;
   final String? playlistId;
   final String? playlistUrl;
@@ -85,22 +86,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   final service = AllServices();
 
   final AudioPlayer _audioPlayer = AudioPlayer();
-  final Color _backgroundColor = Colors.black;
   late AnimationController _controller; // Animation controller
-  final String _countryCode = '';
   SongModel? _currentSong;
   // final MusicKit _musicKitPlugin = MusicKit();
-  final String _developerToken = '';
 
   bool _isGeneratingMore = false;
-  bool _isLoading = false; // Loading state
   bool _isPlaying = false;
   bool _isSelectionMode = false;
   String? _loadingPlaylistId;
   PaletteGenerator? _paletteGenerator;
   late AnimationController _refreshAnimationController; // Animation controller
   final Set<String> _selectedItems = {};
-  final bool _stretch = true;
   StreamSubscription<PlayerState>? _playerSubscription;
 
   @override
@@ -256,6 +252,17 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     ),
         ],
       ),
+      actions: [
+        IconButton(
+          tooltip: "Export Retro Mixtape / Vinyl",
+          onPressed: _openRetroExport,
+          icon: const Icon(
+            CupertinoIcons.waveform_path_badge_plus,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
+      ],
     );
   }
 
@@ -285,6 +292,15 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         ),
       ),
       actions: [
+        IconButton(
+          tooltip: "Export Retro Mixtape / Vinyl",
+          onPressed: _openRetroExport,
+          icon: const Icon(
+            CupertinoIcons.waveform_path_badge_plus,
+            color: Colors.white,
+            size: 22,
+          ),
+        ),
         IconButton(
           onPressed: () async {
             // playlistUrl
@@ -351,7 +367,34 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 ),
               ),
               SafeArea(
-                child: CachedNetworkImage(
+                child: widget.imageBytes != null
+                    ? Container(
+                        margin: const EdgeInsets.only(
+                          top: 60,
+                          bottom: 80,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (_paletteGenerator?.dominantColor?.color ??
+                                      const Color(0xFF6200EE))
+                                  .withValues(alpha: 0.5),
+                              blurRadius: 28,
+                              spreadRadius: 3,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.memory(
+                            widget.imageBytes!,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      )
+                    : CachedNetworkImage(
                   imageUrl: playlistImage ??
                       widget.imageUrl ??
                       generatedImage ??
@@ -1642,6 +1685,22 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   }
 
   Future<void> _updatePaletteGenerator() async {
+    if (widget.imageBytes != null) {
+      try {
+        final paletteGenerator = await PaletteGenerator.fromImageProvider(
+          MemoryImage(widget.imageBytes!),
+        );
+        if (mounted) {
+          setState(() {
+            _paletteGenerator = paletteGenerator;
+          });
+        }
+        return;
+      } catch (e) {
+        debugPrint('Error generating palette from imageBytes: $e');
+      }
+    }
+
     final imageToUse = playlistImage ??
         widget.imageUrl ??
         generatedImage ??
@@ -1674,6 +1733,41 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         });
       }
     }
+  }
+
+  void _openRetroExport() {
+    final effectiveTitle = widget.searchTitle ??
+        widget.searchQuery ??
+        widget.tagQuery ??
+        "Nuance Mixtape";
+    final effectiveSongs = recommendations ?? widget.songs ?? [];
+    final effectiveArtwork = playlistImage ??
+        widget.imageUrl ??
+        generatedImage ??
+        (effectiveSongs.isNotEmpty ? effectiveSongs.first.artworkUrl : null);
+
+    RetroExportDialog.show(
+      context,
+      playlistTitle: effectiveTitle,
+      songs: effectiveSongs,
+      artworkUrl: effectiveArtwork,
+      imageBytes: widget.imageBytes,
+      isPlaying: _isPlaying,
+      audioPlayer: _audioPlayer,
+      playerStateStream: _audioPlayer.onPlayerStateChanged,
+      onTogglePlay: () async {
+        if (_isPlaying) {
+          await _audioPlayer.pause();
+        } else {
+          final song = _currentSong ?? (effectiveSongs.isNotEmpty ? effectiveSongs.first : null);
+          if (song != null && song.previewUrl != null && song.previewUrl!.isNotEmpty) {
+            await _audioPlayer.play(UrlSource(song.previewUrl!));
+          }
+        }
+      },
+      accentColor: _paletteGenerator?.dominantColor?.color ??
+          const Color(0xFFFF7043),
+    );
   }
 
 
@@ -1713,11 +1807,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   //   }
   // }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1770,11 +1859,30 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 if (!isLoading && sessionState.value?.accessToken != null ||
                     widget.sessionState != null)
                   const CustomDivider().marginOnly(bottom: 5),
-              if (!isLoading && sessionState.value?.accessToken != null)
+              if (!isLoading &&
+                  (recommendations?.isNotEmpty == true ||
+                      widget.songs?.isNotEmpty == true))
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
                     children: [
+                      // Retro Mixtape / Vinyl Export Button
+                      Expanded(
+                        child: GeneralButton(
+                          hasPadding: true,
+                          backgroundColor: _paletteGenerator?.dominantColor?.color ??
+                              const Color(0xFFE040FB),
+                          text: "Mixtape",
+                          color: Colors.white,
+                          icon: const Icon(
+                            CupertinoIcons.waveform_path_badge_plus,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          onPressed: _openRetroExport,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: GeneralButton(
                           hasPadding: true,
@@ -1815,14 +1923,13 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                           },
                         ),
                       ),
-                      const SizedBox(
-                        width: 5,
-                      ),
+                      const SizedBox(width: 6),
                       Expanded(
                         child: GeneralButton(
                           backgroundColor: const Color(0xffFDAD3C),
                           hasPadding: true,
                           color: Colors.black,
+                          text: "Bookmark",
                           icon: SvgPicture.asset(
                             "assets/bookmark.svg",
                             color: isLoading
