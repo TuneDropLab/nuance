@@ -171,7 +171,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       (index) => gradients[math.Random().nextInt(gradients.length)],
     );
     final focusNode = FocusNode();
-    void submit(String type) {
+    void submit(String type, {String? image}) {
       focusNode.unfocus();
       String? userMessage;
       String? tagQuery;
@@ -185,6 +185,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Get.to(() => PlaylistScreen(
               searchQuery: userMessage!.trim(),
               tagQuery: null,
+              imageUrl: image,
               sessionState: sessionState,
             ));
       } else if (type == 'tagQuery') {
@@ -195,6 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Get.to(() => PlaylistScreen(
               searchQuery: null,
               tagQuery: tagQuery,
+              imageUrl: image,
               sessionState: sessionState,
             ));
       } else if (type == 'generatedRecQuery') {
@@ -205,6 +207,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Get.to(() => PlaylistScreen(
               searchQuery: generatedRecQuery,
               tagQuery: null,
+              imageUrl: image,
               sessionState: sessionState,
             ));
       }
@@ -484,7 +487,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   onClick: () {
                                     _generatedRecQuery.text =
                                         recommendation['text'];
-                                    submit('generatedRecQuery');
+                                    submit('generatedRecQuery',
+                                        image: recommendation['image']);
                                   },
                                 ).marginOnly(bottom: 25);
                               }

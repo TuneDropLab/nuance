@@ -455,8 +455,8 @@ class _ArtworkSwitcherState extends State<ArtworkSwitcher> {
       child: AnimatedSwitcher(
         duration: const Duration(seconds: 3),
         child: widget.artworks.isNotEmpty &&
-                widget.artworks[_currentIndex]!.isNotEmpty &&
-                widget.artworks[_currentIndex] != null
+                widget.artworks[_currentIndex] != null &&
+                widget.artworks[_currentIndex]!.isNotEmpty
             ? CachedNetworkImage(
                 imageBuilder: (context, imageProvider) {
                   return Container(

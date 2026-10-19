@@ -147,6 +147,10 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   void initState() {
     super.initState();
 
+    if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
+      playlistImage = widget.imageUrl;
+    }
+
     // Initialize the animation controller
     _refreshAnimationController = AnimationController(
       duration: const Duration(seconds: 2),
@@ -349,13 +353,27 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               ),
               SafeArea(
                 child: CachedNetworkImage(
-                  imageUrl: playlistImage ?? widget.imageUrl ?? "",
+                  imageUrl: playlistImage ??
+                      widget.imageUrl ??
+                      generatedImage ??
+                      (recommendations?.isNotEmpty == true
+                          ? (recommendations!.first.artworkUrl ?? "")
+                          : ""),
                   imageBuilder: (context, imageProvider) => Container(
                     margin: const EdgeInsets.only(
                       top: 60,
                       bottom: 80,
                     ),
                     decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
                       image: DecorationImage(
                         image: imageProvider,
                         fit: BoxFit.contain,
@@ -363,15 +381,38 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     ),
                   ),
                   errorWidget: (context, url, error) {
-                    return const SizedBox.shrink();
+                    return Container(
+                      margin: const EdgeInsets.only(top: 60, bottom: 80),
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF2E0854), Color(0xFF180B30)],
+                          ),
+                        ),
+                        child: const Icon(
+                          CupertinoIcons.music_note_list,
+                          size: 64,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    );
                   },
                   placeholder: (context, url) {
                     return Shimmer.fromColors(
                       baseColor: const Color.fromARGB(131, 158, 158, 158),
                       highlightColor: const Color.fromARGB(50, 224, 224, 224),
-                      child: const SizedBox(
-                        height: 200,
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 60, bottom: 80),
                         width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade900,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     );
                   },
@@ -546,10 +587,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               Container(
                 color: Colors.black.withOpacity(0.5),
                 child: CachedNetworkImage(
-                  imageUrl: widget.playlistId != null
-                      // if we pass playlist id we use the spotify image
-                      ? playlistImage ?? ""
-                      : widget.imageUrl ?? generatedImage ?? "",
+                  imageUrl: playlistImage ??
+                      widget.imageUrl ??
+                      generatedImage ??
+                      (recommendations?.isNotEmpty == true
+                          ? (recommendations!.first.artworkUrl ?? "")
+                          : ""),
                   fit: BoxFit.cover,
                   errorWidget: (context, url, error) {
                     return const SizedBox.shrink();
@@ -782,8 +825,31 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               dev.log("Playlist image: $playlistImage");
             }
           }
+
+          // Automatically extract high-res artwork if playlistImage is not set
+          if ((playlistImage == null || playlistImage!.isEmpty) &&
+              recommendations != null &&
+              recommendations!.isNotEmpty) {
+            final trackWithArtwork = recommendations!.firstWhere(
+              (s) => s.artworkUrl != null && s.artworkUrl!.isNotEmpty,
+              orElse: () => recommendations!.first,
+            );
+            if (trackWithArtwork.artworkUrl != null &&
+                trackWithArtwork.artworkUrl!.isNotEmpty) {
+              playlistImage = trackWithArtwork.artworkUrl;
+            }
+          }
+
+          if ((playlistImage == null || playlistImage!.isEmpty) &&
+              widget.imageUrl != null &&
+              widget.imageUrl!.isNotEmpty) {
+            playlistImage = widget.imageUrl;
+          }
+
           isLoading = false;
         });
+
+        _updatePaletteGenerator();
 
         // Record to history (backend for authenticated, local for guest)
         if (recommendations != null && recommendations!.isNotEmpty) {
@@ -1577,26 +1643,37 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   }
 
   Future<void> _updatePaletteGenerator() async {
-    // final imageUrl = playlistImage;
+    final imageToUse = playlistImage ??
+        widget.imageUrl ??
+        generatedImage ??
+        (recommendations?.isNotEmpty == true
+            ? recommendations!.first.artworkUrl
+            : null);
 
-    if (playlistImage != null && (playlistImage ?? "").isNotEmpty) {
+    if (imageToUse != null && imageToUse.trim().isNotEmpty) {
       try {
         final paletteGenerator = await PaletteGenerator.fromImageProvider(
-          CachedNetworkImageProvider((playlistImage ?? "")),
+          CachedNetworkImageProvider(imageToUse),
         );
-        setState(() {
-          _paletteGenerator = paletteGenerator;
-        });
+        if (mounted) {
+          setState(() {
+            _paletteGenerator = paletteGenerator;
+          });
+        }
       } catch (e) {
-        print('Error generating palette: $e');
+        debugPrint('Error generating palette: $e');
+        if (mounted) {
+          setState(() {
+            _paletteGenerator = null;
+          });
+        }
+      }
+    } else {
+      if (mounted) {
         setState(() {
           _paletteGenerator = null;
         });
       }
-    } else {
-      setState(() {
-        _paletteGenerator = null;
-      });
     }
   }
 
