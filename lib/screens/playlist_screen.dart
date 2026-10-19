@@ -22,6 +22,7 @@ import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/services/itunes_service.dart';
+import 'package:nuance/services/sonic_memory_service.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_divider.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
@@ -773,6 +774,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         _currentSong = null;
       });
     } else {
+      if (song.artistName != null && song.artistName!.isNotEmpty) {
+        SonicMemoryService().recordPlayedTrack(
+          artist: song.artistName!,
+          genre: song.primaryGenreName,
+        );
+      }
       await _audioPlayer.play(UrlSource(song.previewUrl ?? ""));
       setState(() {
         _isPlaying = true;
@@ -1761,6 +1768,12 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         } else {
           final song = _currentSong ?? (effectiveSongs.isNotEmpty ? effectiveSongs.first : null);
           if (song != null && song.previewUrl != null && song.previewUrl!.isNotEmpty) {
+            if (song.artistName != null && song.artistName!.isNotEmpty) {
+              SonicMemoryService().recordPlayedTrack(
+                artist: song.artistName!,
+                genre: song.primaryGenreName,
+              );
+            }
             await _audioPlayer.play(UrlSource(song.previewUrl!));
           }
         }

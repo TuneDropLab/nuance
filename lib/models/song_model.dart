@@ -50,6 +50,8 @@ class SongModel {
   });
 
   String? get trackId => id;
+  String? get artistName => artist;
+  String? get primaryGenreName => null;
 
   factory SongModel.fromItunes(Map<String, dynamic> json) {
     final artwork = (json['artworkUrl100'] as String?)

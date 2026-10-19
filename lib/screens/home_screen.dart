@@ -18,6 +18,10 @@ import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/services/all_services.dart';
+import 'package:nuance/services/guest_quota_service.dart';
+import 'package:nuance/services/sonic_memory_service.dart';
+import 'package:nuance/widgets/unlock_nuance_modal.dart';
+import 'package:nuance/widgets/tune_soundscape_modal.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
@@ -313,6 +317,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool isMoreLoading = false;
   List<dynamic> recommendations = [];
   List<dynamic> tags = [];
+  int _remainingGuestGenerations = 3;
 
   @override
   void initState() {
@@ -320,7 +325,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     recommendations.clear();
     tags.clear();
     _scrollController.addListener(_onScroll);
+    _loadGuestQuota();
     _fetchRecommendations();
+  }
+
+  Future<void> _loadGuestQuota() async {
+    final remaining = await GuestQuotaService().getRemainingGenerations();
+    if (mounted) {
+      setState(() => _remainingGuestGenerations = remaining);
+    }
+  }
+
+  List<dynamic> _interleaveDiversePrompts(List<dynamic> rawPrompts) {
+    if (rawPrompts.length <= 1) return rawPrompts;
+
+    final Map<String, List<dynamic>> buckets = {};
+    for (var p in rawPrompts) {
+      final cat = (p is Map ? p['category'] : null)?.toString() ?? 'vibe';
+      buckets.putIfAbsent(cat, () => []).add(p);
+    }
+
+    final List<dynamic> result = [];
+    String? lastCategory;
+
+    while (buckets.values.any((list) => list.isNotEmpty)) {
+      String? selectedKey;
+      for (var key in buckets.keys) {
+        if (buckets[key]!.isNotEmpty && key != lastCategory) {
+          selectedKey = key;
+          break;
+        }
+      }
+
+      selectedKey ??= buckets.keys.firstWhere((k) => buckets[k]!.isNotEmpty);
+      final item = buckets[selectedKey]!.removeAt(0);
+      result.add(item);
+      lastCategory = selectedKey;
+    }
+
+    return result;
   }
 
   @override
@@ -351,7 +394,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       if (mounted) {
         setState(() {
-          recommendations = List.from(geminiPrompts);
+          recommendations = _interleaveDiversePrompts(geminiPrompts);
           tags = List.from(geminiTags);
           isLoading = false;
         });
@@ -378,8 +421,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final discover = await AllServices().getGeminiDiscover();
       final morePrompts = discover['prompts'] as List<dynamic>? ?? [];
       if (morePrompts.isNotEmpty && mounted) {
+        final interleaved = _interleaveDiversePrompts(morePrompts);
         setState(() {
-          recommendations.addAll(morePrompts);
+          recommendations.addAll(interleaved);
           currentPage++;
           isMoreLoading = false;
         });
@@ -415,28 +459,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       (index) => gradients[math.Random().nextInt(gradients.length)],
     );
     final focusNode = FocusNode();
-    void submit(String type, {String? image}) {
+    void submit(String type, {String? image, int? bpm, String? energy}) async {
       focusNode.unfocus();
-      String? userMessage;
       String? tagQuery;
       String? generatedRecQuery;
 
+      final isGuest = sessionState.value?.isGuest == true;
+      if (isGuest && _remainingGuestGenerations <= 0) {
+        UnlockNuanceModal.show(
+          context,
+          title: 'Guest Trial Complete',
+          subtitle:
+              'You have enjoyed your 3 free guest soundscapes. Sign in for free to unlock unlimited creations & cloud library sync.',
+        );
+        return;
+      }
+
       if (type == 'userMessage') {
-        userMessage = _controller.text;
-        if (userMessage.isEmpty) {
+        final promptText = _controller.text.trim();
+        if (promptText.isEmpty) {
           return;
         }
-        Get.to(() => PlaylistScreen(
-              searchQuery: userMessage!.trim(),
-              tagQuery: null,
-              imageUrl: image,
-              sessionState: sessionState,
-            ));
-      } else if (type == 'tagQuery') {
+
+        TuneSoundscapeModal.show(
+          context,
+          prompt: promptText,
+          onConfirm: (params) async {
+            if (isGuest) {
+              await GuestQuotaService().consumeGeneration();
+              _loadGuestQuota();
+            }
+            SonicMemoryService().recordPrompt(promptText);
+            final enriched = params.buildEnrichedQuery(promptText);
+            Get.to(() => PlaylistScreen(
+                  searchQuery: enriched,
+                  tagQuery: null,
+                  imageUrl: image,
+                  sessionState: sessionState,
+                ));
+          },
+        );
+        return;
+      }
+
+      if (isGuest) {
+        await GuestQuotaService().consumeGeneration();
+        _loadGuestQuota();
+      }
+
+      if (type == 'tagQuery') {
         tagQuery = _tagQuery.text;
         if (tagQuery.isEmpty) {
           return;
         }
+        SonicMemoryService().recordPrompt(tagQuery);
         Get.to(() => PlaylistScreen(
               searchQuery: null,
               tagQuery: tagQuery,
@@ -448,8 +524,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (generatedRecQuery.isEmpty) {
           return;
         }
+        SonicMemoryService().recordPrompt(generatedRecQuery);
+        final finalQuery = (bpm != null && energy != null)
+            ? '$generatedRecQuery (~$bpm BPM $energy)'
+            : generatedRecQuery;
         Get.to(() => PlaylistScreen(
-              searchQuery: generatedRecQuery,
+              searchQuery: finalQuery,
               tagQuery: null,
               imageUrl: image,
               sessionState: sessionState,
@@ -619,13 +699,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               error: (error, stack) => Text('Error loading user data',
                   style: Theme.of(context).textTheme.titleMedium),
             ),
-            automaticallyImplyLeading: false,
-            centerTitle: false,
             actions: [
+              if (sessionState.value?.isGuest == true)
+                GestureDetector(
+                  onTap: () => UnlockNuanceModal.show(context),
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8, top: 12, bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: kUiGreen.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: kUiGreen.withOpacity(0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(CupertinoIcons.bolt_fill, size: 12, color: kUiGreen),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$_remainingGuestGenerations Free',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               circularAvatar(sessionState, ref),
             ],
           ),
-          body: Stack(children: [
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 620),
+              child: Stack(children: [
             Container(
               child: recommendations.isEmpty
                   ? ListView.builder(
@@ -731,12 +840,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 return GeneratePlaylistCard(
                                   prompt: recommendation['text'],
                                   image: recommendation['image'],
+                                  category: recommendation['category']?.toString(),
+                                  initialBpm: recommendation['bpm'] is int
+                                      ? recommendation['bpm']
+                                      : (int.tryParse(recommendation['bpm']?.toString() ?? '') ?? 95),
+                                  initialEnergy: recommendation['energy']?.toString(),
                                   gradient: cardGradients[recIndex % cardGradients.length],
-                                  onClick: () {
+                                  onGenerate: (bpm, energy) {
                                     _generatedRecQuery.text =
                                         recommendation['text'];
                                     submit('generatedRecQuery',
-                                        image: recommendation['image']);
+                                        image: recommendation['image'],
+                                        bpm: bpm,
+                                        energy: energy);
                                   },
                                 ).marginOnly(bottom: 25);
                               }
@@ -920,7 +1036,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ]),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 }
 

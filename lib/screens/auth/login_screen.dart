@@ -245,169 +245,186 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ),
                 ),
               ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Center(
-                      child: _isLoading
-                          ? RotationTransition(
-                              turns: _controller,
-                              child: Image.asset(
-                                'assets/whitelogo.png',
-                                width: 40,
-                                height: 40,
-                              ),
-                            )
-                          : Image.asset(
-                              'assets/whitelogo.png',
-                              width: 40,
-                              height: 40,
-                            ),
-                    ),
-                  ),
-                  Column(
-                    children: [
-                      const Text(
-                        'Nuance',
-                        style: TextStyle(
-                          fontSize: 24,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: Get.width * 0.2,
-                          vertical: 6,
-                        ),
-                        child: const Text(
-                          'Generate any kind of playlist you can think of in seconds',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white60,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 4,
-                        ),
-                        child: GeneralButton(
-                          text: 'Start Exploring Music',
-                          color: Colors.white,
-                          icon: SvgPicture.asset(
-                            'assets/icon4star.svg',
-                            width: 14,
-                            height: 14,
-                            color: Colors.white,
-                          ),
-                          backgroundColor: kUiGreen,
-                          onPressed: _isLoading
-                              ? () {}
-                              : () async {
-                                  setState(() => _isLoading = true);
-                                  await ref
-                                      .read(sessionProvider.notifier)
-                                      .startGuestSession();
-                                  Get.offAll(() => const HomeScreen());
-                                },
-                          hasPadding: true,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Divider(
-                                color: Colors.white.withOpacity(0.2),
-                                thickness: 0.8,
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10),
-                              child: Text(
-                                'or sign in to sync history',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.4),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
+              Positioned.fill(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    child: CustomScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      slivers: [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 20),
+                                child: Center(
+                                  child: _isLoading
+                                      ? RotationTransition(
+                                          turns: _controller,
+                                          child: Image.asset(
+                                            'assets/whitelogo.png',
+                                            width: 40,
+                                            height: 40,
+                                          ),
+                                        )
+                                      : Image.asset(
+                                          'assets/whitelogo.png',
+                                          width: 40,
+                                          height: 40,
+                                        ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              child: Divider(
-                                color: Colors.white.withOpacity(0.2),
-                                thickness: 0.8,
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'Nuance',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 32,
+                                      vertical: 8,
+                                    ),
+                                    child: Text(
+                                      'Generate any kind of playlist you can think of in seconds',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.white60,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 4,
+                                    ),
+                                    child: GeneralButton(
+                                      text: 'Start Exploring Music',
+                                      color: Colors.white,
+                                      icon: SvgPicture.asset(
+                                        'assets/icon4star.svg',
+                                        width: 14,
+                                        height: 14,
+                                        color: Colors.white,
+                                      ),
+                                      backgroundColor: kUiGreen,
+                                      onPressed: _isLoading
+                                          ? () {}
+                                          : () async {
+                                              setState(() => _isLoading = true);
+                                              await ref
+                                                  .read(sessionProvider.notifier)
+                                                  .startGuestSession();
+                                              Get.offAll(() => const HomeScreen());
+                                            },
+                                      hasPadding: true,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 8,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Divider(
+                                            color: Colors.white.withOpacity(0.2),
+                                            thickness: 0.8,
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          child: Text(
+                                            'or sign in to sync history',
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(0.4),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w400,
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: Divider(
+                                            color: Colors.white.withOpacity(0.2),
+                                            thickness: 0.8,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 4,
+                                    ),
+                                    child: GeneralButton(
+                                      text: 'Continue with Google',
+                                      color: Colors.black87,
+                                      icon: SvgPicture.string(
+                                        _googleLogoSvg,
+                                        width: 18,
+                                        height: 18,
+                                      ),
+                                      backgroundColor: Colors.white,
+                                      onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+                                      hasPadding: true,
+                                    ),
+                                  ),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 4,
+                                    ),
+                                    child: GeneralButton(
+                                      text: 'Sign in with Email',
+                                      color: Colors.white,
+                                      icon: const Icon(
+                                        CupertinoIcons.mail,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
+                                      backgroundColor: const Color(0xFF222222),
+                                      onPressed: _isLoading ? () {} : _showEmailSignInModal,
+                                      hasPadding: true,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                                    child: Text(
+                                      'Guest mode allows immediate listening with zero sign-in.\nSign in with your Nuance account to preserve your playlists in history.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.white.withOpacity(0.35),
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 4,
-                        ),
-                        child: GeneralButton(
-                          text: 'Continue with Google',
-                          color: Colors.black87,
-                          icon: SvgPicture.string(
-                            _googleLogoSvg,
-                            width: 18,
-                            height: 18,
-                          ),
-                          backgroundColor: Colors.white,
-                          onPressed: _isLoading ? () {} : _handleGoogleSignIn,
-                          hasPadding: true,
-                        ),
-                      ),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 4,
-                        ),
-                        child: GeneralButton(
-                          text: 'Sign in with Email',
-                          color: Colors.white,
-                          icon: const Icon(
-                            CupertinoIcons.mail,
-                            size: 18,
-                            color: Colors.white,
-                          ),
-                          backgroundColor: const Color(0xFF222222),
-                          onPressed: _isLoading ? () {} : _showEmailSignInModal,
-                          hasPadding: true,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(
-                          'Guest mode allows immediate listening with zero sign-in.\nSign in with your Nuance account to preserve your playlists in history.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.white.withOpacity(0.35),
-                            height: 1.3,
+                            ],
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ],
           ),

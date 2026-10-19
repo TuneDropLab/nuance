@@ -10,6 +10,8 @@ import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/models/playlist_model.dart';
 import 'package:nuance/services/itunes_service.dart';
+import 'package:nuance/services/geo_service.dart';
+import 'package:nuance/services/sonic_memory_service.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:share_plus/share_plus.dart';
@@ -541,12 +543,25 @@ class AllServices {
 
   Future<Map<String, dynamic>> getGeminiDiscover() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseURL/gemini/discover'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      final geoContext = await GeoService().resolveContext();
+      final recentArtists = await SonicMemoryService().getRecentArtists();
+      final recentGenres = await SonicMemoryService().getRecentGenres();
+
+      final response = await http
+          .post(
+            Uri.parse('$baseURL/gemini/discover'),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'city': geoContext.city,
+              'country': geoContext.country,
+              'localHour': DateTime.now().hour,
+              'recentArtists': recentArtists,
+              'recentGenres': recentGenres,
+            }),
+          )
+          .timeout(const Duration(seconds: 12));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -556,30 +571,73 @@ class AllServices {
         }
       }
     } catch (e) {
-      debugPrint("Error fetching Gemini discover: $e");
+      debugPrint("Error fetching contextual Gemini discover: $e");
     }
+
+    // Direct GET fallback
+    try {
+      final getRes = await http.get(
+        Uri.parse('$baseURL/gemini/discover'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 6));
+      if (getRes.statusCode == 200) {
+        final data = jsonDecode(getRes.body) as Map<String, dynamic>;
+        final prompts = data['prompts'] as List<dynamic>? ?? [];
+        if (prompts.isNotEmpty) {
+          return data;
+        }
+      }
+    } catch (_) {}
 
     return {
       'prompts': [
         {
           'type': 'prompt',
           'text': 'Late night highway drive with neon synthwave',
+          'category': 'temporal',
+          'bpm': 92,
+          'energy': 'Chill Drive',
           'image': 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&auto=format&fit=crop&q=80',
         },
         {
           'type': 'prompt',
           'text': 'High intensity gym pump with aggressive 808s',
+          'category': 'activity',
+          'bpm': 140,
+          'energy': 'Peak Hype',
           'image': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80',
         },
         {
           'type': 'prompt',
           'text': 'Sun-drenched Sunday morning acoustic coffeehouse',
+          'category': 'mood',
+          'bpm': 80,
+          'energy': 'Mellow Acoustic',
           'image': 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=80',
         },
         {
           'type': 'prompt',
           'text': 'West African summer rooftop afrobeats party',
+          'category': 'genre_fusion',
+          'bpm': 108,
+          'energy': 'Uptempo Dance',
           'image': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80',
+        },
+        {
+          'type': 'prompt',
+          'text': 'Cyberpunk neon alleyways pulsing under midnight rain',
+          'category': 'cinematic',
+          'bpm': 88,
+          'energy': 'Atmospheric Synth',
+          'image': 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
+        },
+        {
+          'type': 'prompt',
+          'text': 'Warm soul vibrations and dusty vinyl Rhodes keys',
+          'category': 'regional',
+          'bpm': 76,
+          'energy': 'Soulful Chill',
+          'image': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
         },
       ],
       'tags': ['Hip-Hop', 'Afrobeats', 'Synthwave', 'R&B', 'Lo-Fi', 'Trap', 'Acoustic', 'Indie']
