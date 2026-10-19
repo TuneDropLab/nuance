@@ -24,27 +24,35 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
   }
 
   Future<void> _checkSession() async {
-    final authService = ref.read(authServiceProvider);
-    final sessionMap = await authService.getSessionData();
+    Widget targetScreen = const LoginScreen();
+    try {
+      final authService = ref.read(authServiceProvider);
+      final sessionMap = await authService.getSessionData().timeout(
+        const Duration(milliseconds: 1000),
+        onTimeout: () => null,
+      );
 
-    // Only registered, authenticated account sessions auto-restore to HomeScreen
-    final bool hasAuthenticatedSession = sessionMap != null &&
-        sessionMap['access_token'] != null &&
-        !(sessionMap['access_token'] as String).startsWith('guest_') &&
-        sessionMap['user']?['id'] != 'guest_tester' &&
-        sessionMap['provider'] != 'guest';
+      // Only registered, authenticated account sessions auto-restore to HomeScreen
+      final bool hasAuthenticatedSession = sessionMap != null &&
+          sessionMap['access_token'] != null &&
+          !(sessionMap['access_token'] as String).startsWith('guest_') &&
+          sessionMap['user']?['id'] != 'guest_tester' &&
+          sessionMap['provider'] != 'guest';
 
-    final Widget targetScreen = hasAuthenticatedSession
-        ? const HomeScreen()
-        : const LoginScreen();
+      if (hasAuthenticatedSession) {
+        targetScreen = const HomeScreen();
+      }
+    } catch (e) {
+      debugPrint("InitialScreen session check error: $e");
+    }
 
-    Future.delayed(const Duration(milliseconds: 900), () {
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted) return;
       setState(() {
         _isCompleted = true;
       });
 
-      Future.delayed(const Duration(milliseconds: 400), () {
+      Future.delayed(const Duration(milliseconds: 200), () {
         if (!mounted) return;
         Navigator.of(context)
             .pushReplacement(_createFadeRoute(targetScreen));

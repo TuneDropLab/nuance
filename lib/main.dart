@@ -11,6 +11,8 @@ import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/services/all_services.dart';
+import 'package:nuance/screens/auth/login_screen.dart';
+import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/screens/onboarding_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
@@ -187,6 +189,15 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  bool get _hasAuthenticatedSession {
+    final s = widget.sessionData;
+    return s != null &&
+        s['access_token'] != null &&
+        !(s['access_token'] as String).startsWith('guest_') &&
+        s['user']?['id'] != 'guest_tester' &&
+        s['provider'] != 'guest';
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetCupertinoApp(
@@ -198,11 +209,11 @@ class _MyAppState extends State<MyApp> {
       ],
       debugShowCheckedModeBanner: false,
       title: 'Nuance',
-      home: _isFirstRun == null
-          ? OnboardingScreen(onComplete: _onboardingComplete)
-          : _isFirstRun!
+      home: kIsWeb
+          ? (_hasAuthenticatedSession ? const HomeScreen() : const LoginScreen())
+          : (_isFirstRun == null || _isFirstRun!
               ? OnboardingScreen(onComplete: _onboardingComplete)
-              : const InitialScreen(),
+              : const InitialScreen()),
       theme: AppTheme.lightTheme,
     );
   }
