@@ -426,6 +426,23 @@ class AllServices {
     }
   }
 
+  Future<Map<String, dynamic>> getGeminiDiscover() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseURL/gemini/discover'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      debugPrint("Error fetching Gemini discover: $e");
+    }
+    return {'prompts': [], 'tags': []};
+  }
+
   Future<List<String>> getTags(String accessToken) async {
     try {
       final response = await http.get(

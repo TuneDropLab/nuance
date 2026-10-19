@@ -12,13 +12,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/widgets/music_listtile.dart';
-import 'package:nuance/providers/auth_provider.dart';
-import 'package:nuance/providers/home_recommedations_provider.dart';
-import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/services/all_services.dart';
-import 'package:nuance/services/itunes_service.dart';
 import 'package:nuance/utils/theme.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
@@ -73,57 +69,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   List<dynamic> recommendations = [];
   List<dynamic> tags = [];
 
-  static final List<Map<String, dynamic>> itunesPromptCards = [
-    {
-      'type': 'prompt',
-      'text': 'Late night lo-fi hip hop study session',
-      'image': 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'type': 'prompt',
-      'text': 'High-energy gym workout with heavy 808s',
-      'image': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'type': 'prompt',
-      'text': 'Chill acoustic coffeehouse morning vibes',
-      'image': 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'type': 'prompt',
-      'text': 'Afrobeats summer sunset party anthems',
-      'image': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'type': 'prompt',
-      'text': '90s Golden Age boom bap hip hop classics',
-      'image': 'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'type': 'prompt',
-      'text': 'Synthwave night drive with retro 80s basslines',
-      'image': 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop&q=80',
-    },
-  ];
-
-  static const List<String> defaultMusicTags = [
-    'Hip-Hop',
-    'Trap',
-    'Lo-Fi',
-    'Afrobeats',
-    'R&B',
-    'Acoustic',
-    'Synthwave',
-    'Drill',
-    'Pop',
-    'Indie',
-  ];
-
   @override
   void initState() {
     super.initState();
     recommendations.clear();
-    tags = List.from(defaultMusicTags);
+    tags.clear();
     _scrollController.addListener(_onScroll);
     _fetchRecommendations();
   }
@@ -146,39 +96,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _fetchRecommendations() async {
     setState(() {
       recommendations.clear();
+      tags.clear();
       isLoading = true;
     });
     try {
-      final session = await ref.read(authServiceProvider).getSessionData();
-      final provider = session?['provider'];
+      final discover = await AllServices().getGeminiDiscover();
+      final geminiPrompts = discover['prompts'] as List<dynamic>? ?? [];
+      final geminiTags = discover['tags'] as List<dynamic>? ?? [];
 
-      if (provider == 'itunes' || provider == 'guest') {
+      if (mounted) {
         setState(() {
-          recommendations = List.from(itunesPromptCards);
-          if (tags.isEmpty) {
-            tags = List.from(defaultMusicTags);
-          }
+          recommendations = List.from(geminiPrompts);
+          tags = List.from(geminiTags);
           isLoading = false;
         });
-        return;
       }
-
-      final newRecommendations =
-          await ref.read(spotifyHomeRecommendationsProvider.future);
-
-      setState(() {
-        recommendations = List.from(newRecommendations);
-        isLoading = false;
-      });
     } catch (e) {
-      debugPrint("Using curated music prompt cards: $e");
-      setState(() {
-        recommendations = List.from(itunesPromptCards);
-        if (tags.isEmpty) {
-          tags = List.from(defaultMusicTags);
-        }
-        isLoading = false;
-      });
+      debugPrint("Error fetching Gemini dynamic discover: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -196,54 +130,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     });
 
     try {
-      final authService = ref.read(authServiceProvider);
-      final sessionData = await authService.getSessionData();
-
-      final provider = sessionData?['provider'];
-      if (provider == 'itunes' || provider == 'guest') {
-        final moreCards = [
-          {
-            'type': 'prompt',
-            'text': 'Melodic rap & emotional trap hits',
-            'image': 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop&q=80',
-          },
-          {
-            'type': 'prompt',
-            'text': 'Deep house & electronic groove midnight lounge',
-            'image': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop&q=80',
-          },
-          {
-            'type': 'prompt',
-            'text': 'Soulful neo-soul & jazz cafe essentials',
-            'image': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
-          },
-        ];
+      final discover = await AllServices().getGeminiDiscover();
+      final morePrompts = discover['prompts'] as List<dynamic>? ?? [];
+      if (morePrompts.isNotEmpty && mounted) {
         setState(() {
-          recommendations.addAll(moreCards);
+          recommendations.addAll(morePrompts);
           currentPage++;
           isMoreLoading = false;
         });
         return;
       }
-
-      final accessToken = sessionData?['access_token'] ?? '';
-
-      final newRecommendations =
-          await AllServices().getSpotifyHomeRecommendations(
-        accessToken,
-        provider,
-      );
-
-      setState(() {
-        recommendations = List.from(recommendations)
-          ..addAll(newRecommendations);
-        currentPage++;
-        isMoreLoading = false;
-      });
     } catch (e) {
-      debugPrint("More cards loaded: $e");
-      currentPage++;
-      isMoreLoading = false;
+      debugPrint("More Gemini cards error: $e");
     } finally {
       if (mounted) {
         setState(() {
@@ -255,34 +153,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future onRefresh() async {
     setState(() {
-      ref.invalidate(spotifyHomeRecommendationsProvider);
       ref.invalidate(historyProvider);
-      tags.clear(); // Clear tags here as well
+      tags.clear();
+      recommendations.clear();
     });
 
-    await Future.delayed(const Duration(seconds: 2));
-    _fetchRecommendations();
+    await _fetchRecommendations();
   }
 
   @override
   Widget build(BuildContext context) {
     final sessionState = ref.watch(sessionProvider);
-    final tagsRecommendations = ref.watch(recommendationTagsProvider);
-
-    // Update the tags list when data is available
-    tagsRecommendations.when(
-      data: (data) {
-        setState(() {
-          tags = data; // Update the tags list with the fetched data
-        });
-      },
-      error: (error, stack) {
-        debugPrint("Error loading tags: $error");
-      },
-      loading: () {
-        // Optionally handle loading state
-      },
-    );
 
     final List<LinearGradient> cardGradients = List.generate(
       recommendations.length,
