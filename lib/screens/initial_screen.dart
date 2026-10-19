@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/providers/auth_provider.dart';
+import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/home_screen.dart';
 
@@ -25,7 +26,12 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
 
   Future<void> _checkSession() async {
     final authService = ref.read(authServiceProvider);
-    final sessionData = await authService.getSessionData();
+    var sessionData = await authService.getSessionData();
+
+    if (sessionData == null) {
+      await ref.read(sessionProvider.notifier).startGuestSession();
+      sessionData = await authService.getSessionData();
+    }
 
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
@@ -33,13 +39,8 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
       });
 
       Future.delayed(const Duration(seconds: 1), () {
-        if (sessionData != null) {
-          Navigator.of(context)
-              .pushReplacement(_createFadeRoute(const HomeScreen()));
-        } else {
-          Navigator.of(context)
-              .pushReplacement(_createFadeRoute(const LoginScreen()));
-        }
+        Navigator.of(context)
+            .pushReplacement(_createFadeRoute(const HomeScreen()));
       });
     });
   }

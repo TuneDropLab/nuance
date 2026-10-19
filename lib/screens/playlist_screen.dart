@@ -1720,29 +1720,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                     ],
                   ),
                 ),
-              if (sessionState.value?.accessToken == null)
-                Container(
-                  width: Get.width,
-                  margin: const EdgeInsets.symmetric(horizontal: 15),
-                  child: CupertinoButton.filled(
-                    pressedOpacity: 0.3,
-                    onPressed: () {
-                      _authenticate();
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icon4star.svg',
-                          width: 10,
-                          height: 10,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('Sign in with Spotify'),
-                      ],
-                    ),
-                  ),
-                ),
+
             ],
           ),
         ),

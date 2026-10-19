@@ -42,12 +42,15 @@ class GeneralButton extends StatelessWidget {
         children: [
           if (icon != null) icon!,
           if (icon != null) const SizedBox(width: 8),
-          Text(
-            text as String,
-            style: TextStyle(
-              color: color,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          Flexible(
+            child: Text(
+              text as String,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
