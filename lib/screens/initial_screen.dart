@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nuance/providers/auth_provider.dart';
-import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/home_screen.dart';
 
@@ -26,21 +25,29 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
 
   Future<void> _checkSession() async {
     final authService = ref.read(authServiceProvider);
-    var sessionData = await authService.getSessionData();
+    final sessionMap = await authService.getSessionData();
 
-    if (sessionData == null) {
-      await ref.read(sessionProvider.notifier).startGuestSession();
-      sessionData = await authService.getSessionData();
-    }
+    // Only registered, authenticated account sessions auto-restore to HomeScreen
+    final bool hasAuthenticatedSession = sessionMap != null &&
+        sessionMap['access_token'] != null &&
+        !(sessionMap['access_token'] as String).startsWith('guest_') &&
+        sessionMap['user']?['id'] != 'guest_tester' &&
+        sessionMap['provider'] != 'guest';
 
-    Future.delayed(const Duration(seconds: 1), () {
+    final Widget targetScreen = hasAuthenticatedSession
+        ? const HomeScreen()
+        : const LoginScreen();
+
+    Future.delayed(const Duration(milliseconds: 900), () {
+      if (!mounted) return;
       setState(() {
         _isCompleted = true;
       });
 
-      Future.delayed(const Duration(seconds: 1), () {
+      Future.delayed(const Duration(milliseconds: 400), () {
+        if (!mounted) return;
         Navigator.of(context)
-            .pushReplacement(_createFadeRoute(const HomeScreen()));
+            .pushReplacement(_createFadeRoute(targetScreen));
       });
     });
   }

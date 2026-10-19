@@ -43,7 +43,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
 
   void _loadHistory() {
     _localHistory = []; // Clear local history
-    ref.read(historyProvider); // Trigger the provider to load data
+    ref.refresh(historyProvider); // Refresh the provider to load data
   }
 
   @override
@@ -142,11 +142,40 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                               _localHistory =
                                   history; // Update local history here
                               if (history.isEmpty) {
+                                final isGuest = widget.sessionState.value?.isGuest ?? true;
                                 return Center(
-                                  child: Text(
-                                    'Save your first playlist to see history',
-                                    style: subtitleTextStyle.copyWith(
-                                      color: Colors.white,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          CupertinoIcons.music_albums,
+                                          size: 44,
+                                          color: Colors.white.withOpacity(0.25),
+                                        ),
+                                        const SizedBox(height: 14),
+                                        Text(
+                                          isGuest
+                                              ? 'No saved playlists yet'
+                                              : 'Save your first playlist to see history',
+                                          style: subtitleTextStyle.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          isGuest
+                                              ? 'Your generated playlists will appear here during this listening session.'
+                                              : 'Your playlists sync to your account permanently across devices.',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            color: Colors.white.withOpacity(0.4),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
@@ -223,7 +252,7 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                                                   historyItem.searchQuery,
                                               sessionState: widget.sessionState,
                                               songs:
-                                                  historyItem.recommendations!,
+                                                  historyItem.recommendations ?? [],
                                               imageUrl: historyItem.imageUrl,
                                             ),
                                           );
@@ -261,14 +290,25 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Text(
-                                    'Error loading history',
-                                    style: TextStyle(color: Colors.red),
+                                  Icon(
+                                    Icons.cloud_off_rounded,
+                                    size: 36,
+                                    color: Colors.white.withOpacity(0.3),
                                   ),
-                                  GeneralButton(
-                                    onPressed: _loadHistory,
-                                    text: "Retry",
-                                    backgroundColor: Colors.grey,
+                                  const SizedBox(height: 12),
+                                  const Text(
+                                    'Unable to load history',
+                                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  SizedBox(
+                                    width: 110,
+                                    height: 36,
+                                    child: GeneralButton(
+                                      onPressed: _loadHistory,
+                                      text: "Retry",
+                                      backgroundColor: Colors.grey.shade800,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -359,17 +399,16 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
         heading: "Delete ${historyItem.searchQuery}?",
         subtitle: "Are you sure you want to delete this item?",
         confirmText: "Delete",
-        onConfirm: () {
+        onConfirm: () async {
           Get.back();
           setState(() {
             _localHistory.remove(historyItem);
           });
 
-          AllServices().deleteHistory(
-            widget.sessionState.value?.accessToken ?? "",
-            historyItem.id ?? 0,
-          );
-          _loadHistory();
+          if (historyItem.id != null) {
+            await ref.read(deleteHistoryEntryProvider(historyItem.id!).future);
+          }
+          ref.refresh(historyProvider);
         },
       ),
     );

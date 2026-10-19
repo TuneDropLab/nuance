@@ -16,13 +16,36 @@ class HistoryModel {
   });
 
   factory HistoryModel.fromJson(Map<String, dynamic> json) {
+    final rawRecs = json['recommendations'];
+    List<SongModel> recsList = [];
+    if (rawRecs is List) {
+      recsList = rawRecs
+          .whereType<Map<String, dynamic>>()
+          .map((x) => SongModel.fromJson(x))
+          .toList();
+    }
+
+    DateTime parsedDate;
+    if (json['createdAt'] != null) {
+      parsedDate =
+          DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now();
+    } else {
+      parsedDate = DateTime.now();
+    }
+
+    int? parsedId;
+    if (json['id'] != null) {
+      parsedId = json['id'] is int
+          ? json['id'] as int
+          : int.tryParse(json['id'].toString());
+    }
+
     return HistoryModel(
-      id: json['id'],
-      searchQuery: json['searchQuery'],
-      recommendations: List<SongModel>.from(
-          json['recommendations'].map((x) => SongModel.fromJson(x))),
-      imageUrl: json['image'],
-      createdAt: DateTime.parse(json['createdAt']),
+      id: parsedId,
+      searchQuery: json['searchQuery']?.toString(),
+      recommendations: recsList,
+      imageUrl: json['image']?.toString() ?? json['imageUrl']?.toString(),
+      createdAt: parsedDate,
     );
   }
 }

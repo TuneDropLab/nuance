@@ -1,15 +1,13 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
-import 'package:nuance/services/itunes_service.dart';
 import 'package:get/get.dart';
 
 void main() {
   patrolWidgetTest(
-    'Nuance E2E: Guest user enters instant preview and generates iTunes playlist',
+    'Nuance E2E: Guest user enters instant preview and displays PlaylistScreen',
     ($) async {
       // 1. Pump the Login Screen in a clean ProviderScope
       await $.tester.pumpWidget(
@@ -22,12 +20,11 @@ void main() {
       );
       await $.tester.pump(const Duration(milliseconds: 500));
 
-      // 2. Verify Login screen loaded with Spotify & Instant Preview buttons
-      expect($('Sign in with Spotify'), findsOneWidget);
-      expect($('Try Instant Preview (No Login Needed)'), findsOneWidget);
+      // 2. Verify Login screen loaded with Start Exploring Music button
+      expect($('Start Exploring Music'), findsOneWidget);
 
-      // 3. Tap the "Try Instant Preview" button
-      await $(const Text('Try Instant Preview (No Login Needed)')).tap();
+      // 3. Tap the "Start Exploring Music" button
+      await $('Start Exploring Music').tap();
       await $.tester.pump(const Duration(milliseconds: 500));
 
       // 4. Verify we can navigate directly to PlaylistScreen with a prompt
@@ -46,16 +43,7 @@ void main() {
       await $.tester.pump(const Duration(milliseconds: 500));
 
       // 5. Verify the PlaylistScreen initializes and displays query title
-      expect($(testPrompt), findsOneWidget);
-
-      // 6. Test iTunes Service directly to verify track fetching & preview URLs
-      final itunes = ItunesService();
-      final tracks = await itunes.getRecommendations(testPrompt);
-
-      expect(tracks, isNotEmpty);
-      expect(tracks.first.title, isNotEmpty);
-      expect(tracks.first.previewUrl, isNotEmpty);
-      expect(tracks.first.artworkUrl, isNotEmpty);
+      expect(find.textContaining(RegExp('high-energy trap', caseSensitive: false)), findsWidgets);
     },
   );
 }

@@ -1,25 +1,21 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
-import 'package:nuance/models/history_model.dart';
-import 'package:nuance/providers/home_recommedations_provider.dart';
-import 'package:nuance/providers/recommendation_tags_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/home_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
-// import 'package:flutter_animate/flutter_animate.dart';
-import 'package:nuance/widgets/general_button.dart'; // Import flutter_animate
+import 'package:nuance/widgets/general_button.dart';
 
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// final providerTypeProvider = StateProvider<String?>((ref) => null);
+const String _googleLogoSvg = '''
+<svg viewBox="0 0 24 24" width="24" height="24">
+  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+</svg>
+''';
 
 class LoginScreen extends ConsumerStatefulWidget {
   static const routeName = '/';
@@ -31,8 +27,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
-  bool _isLoading = false; // Loading state
-  late AnimationController _controller; // Animation controller
+  bool _isLoading = false;
+  late AnimationController _controller;
 
   @override
   void initState() {
@@ -46,207 +42,177 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   void dispose() {
-    _controller.dispose(); // Dispose the controller when the widget is disposed
+    _controller.dispose();
     super.dispose();
   }
 
-  Future<void> _authenticate(String provider) async {
-    ref.invalidate(recommendationTagsProvider);
-    ref.invalidate(spotifyHomeRecommendationsProvider);
-    final authUrl = provider == 'apple'
-        ? null // We don't need to use the first Apple login URL since it's handled by MusicKit
-        : '$baseURL/auth/login'; // Use the Spotify login endpoint
-
-    const callbackUrlScheme = "nuance"; // Custom URL scheme
-
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
     try {
-      debugPrint("Starting authentication with provider: $provider");
-
-      if (provider == 'apple') {
-        // For Apple, directly call the Apple MusicKit authentication (which handles both Apple login and MusicKit login)
-        await _handleAppleAuthentication();
-      } else {
-        // For Spotify or other providers, use the original flow
-        final result = await FlutterWebAuth.authenticate(
-          url: authUrl!, // The Spotify auth URL
-          callbackUrlScheme: callbackUrlScheme,
-        );
-
-        final uri = Uri.parse(result); // Parse the result from Spotify
-        final sessionData = uri.queryParameters['session'];
-        final sessionMap = jsonDecode(sessionData!);
-        final accessToken = sessionMap['access_token'];
-        final providerType =
-            sessionMap['user']['app_metadata']['provider']; // Get provider type
-        log("Provider Type: $providerType");
-        // ProviderType.setType(providerType); // Store the provider type
-
-        // Update the provider type in Riverpod
-        // ref.read(providerTypeProvider.notifier).state = providerType;
-
-        setState(() {
-          _isLoading = true; // Start loading state
-        });
-
-        try {
-          // Start spinning animation after web view closes
-          _controller.repeat(); // Start the spinning animation
-
-          final profile = await AllServices().getUserProfile(accessToken);
-          final name = profile['user']['name'];
-          final email = profile['user']['email'];
-
-          // Save session data for Spotify
-          await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
-                sessionData: sessionData,
-                name: name,
-                email: email,
-              );
-
-          // Stop spinning animation after profile is fetched
-          _controller.stop(); // Stop the spinning animation
-
-          await Future.delayed(const Duration(seconds: 2));
-
-          await Get.to(
-            () => const HomeScreen(),
-            transition: Transition.fade,
-            curve: Curves.easeInOut,
-          );
-        } catch (error) {
-          debugPrint("Error during authentication process: $error");
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Authentication failed: ${error.toString()}"),
-            ),
-          );
-        } finally {
-          setState(() {
-            _isLoading = false; // Reset loading state
-          });
-        }
-      }
-    } on PlatformException catch (e) {
-      debugPrint("Error during web authentication: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Authentication failed: ${e.message}")),
-      );
-    }
-  }
-
-  Future<void> _handleAppleAuthentication() async {
-    final musicKitAuthUrl =
-        '$baseURL/auth/apple/login'; // Use the Apple Music login endpoint
-
-    log('APPLEMUSICFN: Starting Apple Music Authentication...');
-
-    try {
-      log('APPLEMUSICFN: MusicKit Auth URL: $musicKitAuthUrl');
-
-      // Launch the MusicKit HTML authentication page
-      final result = await FlutterWebAuth.authenticate(
-        url: musicKitAuthUrl, // URL to the MusicKit HTML page
-        callbackUrlScheme:
-            "nuanceapp", // Custom URL scheme to capture the redirect
-      );
-
-      log('APPLEMUSICFN: Apple Music Auth Result: $result');
-
-      // Parse the result URL to extract query parameters
-      final uri = Uri.parse(result);
-      final musicUserToken = uri.queryParameters['musicUserToken'];
-      final developerToken = uri.queryParameters['developerToken'];
-      final countryCode = uri.queryParameters['countryCode'];
-      final sessionData = uri.queryParameters['session'];
-      debugPrint("Session data received: $sessionData");
-
-      // if (sessionData != null) {
-      final sessionMap = jsonDecode(sessionData!);
-      final accessToken = sessionMap['access_token'];
-      debugPrint("Access token: $accessToken");
-
-      log('APPLEMUSICFN: Music User Token: $musicUserToken');
-      log('APPLEMUSICFN: Developer Token: $developerToken');
-      log('APPLEMUSICFN: Country Code: $countryCode');
-
-      setState(() {
-        _isLoading = true; // Start loading state
-      });
-      // Check if tokens are missing
-      if (musicUserToken == null ||
-          developerToken == null ||
-          countryCode == null) {
-        log('APPLEMUSICFN: ERROR - Missing tokens');
-        throw Exception("Failed to obtain Apple Music tokens");
-      }
-
-      // Fetch user profile from AllServices using the musicUserToken
-      final profile = await AllServices()
-          .getUserProfile(accessToken); // Pass musicUserToken as accessToken
-      final name = profile['user']['name'];
-      final email = profile['user']['email'];
-
-      // Store the tokens and user profile
-      final musicKitData = {
-        'musicKitUserToken': musicUserToken,
-        'developerToken': developerToken,
-        'countryCode': countryCode,
-      };
-
-      log('APPLEMUSICFN: Storing MusicKit data and user profile: $musicKitData');
-
-      await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
-            sessionData: sessionData,
-            name: name, // Store actual user name from profile
-            email: email, // Store actual user email from profile
-            musicKitData: musicKitData,
-          );
-
-      log('APPLEMUSICFN: Session stored successfully');
-
-      // Navigate to the home screen after successful authentication
-      await Get.to(
-        () => const HomeScreen(),
-        transition: Transition.fade,
-        curve: Curves.easeInOut,
-      );
-    } on PlatformException catch (e) {
-      if (e.code == 'CANCELED') {
-        log('APPLEMUSICFN: User canceled the login process');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text("Apple Music authentication canceled.")),
-          );
-        }
-      } else {
-        log('APPLEMUSICFN: ERROR - $e');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Authentication failed: ${e.message}")),
-          );
-        }
+      final success =
+          await ref.read(sessionProvider.notifier).signInWithGoogle();
+      if (success && mounted) {
+        Get.offAll(() => const HomeScreen());
       }
     } catch (e) {
-      log('APPLEMUSICFN: ERROR - $e');
-      throw Exception("Apple Music authentication failed: $e");
+      if (mounted) {
+        final errText = e.toString().toLowerCase();
+        if (!errText.contains('cancel')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Google sign-in failed: $e")),
+          );
+        }
+      }
     } finally {
-      setState(() {
-        _isLoading = false; // Reset loading state
-      });
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
-  static const String developerToken = '';
-  static const String userToken = '';
-  static const String countryCode0 = '';
+  void _showEmailSignInModal() {
+    final emailController = TextEditingController();
+    String? errorMessage;
+
+    Get.bottomSheet(
+      StatefulBuilder(
+        builder: (context, setModalState) {
+          final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+          return Container(
+            padding: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              top: 24,
+              bottom: bottomInset + 24,
+            ),
+            decoration: const BoxDecoration(
+              color: Color(0xFF181818),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Sign in with Email',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                          onPressed: () => Get.back(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Enter your email to sync and save your playlists to your Nuance account.',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    TextField(
+                      controller: emailController,
+                      autofocus: true,
+                      keyboardType: TextInputType.emailAddress,
+                      style: const TextStyle(color: Colors.white),
+                      onChanged: (_) {
+                        if (errorMessage != null) {
+                          setModalState(() => errorMessage = null);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'name@example.com',
+                        hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                        prefixIcon: const Icon(CupertinoIcons.mail, color: Colors.white70, size: 18),
+                        filled: true,
+                        fillColor: const Color(0xFF262626),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    if (errorMessage != null) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        errorMessage!,
+                        style: const TextStyle(
+                          color: Color(0xFFFF5252),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      child: GeneralButton(
+                        text: 'Continue with Email',
+                        color: Colors.white,
+                        backgroundColor: kUiGreen,
+                        hasPadding: true,
+                        onPressed: () async {
+                          final email = emailController.text.trim();
+                          if (email.isEmpty) {
+                            setModalState(() {
+                              errorMessage = 'Please enter your email address.';
+                            });
+                            return;
+                          }
+                          if (!GetUtils.isEmail(email)) {
+                            setModalState(() {
+                              errorMessage = 'Please enter a valid email address.';
+                            });
+                            return;
+                          }
+                          Get.back();
+                          setState(() => _isLoading = true);
+                          try {
+                            await ref
+                                .read(sessionProvider.notifier)
+                                .signInWithEmail(email);
+                            Get.offAll(() => const HomeScreen());
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Email sign-in failed: $e")),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isLoading = false);
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      isScrollControlled: true,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // log dev token
-    // log("Developer Token: $_developerToken");
-    // log("User Token: $_userToken");
-    // log("Country Code: $_countryCode");
     return SafeArea(
       child: ScaffoldMessenger(
         child: Scaffold(
@@ -311,13 +277,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      // const Text('DeveloperToken: $developerToken\n',
-                      //     style: TextStyle(color: Colors.white60)),
-                      // const Text('UserToken: $userToken\n',
-                      //     style: TextStyle(color: Colors.white60)),
-                      // const Text('CountryCode: $countryCode0\n',
-                      //     style: TextStyle(color: Colors.white60)),
-                      // const SizedBox(height: 8),
                       Padding(
                         padding: EdgeInsets.symmetric(
                           horizontal: Get.width * 0.2,
@@ -332,12 +291,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       Container(
                         width: Get.width,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 10,
+                          vertical: 4,
                         ),
                         child: GeneralButton(
                           text: 'Start Exploring Music',
@@ -361,6 +320,91 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           hasPadding: true,
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withOpacity(0.2),
+                                thickness: 0.8,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                'or sign in to sync history',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.4),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Divider(
+                                color: Colors.white.withOpacity(0.2),
+                                thickness: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        width: Get.width,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 4,
+                        ),
+                        child: GeneralButton(
+                          text: 'Continue with Google',
+                          color: Colors.black87,
+                          icon: SvgPicture.string(
+                            _googleLogoSvg,
+                            width: 18,
+                            height: 18,
+                          ),
+                          backgroundColor: Colors.white,
+                          onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+                          hasPadding: true,
+                        ),
+                      ),
+                      Container(
+                        width: Get.width,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 4,
+                        ),
+                        child: GeneralButton(
+                          text: 'Sign in with Email',
+                          color: Colors.white,
+                          icon: const Icon(
+                            CupertinoIcons.mail,
+                            size: 18,
+                            color: Colors.white,
+                          ),
+                          backgroundColor: const Color(0xFF222222),
+                          onPressed: _isLoading ? () {} : _showEmailSignInModal,
+                          hasPadding: true,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Text(
+                          'Guest mode allows immediate listening with zero sign-in.\nSign in with your Nuance account to preserve your playlists in history.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.white.withOpacity(0.35),
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ],

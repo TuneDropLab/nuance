@@ -15,9 +15,13 @@ final playlistProvider = FutureProvider<List<dynamic>>((ref) async {
       throw Exception('User not authenticated');
     }
 
-    final userId = sessionData['user']["user_metadata"]["provider_id"];
-    final accessToken = sessionData['access_token'];
-    final providerType = sessionData['user']['app_metadata']['provider'];
+    final userId = sessionData['user']?["user_metadata"]?["provider_id"] ??
+        sessionData['user']?['id'] ??
+        '';
+    final accessToken = sessionData['access_token'] ?? '';
+    final providerType = sessionData['user']?['app_metadata']?['provider'] ??
+        sessionData['user']?['provider'] ??
+        'google';
     final playlists =
         await AllServices().getPlaylists(accessToken, userId, providerType);
     return playlists;
@@ -36,8 +40,12 @@ final createPlaylistProvider = FutureProvider.family<dynamic, Map<String, String
       throw Exception('User not authenticated');
     }
 
-    final providerType = sessionData['user']['app_metadata']['provider'];
-    final userId = sessionData['user']["user_metadata"]["provider_id"];
+    final providerType = sessionData['user']?['app_metadata']?['provider'] ??
+        sessionData['user']?['provider'] ??
+        'google';
+    final userId = sessionData['user']?["user_metadata"]?["provider_id"] ??
+        sessionData['user']?['id'] ??
+        '';
     log("(createPlaylistProviderFN) providerType 22222222: $providerType");
     log("(createPlaylistProviderFN) Name: $data");
     log("(createPlaylistProviderFN) Description: ${data['description']}");

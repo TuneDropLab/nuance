@@ -57,4 +57,96 @@ class ItunesService {
 
     return searchTracks(keywords.isNotEmpty ? keywords : "trending", limit: 15);
   }
+
+  /// Resolve a list of Gemini recommendation titles & artists into playable iTunes preview tracks
+  Future<List<SongModel>> resolveRecommendations(
+      List<dynamic> recommendations) async {
+    final List<SongModel> resolved = [];
+    final Set<String> seenIds = {};
+
+    for (final item in recommendations) {
+      String? title;
+      String? artist;
+      if (item is Map) {
+        title = item['title']?.toString();
+        artist = item['artist']?.toString();
+      } else {
+        try {
+          title = item.title?.toString();
+          artist = item.artist?.toString();
+        } catch (_) {}
+      }
+
+      if (title == null || title.isEmpty) continue;
+      final term = artist != null && artist.isNotEmpty
+          ? "$title $artist"
+          : title;
+
+      final results = await searchTracks(term, limit: 3);
+      for (final song in results) {
+        final id = song.trackId ?? "${song.title}_${song.artist}";
+        if (!seenIds.contains(id) && (song.previewUrl?.isNotEmpty ?? false)) {
+          seenIds.add(id);
+          resolved.add(song);
+          break; // Got best match for this recommendation
+        }
+      }
+
+      if (resolved.length >= 20) break;
+    }
+
+    return resolved;
+  }
+
+  /// Generate more recommendations based on existing songs or search prompt
+  Future<List<SongModel>> getMoreRecommendations({
+    String? prompt,
+    List<SongModel>? currentSongs,
+    int limit = 15,
+  }) async {
+    final Set<String> existingIds = (currentSongs ?? [])
+        .map((s) => s.trackId ?? "${s.title}_${s.artist}".toLowerCase())
+        .toSet();
+
+    final List<SongModel> moreTracks = [];
+
+    // 1. If we have seed songs, search by seed artists/titles
+    if (currentSongs != null && currentSongs.isNotEmpty) {
+      final sampleSeeds = List<SongModel>.from(currentSongs)..shuffle();
+      for (final seed in sampleSeeds.take(3)) {
+        final query = seed.artist ?? seed.title ?? "";
+        if (query.isNotEmpty) {
+          final tracks = await searchTracks(query, limit: 10);
+          for (final t in tracks) {
+            final id = t.trackId ?? "${t.title}_${t.artist}".toLowerCase();
+            if (!existingIds.contains(id)) {
+              existingIds.add(id);
+              moreTracks.add(t);
+              if (moreTracks.length >= limit) return moreTracks;
+            }
+          }
+        }
+      }
+    }
+
+    // 2. If not enough, search based on prompt
+    if (moreTracks.length < limit && prompt != null && prompt.isNotEmpty) {
+      final promptTracks = await searchTracks(prompt, limit: 20);
+      for (final t in promptTracks) {
+        final id = t.trackId ?? "${t.title}_${t.artist}".toLowerCase();
+        if (!existingIds.contains(id)) {
+          existingIds.add(id);
+          moreTracks.add(t);
+          if (moreTracks.length >= limit) return moreTracks;
+        }
+      }
+    }
+
+    // 3. Fallback to trending
+    if (moreTracks.isEmpty) {
+      return searchTracks("top hits", limit: limit);
+    }
+
+    return moreTracks;
+  }
 }

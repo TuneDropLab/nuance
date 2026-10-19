@@ -13,8 +13,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:get/get.dart';
 // import 'package:music_kit/music_kit.dart';
+import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/models/song_model.dart';
+import 'package:nuance/providers/history_provider.dart';
 import 'package:nuance/providers/playlist_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/providers/add_tracks_provider.dart';
@@ -778,12 +780,48 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               playlistImage = result['playlistImage'] as String?;
               recommendations = result['playlistTracks'] as List<SongModel>;
               dev.log("Playlist image: $playlistImage");
-              dev.log(
-                  "Playlist tracks: ${recommendations?.map((e) => e.toJson()).toList()}");
             }
           }
           isLoading = false;
         });
+
+        // Record to history (backend for authenticated, local for guest)
+        if (recommendations != null && recommendations!.isNotEmpty) {
+          final queryTitle = widget.searchTitle ??
+              widget.searchQuery ??
+              widget.tagQuery ??
+              "Top Hits";
+          final activeSession = ref.read(sessionProvider).value;
+          final isGuest = activeSession?.isGuest ?? true;
+          final finalImage = playlistImage ?? generatedImage ?? widget.imageUrl;
+
+          if (!isGuest &&
+              activeSession != null &&
+              activeSession.accessToken.isNotEmpty) {
+            AllServices()
+                .saveHistory(
+                  activeSession.accessToken,
+                  queryTitle,
+                  finalImage,
+                  recommendations!,
+                )
+                .then((_) => ref.invalidate(historyProvider));
+          } else {
+            ref.read(guestHistoryProvider.notifier).update((list) {
+              final newItem = HistoryModel(
+                id: DateTime.now().millisecondsSinceEpoch,
+                searchQuery: queryTitle,
+                recommendations: recommendations,
+                imageUrl: finalImage,
+                createdAt: DateTime.now(),
+              );
+              return [
+                newItem,
+                ...list.where((item) => item.searchQuery != queryTitle),
+              ];
+            });
+          }
+        }
       }
     } catch (e) {
       dev.log("Error occurred: $e");
@@ -885,6 +923,42 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
             _isGeneratingMore = false;
             debugPrint("Generating more set to2: $_isGeneratingMore");
           });
+
+          // Update history with boosted song list
+          final queryTitle = widget.searchTitle ??
+              widget.searchQuery ??
+              widget.tagQuery ??
+              "Top Hits";
+          final activeSession = ref.read(sessionProvider).value;
+          final isGuest = activeSession?.isGuest ?? true;
+          final finalImage = playlistImage ?? generatedImage ?? widget.imageUrl;
+
+          if (!isGuest &&
+              activeSession != null &&
+              activeSession.accessToken.isNotEmpty) {
+            AllServices()
+                .saveHistory(
+                  activeSession.accessToken,
+                  queryTitle,
+                  finalImage,
+                  recommendations!,
+                )
+                .then((_) => ref.invalidate(historyProvider));
+          } else {
+            ref.read(guestHistoryProvider.notifier).update((list) {
+              final newItem = HistoryModel(
+                id: DateTime.now().millisecondsSinceEpoch,
+                searchQuery: queryTitle,
+                recommendations: recommendations,
+                imageUrl: finalImage,
+                createdAt: DateTime.now(),
+              );
+              return [
+                newItem,
+                ...list.where((item) => item.searchQuery != queryTitle),
+              ];
+            });
+          }
         } else {
           CustomSnackbar().show("No recommendations generated");
         }
@@ -1351,7 +1425,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                               size: 18,
                               color: Colors.grey.shade800,
                             ),
-                            onPressed: () {
+                            onPressed: () async {
                               setState(() {
                                 isLoading = true;
                               });
@@ -1359,6 +1433,52 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                               final description =
                                   descriptionController.text.trim();
                               if (name.isNotEmpty) {
+                                final currentSession = widget.sessionState?.value ??
+                                    ref.read(sessionProvider).value;
+                                final isGoogleOrEmail =
+                                    currentSession?.provider == 'google' ||
+                                    currentSession?.provider == 'email';
+                                final isGuest = currentSession?.isGuest ?? true;
+
+                                if (isGoogleOrEmail || isGuest || currentSession == null) {
+                                  final queryTitle = name;
+                                  final finalImage = widget.imageUrl ?? generatedImage ?? "";
+
+                                  if (!isGuest &&
+                                      currentSession != null &&
+                                      currentSession.accessToken.isNotEmpty) {
+                                    await AllServices().saveHistory(
+                                      currentSession.accessToken,
+                                      queryTitle,
+                                      finalImage,
+                                      recommendations ?? [],
+                                    );
+                                    ref.invalidate(historyProvider);
+                                  } else {
+                                    ref.read(guestHistoryProvider.notifier).update((list) {
+                                      final newItem = HistoryModel(
+                                        id: DateTime.now().millisecondsSinceEpoch,
+                                        searchQuery: queryTitle,
+                                        recommendations: recommendations,
+                                        imageUrl: finalImage,
+                                        createdAt: DateTime.now(),
+                                      );
+                                      return [
+                                        newItem,
+                                        ...list.where((item) => item.searchQuery != queryTitle),
+                                      ];
+                                    });
+                                  }
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Get.back(); // Close modal
+                                  CustomSnackbar().show(
+                                    'Playlist saved to your saved history!',
+                                  );
+                                  return;
+                                }
+
                                 final Map<String, String> data = {
                                   'name': name,
                                   'description': description.isEmpty
@@ -1480,73 +1600,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
     }
   }
 
-  Future<void> _authenticate() async {
-    final authUrl = '$baseURL/auth/login';
-    const callbackUrlScheme = "nuance";
 
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // First, initialize MusicKit
-      // await _initializeMusicKit();
-
-      final result = await FlutterWebAuth.authenticate(
-        url: authUrl,
-        callbackUrlScheme: callbackUrlScheme,
-      );
-
-      final uri = Uri.parse(result);
-      final sessionData = uri.queryParameters['session'];
-
-      if (sessionData != null) {
-        final sessionMap = jsonDecode(sessionData);
-        final accessToken = sessionMap['access_token'];
-
-        try {
-          final profile = await service.getUserProfile(accessToken);
-          final name = profile['user']['name'];
-          final email = profile['user']['email'];
-
-          // Request MusicKit user token
-          // final musicKitUserToken = await _requestMusicKitUserToken();
-
-          // final musicKitData = {
-          //   'musicKitUserToken': musicKitUserToken,
-          //   'developerToken': _developerToken,
-          //   'countryCode': _countryCode,
-          // };
-
-          // await ref.read(sessionProvider.notifier).storeSessionAndSaveToState(
-          //       sessionData: sessionData,
-          //       name: name,
-          //       email: email,
-          //       musicKitData: musicKitData,
-          //     );
-
-          await Get.to(
-            () => const HomeScreen(),
-            transition: Transition.fade,
-            curve: Curves.easeInOut,
-          );
-        } catch (error) {
-          debugPrint("Error in profile fetching or MusicKit process: $error");
-          _showErrorSnackBar("Error in authentication process: $error");
-        }
-      }
-    } on PlatformException catch (e) {
-      debugPrint("PlatformException in authentication: ${e.message}");
-      _showErrorSnackBar("Authentication failed: ${e.message}");
-    } catch (e) {
-      debugPrint("Unexpected error in authentication: $e");
-      _showErrorSnackBar("Unexpected error occurred");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
 
   // Future<void> _initializeMusicKit() async {
   //   try {

@@ -49,6 +49,8 @@ class SongModel {
     this.createdAt,
   });
 
+  String? get trackId => id;
+
   factory SongModel.fromItunes(Map<String, dynamic> json) {
     final artwork = (json['artworkUrl100'] as String?)
             ?.replaceAll('100x100bb', '600x600bb') ??

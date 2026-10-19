@@ -7,19 +7,41 @@ class AuthService {
   AuthService(this.secureStorage);
 
   Future<void> storeSessionData(String sessionData) async {
-    final sessionJson = jsonDecode(sessionData);
-    await secureStorage.write(
-        key: 'access_token', value: sessionJson['access_token']);
-    await secureStorage.write(
-        key: 'refresh_token', value: sessionJson['refresh_token']);
-    await secureStorage.write(
-        key: 'provider_token', value: sessionJson['provider_token']);
-    await secureStorage.write(
-        key: 'expires_at', value: sessionJson['expires_at'].toString());
-    await secureStorage.write(
-        key: 'user', value: jsonEncode(sessionJson['user']));
-    await secureStorage.write(
-        key: 'provider', value: sessionJson['provider']?.toString() ?? 'itunes');
+    final sessionJson = jsonDecode(sessionData) as Map<String, dynamic>;
+    final accessToken =
+        sessionJson['access_token'] ?? sessionJson['accessToken'];
+    final refreshToken =
+        sessionJson['refresh_token'] ?? sessionJson['refreshToken'];
+    final providerToken =
+        sessionJson['provider_token'] ?? sessionJson['providerToken'];
+    final expiresAt = sessionJson['expires_at'] ?? sessionJson['expiresAt'];
+    final user = sessionJson['user'];
+    final provider = sessionJson['provider'] ??
+        ((user is Map && user['app_metadata'] is Map)
+            ? (user['app_metadata'] as Map)['provider']
+            : null) ??
+        'google';
+
+    if (accessToken != null) {
+      await secureStorage.write(
+          key: 'access_token', value: accessToken.toString());
+    }
+    if (refreshToken != null) {
+      await secureStorage.write(
+          key: 'refresh_token', value: refreshToken.toString());
+    }
+    if (providerToken != null) {
+      await secureStorage.write(
+          key: 'provider_token', value: providerToken.toString());
+    }
+    if (expiresAt != null) {
+      await secureStorage.write(
+          key: 'expires_at', value: expiresAt.toString());
+    }
+    if (user != null) {
+      await secureStorage.write(key: 'user', value: jsonEncode(user));
+    }
+    await secureStorage.write(key: 'provider', value: provider.toString());
   }
 
   Future<Map<String, dynamic>?> getSessionData() async {
@@ -30,17 +52,24 @@ class AuthService {
     final user = await secureStorage.read(key: 'user');
     final provider = await secureStorage.read(key: 'provider');
 
-    if (accessToken != null &&
-        refreshToken != null &&
-        expiresAt != null &&
-        user != null) {
+    if (accessToken != null && user != null) {
+      int expiryMs = 0;
+      if (expiresAt != null) {
+        final parsed = int.tryParse(expiresAt);
+        if (parsed != null) {
+          expiryMs = parsed < 10000000000 ? parsed * 1000 : parsed;
+        } else {
+          expiryMs = DateTime.tryParse(expiresAt)?.millisecondsSinceEpoch ?? 0;
+        }
+      }
+
       return {
         'access_token': accessToken,
-        'refresh_token': refreshToken,
-        'provider_token': providerToken,
-        'expires_at': int.parse(expiresAt),
+        'refresh_token': refreshToken ?? '',
+        'provider_token': providerToken ?? '',
+        'expires_at': expiryMs,
         'user': jsonDecode(user),
-        'provider': provider,
+        'provider': provider ?? 'google',
       };
     }
     return null;

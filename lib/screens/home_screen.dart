@@ -13,6 +13,7 @@ import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/widgets/music_listtile.dart';
 import 'package:nuance/providers/session_notifier.dart';
+import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/theme.dart';
@@ -227,6 +228,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             backgroundColor: Colors.black,
             title: sessionState.when(
               data: (data) {
+                final userMetadata =
+                    data?.user["user_metadata"] as Map<String, dynamic>?;
+                final rawName = userMetadata?["full_name"]?.toString() ??
+                    data?.user["name"]?.toString() ??
+                    (data?.isGuest == true ? "Guest" : "User");
+                final firstName = rawName.trim().isNotEmpty
+                    ? rawName.trim().split(" ").first
+                    : (data?.isGuest == true ? "Guest" : "User");
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -279,7 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
                           child: Text(
-                            ' ${data?.user["user_metadata"]["full_name"].split(" ")[0]}',
+                            ' $firstName',
                             style: Theme.of(context)
                                 .textTheme
                                 .titleMedium!
@@ -681,20 +691,27 @@ Padding circularAvatar(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
                   confirmText: "Sign in",
                   onConfirm: () {
                     Get.back();
+                    Get.offAll(() => const LoginScreen());
                   },
                 ),
               );
             },
           );
         }
-        return CupertinoButton(
-          padding: const EdgeInsets.all(0),
-          onPressed: () {
-            globalKey.currentState!.openDrawer();
 
-            ref.invalidate(historyProvider);
-          },
-          child: CachedNetworkImage(
+        final userMetadata =
+            data.user["user_metadata"] as Map<String, dynamic>?;
+        final avatarUrl = userMetadata?["avatar_url"]?.toString() ?? "";
+        final fullName = userMetadata?["full_name"]?.toString() ??
+            data.user["name"]?.toString() ??
+            (data.isGuest ? "Guest Listener" : "Nuance User");
+        final initialLetter = fullName.isNotEmpty
+            ? fullName.substring(0, 1).toUpperCase()
+            : (data.isGuest ? "G" : "N");
+
+        Widget avatarWidget;
+        if (avatarUrl.isNotEmpty) {
+          avatarWidget = CachedNetworkImage(
             imageBuilder: (context, imageProvider) => Container(
               width: 40.0,
               height: 40.0,
@@ -706,47 +723,76 @@ Padding circularAvatar(AsyncValue<SessionData?> sessionState, WidgetRef ref) {
               ),
             ),
             fit: BoxFit.fill,
-            height: 150,
-            imageUrl: data.user["user_metadata"]["avatar_url"] ?? "",
+            height: 40,
+            imageUrl: avatarUrl,
             placeholder: (context, url) => const Center(
               child: CupertinoActivityIndicator(color: AppTheme.textColor),
             ),
-            errorWidget: (context, url, error) => GestureDetector(
-              child: Container(
-                width: 40.0,
-                height: 40.0,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.orange,
-                      Color.fromARGB(255, 255, 222, 59),
-                      Color.fromARGB(255, 225, 153, 47),
-                      Colors.red,
-                    ],
-                  ),
-                  color: Colors.orange,
+            errorWidget: (context, url, error) => Container(
+              width: 40.0,
+              height: 40.0,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.orange,
+                    Color.fromARGB(255, 255, 222, 59),
+                    Color.fromARGB(255, 225, 153, 47),
+                    Colors.red,
+                  ],
                 ),
-                child: Center(
-                  child: Text(
-                    data.user["user_metadata"]["full_name"]
-                        .toString()
-                        .substring(0, 1)
-                        .toUpperCase(),
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold),
-                  ),
+                color: Colors.orange,
+              ),
+              child: Center(
+                child: Text(
+                  initialLetter,
+                  style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
-              onTap: () {
-                globalKey.currentState!.openDrawer();
-              },
             ),
-          ),
+          );
+        } else {
+          avatarWidget = Container(
+            width: 40.0,
+            height: 40.0,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.orange,
+                  Color.fromARGB(255, 255, 222, 59),
+                  Color.fromARGB(255, 225, 153, 47),
+                  Colors.red,
+                ],
+              ),
+              color: Colors.orange,
+            ),
+            child: Center(
+              child: Text(
+                initialLetter,
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          );
+        }
+
+        return CupertinoButton(
+          padding: const EdgeInsets.all(0),
+          onPressed: () {
+            globalKey.currentState!.openDrawer();
+            ref.invalidate(historyProvider);
+          },
+          child: avatarWidget,
         );
       },
       loading: () => const Center(

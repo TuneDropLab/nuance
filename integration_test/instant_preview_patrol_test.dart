@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:patrol/patrol.dart';
+import 'package:patrol_finders/patrol_finders.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:nuance/services/itunes_service.dart';
 import 'package:get/get.dart';
 
 void main() {
-  patrolTest(
+  patrolWidgetTest(
     'Nuance E2E: Guest user enters instant preview and generates iTunes playlist',
     ($) async {
       // 1. Pump the Login Screen in a clean ProviderScope
-      await $.pumpWidgetAndSettle(
+      await $.tester.pumpWidget(
         const ProviderScope(
           child: GetMaterialApp(
             debugShowCheckedModeBanner: false,
@@ -20,18 +20,18 @@ void main() {
           ),
         ),
       );
+      await $.tester.pump(const Duration(milliseconds: 500));
 
-      // 2. Verify Login screen loaded with Spotify & Instant Preview buttons
-      expect($('Sign in with Spotify'), findsOneWidget);
-      expect($('Try Instant Preview (No Login Needed)'), findsOneWidget);
+      // 2. Verify Login screen loaded with Start Exploring Music button
+      expect($('Start Exploring Music'), findsOneWidget);
 
-      // 3. Tap the "Try Instant Preview" button
-      await $(const Text('Try Instant Preview (No Login Needed)')).tap();
-      await $.pumpAndSettle();
+      // 3. Tap the "Start Exploring Music" button
+      await $('Start Exploring Music').tap();
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       // 4. Verify we can navigate directly to PlaylistScreen with a prompt
       const testPrompt = 'high-energy trap with a dark edge';
-      await $.pumpWidgetAndSettle(
+      await $.tester.pumpWidget(
         ProviderScope(
           child: GetMaterialApp(
             debugShowCheckedModeBanner: false,
@@ -42,6 +42,7 @@ void main() {
           ),
         ),
       );
+      await $.tester.pump(const Duration(milliseconds: 500));
 
       // 5. Verify the PlaylistScreen initializes and displays query title
       expect($(testPrompt), findsOneWidget);

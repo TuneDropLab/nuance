@@ -82,7 +82,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 );
               }
 
-              nameController.text = data.user["user_metadata"]["full_name"];
+              final fullName = data.user["user_metadata"]?["full_name"]?.toString() ??
+                  data.user["name"]?.toString() ??
+                  (data.isGuest ? "Guest Listener" : "Nuance User");
+              nameController.text = fullName;
+              final avatarUrl = data.user["user_metadata"]?["avatar_url"]?.toString();
 
               return Column(
                 children: [
@@ -94,112 +98,90 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         Center(
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 15),
-                            child: sessionState.when(
-                              data: (data) {
-                                if (data == null) {
-                                  return GestureDetector(
-                                    child: Container(
-                                      width: 140.0,
-                                      height: 140.0,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.orange,
-                                            Color.fromARGB(255, 255, 222, 59),
-                                            Color.fromARGB(255, 225, 153, 47),
-                                            Colors.red,
-                                          ],
+                            child: (avatarUrl != null && avatarUrl.isNotEmpty)
+                                ? CupertinoButton(
+                                    padding: const EdgeInsets.all(0),
+                                    onPressed: () {},
+                                    child: CachedNetworkImage(
+                                      imageBuilder: (context, imageProvider) =>
+                                          CircleAvatar(
+                                        radius: 70,
+                                        backgroundImage: imageProvider,
+                                        backgroundColor: Colors.grey,
+                                      ),
+                                      fit: BoxFit.fill,
+                                      height: 150,
+                                      imageUrl: avatarUrl,
+                                      placeholder: (context, url) => const Center(
+                                        child: CupertinoActivityIndicator(
+                                            color: AppTheme.textColor),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          CircleAvatar(
+                                        radius: 70,
+                                        backgroundColor: Colors.grey.shade900,
+                                        child: const Icon(
+                                          Icons.person,
+                                          size: 70,
+                                          color: Colors.white,
                                         ),
-                                        color: Colors.orange,
                                       ),
                                     ),
-                                    onTap: () {},
-                                  );
-                                }
-
-                                return CupertinoButton(
-                                  padding: const EdgeInsets.all(0),
-                                  onPressed: () {},
-                                  child: CachedNetworkImage(
-                                    imageBuilder: (context, imageProvider) =>
-                                        CircleAvatar(
-                                      radius: 70,
-                                      backgroundImage: imageProvider,
-                                      backgroundColor: Colors.grey,
-                                    ),
-                                    fit: BoxFit.fill,
-                                    height: 150,
-                                    imageUrl: data.user["user_metadata"]
-                                            ["avatar_url"] ??
-                                        "",
-                                    placeholder: (context, url) => const Center(
-                                      child: CupertinoActivityIndicator(
-                                          color: AppTheme.textColor),
-                                    ),
-                                    errorWidget: (context, url, error) =>
-                                        GestureDetector(
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                            colors: [
-                                              Colors.orange,
-                                              Color.fromARGB(255, 255, 222, 59),
-                                              Color.fromARGB(255, 225, 153, 47),
-                                              Colors.red,
-                                            ],
-                                          ),
-                                          color: Colors.orange,
-                                        ),
-                                        child: CircleAvatar(
-                                          radius: 70,
-                                          backgroundColor: Colors.transparent,
-                                          child: Center(
-                                            child: Text(
-                                              data.user["user_metadata"]
-                                                      ["full_name"]
-                                                  .toString()
-                                                  .substring(0, 1)
-                                                  .toUpperCase(),
-                                              style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 64,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ),
-                                        ),
+                                  )
+                                : Container(
+                                    width: 120.0,
+                                    height: 120.0,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.grey.shade900,
+                                      border: Border.all(
+                                        color: data.isGuest
+                                            ? kUiGreen
+                                            : Colors.white24,
+                                        width: 2,
                                       ),
+                                    ),
+                                    child: Icon(
+                                      data.isGuest
+                                          ? Icons.headphones
+                                          : Icons.person,
+                                      size: 55,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                );
-                              },
-                              loading: () => const Center(
-                                child: CupertinoActivityIndicator(
-                                    color: AppTheme.textColor),
-                              ),
-                              error: (error, stack) => Container(
-                                width: 70.0,
-                                height: 70.0,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                         const SizedBox(height: 20),
                         Center(
                           child: Text(
-                            data.user["user_metadata"]["full_name"],
+                            fullName,
                             style: headingTextStyle,
                           ),
                         ),
+                        if (data.isGuest) ...[
+                          const SizedBox(height: 6),
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: kUiGreen.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: kUiGreen.withOpacity(0.4),
+                                ),
+                              ),
+                              child: const Text(
+                                "Guest Mode Active",
+                                style: TextStyle(
+                                  color: kUiGreen,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                         const SizedBox(height: 20),
                         TextField(
                           onChanged: (value) {
@@ -221,7 +203,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         const SizedBox(height: 20),
                         TextField(
                           controller: TextEditingController(
-                            text: data.user["email"],
+                            text: data.user["email"]?.toString() ??
+                                (data.isGuest ? "guest@nuance.local" : ""),
                           ),
                           decoration: InputDecoration(
                             labelStyle: const TextStyle(color: Colors.white),
@@ -265,11 +248,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                         "Are you sure you want to delete all history?",
                                     confirmText: "Delete",
                                     onConfirm: () {
+                                      ref.read(guestHistoryProvider.notifier).state = [];
                                       ref.invalidate(historyProvider);
                                       Get.back();
-                                      AllServices().deleteAllHistory(
-                                        sessionState.value?.accessToken ?? "",
-                                      );
+                                      if (!data.isGuest) {
+                                        AllServices().deleteAllHistory(
+                                          sessionState.value?.accessToken ?? "",
+                                        );
+                                      }
                                     },
                                   ),
                                 );
@@ -285,9 +271,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     padding: const EdgeInsets.all(20),
                     child: GeneralButton(
                       hasPadding: true,
-                      text: "Sign Out",
+                      text: data.isGuest ? "Exit Guest Mode" : "Sign Out",
                       color: Colors.white,
-                      backgroundColor: Colors.grey.shade800,
+                      backgroundColor:
+                          data.isGuest ? kUiGreen : Colors.grey.shade800,
                       onPressed: () {
                         sessionData.logout();
                       },

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -11,7 +10,6 @@ import 'package:nuance/models/song_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
 import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/services/all_services.dart';
-import 'package:nuance/screens/home_screen.dart';
 import 'package:nuance/screens/initial_screen.dart';
 import 'package:nuance/screens/onboarding_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
@@ -162,9 +160,7 @@ class _MyAppState extends State<MyApp> {
           ? OnboardingScreen(onComplete: _onboardingComplete)
           : _isFirstRun!
               ? OnboardingScreen(onComplete: _onboardingComplete)
-              : !_isFirstRun! && widget.sessionData == null
-                  ? const InitialScreen()
-                  : const HomeScreen(),
+              : const InitialScreen(),
       theme: AppTheme.lightTheme,
     );
   }
@@ -175,8 +171,6 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _isFirstRun = false;
     });
-    Get.offAll(() => widget.sessionData == null
-        ? const InitialScreen()
-        : const HomeScreen());
+    Get.offAll(() => const InitialScreen());
   }
 }

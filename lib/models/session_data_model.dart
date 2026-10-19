@@ -36,14 +36,52 @@ class SessionData {
     );
   }
 
+  bool get isGuest =>
+      accessToken.startsWith('guest_') ||
+      provider == 'itunes' ||
+      provider == 'guest' ||
+      user['id'] == 'guest_tester' ||
+      (user['app_metadata'] is Map && user['app_metadata']['is_guest'] == true);
+
+  bool get isExpired {
+    if (expiresAt.isEmpty) return false;
+    final int? expVal = int.tryParse(expiresAt);
+    if (expVal != null) {
+      final ms = expVal < 10000000000 ? expVal * 1000 : expVal;
+      return DateTime.now().millisecondsSinceEpoch >= ms;
+    }
+    final dt = DateTime.tryParse(expiresAt);
+    if (dt != null) {
+      return DateTime.now().isAfter(dt);
+    }
+    return false;
+  }
+
   factory SessionData.fromJson(Map<String, dynamic> json) {
+    final userMap = json['user'] is Map<String, dynamic>
+        ? json['user'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    final appMetadata = userMap['app_metadata'] is Map<String, dynamic>
+        ? userMap['app_metadata'] as Map<String, dynamic>
+        : <String, dynamic>{};
+
     return SessionData(
-      accessToken: json['access_token'],
-      refreshToken: json['refresh_token'],
-      expiresAt: json['expires_at'].toString(),
-      user: json['user'],
-      providerToken: json['provider_token'],
-      provider: json['user']['app_metadata']['provider'],
+      accessToken: json['access_token']?.toString() ??
+          json['accessToken']?.toString() ??
+          '',
+      refreshToken: json['refresh_token']?.toString() ??
+          json['refreshToken']?.toString() ??
+          '',
+      expiresAt: json['expires_at']?.toString() ??
+          json['expiresAt']?.toString() ??
+          '',
+      user: userMap,
+      providerToken: json['provider_token']?.toString() ??
+          json['providerToken']?.toString() ??
+          '',
+      provider: appMetadata['provider']?.toString() ??
+          json['provider']?.toString() ??
+          'guest',
     );
   }
 

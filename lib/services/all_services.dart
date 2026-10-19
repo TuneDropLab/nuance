@@ -9,6 +9,7 @@ import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/recommendation_model.dart';
 import 'package:nuance/models/song_model.dart';
 import 'package:nuance/models/playlist_model.dart';
+import 'package:nuance/services/itunes_service.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_snackbar.dart';
 import 'package:share_plus/share_plus.dart';
@@ -78,10 +79,51 @@ class AllServices {
       String userMessage,
       List<SongModel> currentSongList,
       isAppleProvider) async {
-    log("GMRFN: Starting getMoreRecommendations with accessToken: $accessToken, userMessage: $userMessage, currentSongList: $currentSongList, isAppleProvider: $isAppleProvider");
+    log("GMRFN: Starting getMoreRecommendations with accessToken: $accessToken, userMessage: $userMessage, isAppleProvider: $isAppleProvider");
+
+    final isGuest = accessToken.isEmpty ||
+        accessToken.startsWith('guest_') ||
+        isAppleProvider == 'guest' ||
+        isAppleProvider == 'itunes';
+
+    // In guest mode, or when iTunes preview is primary:
+    if (isGuest) {
+      try {
+        final response = await http.post(
+          Uri.parse('$baseURL/boost'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode({
+            'userMessage': userMessage,
+            'currentSongs': currentSongList.map((e) => e.toJson()).toList(),
+          }),
+        ).timeout(const Duration(seconds: 12));
+
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = jsonDecode(response.body);
+          final List<dynamic> recommendedSongsJson =
+              data['recommendations']?['songs'] ?? [];
+          if (recommendedSongsJson.isNotEmpty) {
+            final resolved = await ItunesService().resolveRecommendations(recommendedSongsJson);
+            if (resolved.isNotEmpty) {
+              return resolved;
+            }
+          }
+        }
+      } catch (e) {
+        log("GMRFN: Backend boost failed or timed out: $e");
+      }
+
+      // Fallback directly to iTunes service
+      return await ItunesService().getMoreRecommendations(
+        prompt: userMessage,
+        currentSongs: currentSongList,
+      );
+    }
 
     try {
-      log("GMRFN: Sending POST request to $baseURL/more-recommendations");
+      log("GMRFN: Sending POST request to $baseURL/gemini/more-recommendations");
       final response = await http.post(
         Uri.parse('$baseURL/gemini/more-recommendations'),
         headers: {
@@ -95,29 +137,34 @@ class AllServices {
       log("GMRFN: Received response with status code: ${response.statusCode}");
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        log("GMRFN: Response body decoded: $data");
-
         final List<dynamic> recommendedSongsJson =
             data['recommendations']['songs'];
-        log("GMRFN: Recommended songs JSON: $recommendedSongsJson");
         final recommendations = recommendedSongsJson
             .map((item) => RecommendationModel.fromJson(item))
             .toList();
-        log("GMRFN: Recommendations mapped: $recommendations");
 
-        final trackInfo = await getTrackInfo(accessToken, recommendations,
-            currentSongList: currentSongList, // Use named parameter here,
-            isAppleProvider: isAppleProvider);
-        log("GMRFN: Track info retrieved: $trackInfo");
-
-        return trackInfo;
+        try {
+          final trackInfo = await getTrackInfo(accessToken, recommendations,
+              currentSongList: currentSongList,
+              isAppleProvider: isAppleProvider);
+          return trackInfo;
+        } catch (trackErr) {
+          log("GMRFN: Track info lookup failed, resolving via iTunes: $trackErr");
+          return await ItunesService().resolveRecommendations(recommendations);
+        }
       } else {
-        log("GMRFN: Error - Failed to load recommendations, status code: ${response.statusCode}");
-        throw Exception('Failed to load recommendations');
+        log("GMRFN: Error status code: ${response.statusCode}, fallback to iTunes");
+        return await ItunesService().getMoreRecommendations(
+          prompt: userMessage,
+          currentSongs: currentSongList,
+        );
       }
     } catch (e) {
-      log("GMRFN: Exception occurred: $e");
-      rethrow;
+      log("GMRFN: Exception occurred: $e, fallback to iTunes");
+      return await ItunesService().getMoreRecommendations(
+        prompt: userMessage,
+        currentSongs: currentSongList,
+      );
     }
   }
 
@@ -323,9 +370,48 @@ class AllServices {
     }
   }
 
+  Future<bool> saveHistory(
+    String accessToken,
+    String searchQuery,
+    String? imageUrl,
+    List<SongModel> songs,
+  ) async {
+    if (accessToken.isEmpty || accessToken.startsWith('guest_')) {
+      return false;
+    }
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseURL/history'),
+            headers: {
+              'Authorization': 'Bearer $accessToken',
+              'Content-Type': 'application/json',
+            },
+            body: jsonEncode({
+              'searchQuery': searchQuery,
+              'imageUrl': imageUrl ?? '',
+              'recommendations': songs.map((s) => s.toJson()).toList(),
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('saveHistory succeeded for "$searchQuery"');
+        return true;
+      } else {
+        log('saveHistory failed with status: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      log('saveHistory exception: $e');
+      return false;
+    }
+  }
+
   Future<List<HistoryModel>> getHistory(String accessToken) async {
-    // final isAppleProvider = await _isAppleProvider();
-    // final basePath = isAppleProvider ? '/apple-music' : '';
+    if (accessToken.isEmpty || accessToken.startsWith('guest_')) {
+      return [];
+    }
     try {
       final response = await http.get(
         Uri.parse('$baseURL/history'),
@@ -333,29 +419,28 @@ class AllServices {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final List<dynamic> historyData = jsonDecode(response.body);
         return historyData.map((item) => HistoryModel.fromJson(item)).toList();
       } else {
-        _customSnackbar.show('Failed to get history');
-        throw Exception('Failed to load history');
+        log('getHistory failed with status: ${response.statusCode}');
+        return [];
       }
     } catch (e) {
-      _customSnackbar.show('Failed to get history');
-
-      rethrow;
+      log('getHistory exception: $e');
+      return [];
     }
   }
 
   Future<void> deleteHistory(
     String accessToken,
     int id,
-    // isAppleProvider,
   ) async {
-    // final isAppleProvider = await _isAppleProvider();
-    // final basePath = isAppleProvider ? '/apple-music' : '';
+    if (accessToken.isEmpty || accessToken.startsWith('guest_')) {
+      return;
+    }
     try {
       final response = await http.delete(
         Uri.parse('$baseURL/history/$id'),
@@ -363,22 +448,22 @@ class AllServices {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
-      } else {
-        throw Exception('Failed to delete history');
+      if (response.statusCode != 200) {
+        log('Failed to delete history: ${response.statusCode}');
       }
     } catch (e) {
-      rethrow;
+      log('Exception deleting history: $e');
     }
   }
 
   Future<void> deleteAllHistory(
     String accessToken,
   ) async {
-    // final isAppleProvider = await _isAppleProvider();
-    // final basePath = isAppleProvider ? '/apple-music' : '';
+    if (accessToken.isEmpty || accessToken.startsWith('guest_')) {
+      return;
+    }
     try {
       final response = await http.delete(
         Uri.parse('$baseURL/history'),
@@ -386,14 +471,42 @@ class AllServices {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
-      } else {
-        throw Exception('Failed to delete all history');
+      if (response.statusCode != 200) {
+        log('Failed to delete all history: ${response.statusCode}');
       }
     } catch (e) {
-      rethrow;
+      log('Exception deleting all history: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> refreshToken(
+    String providerId, {
+    String? currentToken,
+  }) async {
+    try {
+      final headers = {'Content-Type': 'application/json'};
+      if (currentToken != null && currentToken.isNotEmpty) {
+        headers['Authorization'] = 'Bearer $currentToken';
+      }
+      final response = await http
+          .post(
+            Uri.parse('$baseURL/auth/refresh-token'),
+            headers: headers,
+            body: jsonEncode({'providerId': providerId}),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        log('refreshToken failed with status: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      log('refreshToken exception: $e');
+      return null;
     }
   }
 
@@ -433,14 +546,44 @@ class AllServices {
         headers: {
           'Content-Type': 'application/json',
         },
-      );
+      ).timeout(const Duration(seconds: 10));
+
       if (response.statusCode == 200) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final prompts = data['prompts'] as List<dynamic>? ?? [];
+        if (prompts.isNotEmpty) {
+          return data;
+        }
       }
     } catch (e) {
       debugPrint("Error fetching Gemini discover: $e");
     }
-    return {'prompts': [], 'tags': []};
+
+    return {
+      'prompts': [
+        {
+          'type': 'prompt',
+          'text': 'Late night highway drive with neon synthwave',
+          'image': 'https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=600&auto=format&fit=crop&q=80',
+        },
+        {
+          'type': 'prompt',
+          'text': 'High intensity gym pump with aggressive 808s',
+          'image': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&auto=format&fit=crop&q=80',
+        },
+        {
+          'type': 'prompt',
+          'text': 'Sun-drenched Sunday morning acoustic coffeehouse',
+          'image': 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=80',
+        },
+        {
+          'type': 'prompt',
+          'text': 'West African summer rooftop afrobeats party',
+          'image': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop&q=80',
+        },
+      ],
+      'tags': ['Hip-Hop', 'Afrobeats', 'Synthwave', 'R&B', 'Lo-Fi', 'Trap', 'Acoustic', 'Indie']
+    };
   }
 
   Future<List<String>> getTags(String accessToken) async {
