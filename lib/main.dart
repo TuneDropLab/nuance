@@ -191,11 +191,13 @@ class _MyAppState extends State<MyApp> {
 
   bool get _hasAuthenticatedSession {
     final s = widget.sessionData;
-    return s != null &&
-        s['access_token'] != null &&
-        !(s['access_token'] as String).startsWith('guest_') &&
-        s['user']?['id'] != 'guest_tester' &&
-        s['provider'] != 'guest';
+    if (s == null) return false;
+    final token = s['access_token']?.toString();
+    if (token == null || token.isEmpty || token.startsWith('guest_')) return false;
+    if (s['provider']?.toString() == 'guest') return false;
+    final user = s['user'];
+    if (user is Map && user['id']?.toString() == 'guest_tester') return false;
+    return true;
   }
 
   @override

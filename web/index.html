@@ -32,12 +32,7 @@
         <title>nuance</title>
         <link rel="manifest" href="manifest.json" />
 
-        <script>
-            // The value below is injected by flutter build, do not touch.
-            var serviceWorkerVersion = null;
-        </script>
-        <!-- This script adds the flutter initialization JS code -->
-        <script src="flutter.js" defer=""></script>
+
 
         <meta name="theme-color" content="#000000" />
         <meta name="color-scheme" content="dark" />
@@ -57,7 +52,8 @@
             }
 
             flt-glass-pane, flt-scene-host {
-                background-color: #000000 !important;
+                background-color: transparent !important;
+                background: transparent !important;
             }
 
             #splash {
@@ -167,51 +163,15 @@
         </picture>
 
         <script>
-            function initFlutter() {
-                // Safety fallback timeout after 12s in case engine hangs
-                var safetyTimer = setTimeout(function () {
-                    if (typeof removeSplashFromWeb === "function") {
-                        removeSplashFromWeb();
+            // Unregister any stale service workers from prior sessions to avoid caching issues
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                    for (var i = 0; i < registrations.length; i++) {
+                        registrations[i].unregister();
                     }
-                }, 12000);
-
-                if (!window._flutter || !window._flutter.loader) {
-                    console.error("Flutter loader not available");
-                    return;
-                }
-
-                _flutter.loader.loadEntrypoint({
-                    serviceWorker: {
-                        serviceWorkerVersion: serviceWorkerVersion,
-                    },
-                    onEntrypointLoaded: function (engineInitializer) {
-                        engineInitializer
-                            .initializeEngine()
-                            .then(function (appRunner) {
-                                return appRunner.runApp();
-                            })
-                            .then(function () {
-                                clearTimeout(safetyTimer);
-                                if (typeof removeSplashFromWeb === "function") {
-                                    removeSplashFromWeb();
-                                }
-                            })
-                            .catch(function (err) {
-                                console.error("Engine run error:", err);
-                                clearTimeout(safetyTimer);
-                                if (typeof removeSplashFromWeb === "function") {
-                                    removeSplashFromWeb();
-                                }
-                            });
-                    },
-                });
-            }
-
-            if (document.readyState === "complete" || document.readyState === "interactive") {
-                initFlutter();
-            } else {
-                window.addEventListener("load", initFlutter);
+                }).catch(function() {});
             }
         </script>
+        <script src="flutter_bootstrap.js" async></script>
     </body>
 </html>
