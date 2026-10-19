@@ -41,7 +41,7 @@ dependencies:
   # dio: ^5.4.3+1
   # logger: ^2.3.0
   # adaptive_theme: ^3.6.0
-  sentry_flutter: ^8.2.0
+  # sentry_flutter: ^8.2.0
   # animated_gradient: ^0.0.2
   spotify: ^0.13.1
   # custom_signin_buttons: ^1.0.2
