@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:nuance/models/history_model.dart';
 import 'package:nuance/models/session_data_model.dart';
-import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 
 void main() {

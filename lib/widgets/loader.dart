@@ -50,11 +50,14 @@ class _SpinningSvgState extends State<SpinningSvg>
     );
 
     _fadeController.addStatusListener((status) {
+      if (!mounted) return;
       if (status == AnimationStatus.completed) {
         Future.delayed(widget.animationDuration - widget.fadeDuration, () {
+          if (!mounted) return;
           _fadeOutText();
         });
       } else if (status == AnimationStatus.dismissed) {
+        if (!mounted) return;
         setState(() {
           _currentTextIndex = (_currentTextIndex + 1) % widget.textList.length;
           _fadeInText();
@@ -73,10 +76,12 @@ class _SpinningSvgState extends State<SpinningSvg>
   }
 
   void _fadeInText() {
+    if (!mounted) return;
     _fadeController.forward();
   }
 
   void _fadeOutText() {
+    if (!mounted) return;
     _fadeController.reverse();
   }
 

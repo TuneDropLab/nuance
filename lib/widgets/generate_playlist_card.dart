@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
 
 import 'package:nuance/widgets/general_button.dart';
 
@@ -107,7 +106,7 @@ class GeneratePlaylistCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   SizedBox(
-                    width: Get.width,
+                    width: double.infinity,
                     child: GeneralButton(
                       hasPadding: true,
                       text: "Generate",

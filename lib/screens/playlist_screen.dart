@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as dev;
 import 'dart:math';
@@ -100,40 +101,25 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   late AnimationController _refreshAnimationController; // Animation controller
   final Set<String> _selectedItems = {};
   final bool _stretch = true;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-
-  // }
+  StreamSubscription<PlayerState>? _playerSubscription;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    ref.invalidate(playlistProvider);
-    // _fetchRecommendationsOrPlaylistTracks();
-
-    _audioPlayer.onPlayerStateChanged.listen((playerState) {
-      if (playerState == PlayerState.playing) {
-        setState(() {
-          _isPlaying = true;
-        });
-      } else {
-        setState(() {
-          _isPlaying = false;
-        });
-      }
-    });
-
-    _fetchRecommendationsOrPlaylistTracks().then((_) {
-      if (playlistImage != null && playlistImage!.isNotEmpty) {
-        _updatePaletteGenerator();
-      }
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.invalidate(playlistProvider);
+      _fetchRecommendationsOrPlaylistTracks().then((_) {
+        if (mounted && playlistImage != null && playlistImage!.isNotEmpty) {
+          _updatePaletteGenerator();
+        }
+      });
     });
   }
 
   @override
   void dispose() {
+    _playerSubscription?.cancel();
     _audioPlayer.dispose();
 
     _controller.dispose(); // Dispose the controller when the widget is disposed
@@ -146,6 +132,19 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
   @override
   void initState() {
     super.initState();
+
+    _playerSubscription = _audioPlayer.onPlayerStateChanged.listen((playerState) {
+      if (!mounted) return;
+      if (playerState == PlayerState.playing) {
+        setState(() {
+          _isPlaying = true;
+        });
+      } else {
+        setState(() {
+          _isPlaying = false;
+        });
+      }
+    });
 
     if (widget.imageUrl != null && widget.imageUrl!.isNotEmpty) {
       playlistImage = widget.imageUrl;

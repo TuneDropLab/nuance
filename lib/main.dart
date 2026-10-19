@@ -97,18 +97,26 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initFirebaseMessaging() async {
-    FirebaseMessaging.instance.requestPermission();
-    FirebaseMessaging.instance.getToken().then((String? token) {
-      debugPrint("Device Token: $token");
-    });
+    try {
+      await FirebaseMessaging.instance.requestPermission();
+      final token = await FirebaseMessaging.instance.getToken().catchError((e) {
+        debugPrint("FirebaseMessaging getToken non-fatal: $e");
+        return null;
+      });
+      if (token != null) {
+        debugPrint("Device Token: $token");
+      }
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("Foreground Message received: ${message.notification?.title}");
-    });
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint("Foreground Message received: ${message.notification?.title}");
+      });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint("Message opened app: ${message.notification?.title}");
-    });
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint("Message opened app: ${message.notification?.title}");
+      });
+    } catch (e) {
+      debugPrint("FirebaseMessaging init safely handled: $e");
+    }
   }
 
   @override

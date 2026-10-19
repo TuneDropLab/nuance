@@ -54,13 +54,14 @@ class _MyCustomDrawerState extends ConsumerState<MyCustomDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
     return Drawer(
-      width: Get.width,
+      width: mediaQuery.size.width,
       backgroundColor: const Color.fromARGB(255, 14, 14, 14),
       child: SafeArea(
         child: SizedBox(
-          height: Get.height,
-          width: Get.width,
+          height: mediaQuery.size.height,
+          width: mediaQuery.size.width,
           child: Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: 15,
