@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -70,19 +71,26 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _checkFirstRun() async {
     try {
+      if (kIsWeb) {
+        setState(() {
+          _isFirstRun = false;
+        });
+        return;
+      }
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         _isFirstRun = prefs.getBool('isFirstRun') ?? true;
       });
     } catch (e) {
-      // Default to true if there's an error
+      // Default to false on error so app never gets stuck
       setState(() {
-        _isFirstRun = true;
+        _isFirstRun = false;
       });
     }
   }
 
   Future<void> _initUniLinks() async {
+    if (kIsWeb) return;
     try {
       _sub = uriLinkStream.listen((Uri? uri) {
         if (uri != null) {
