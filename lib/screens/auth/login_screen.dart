@@ -335,58 +335,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       const SizedBox(height: 32),
                       Container(
                         width: Get.width,
-                        padding: const EdgeInsets.only(
-                          bottom: 10,
-                          left: 20,
-                          right: 20,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
                         ),
                         child: GeneralButton(
-                          text: 'Sign in with Apple Music',
+                          text: 'Start Exploring Music',
                           color: Colors.white,
                           icon: SvgPicture.asset(
                             'assets/icon4star.svg',
-                            width: 10,
-                            height: 10,
+                            width: 14,
+                            height: 14,
+                            color: Colors.white,
                           ),
-                          backgroundColor: const Color.fromARGB(
-                              255, 255, 88, 88), // Apple Music theme
-                          onPressed:
-                              _isLoading ? () {} : () => _authenticate("apple"),
-                          hasPadding: true,
-                        ),
-                      ),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.only(
-                          bottom: 20,
-                          left: 20,
-                          right: 20,
-                        ),
-                        child: GeneralButton(
-                          text: 'Sign in with Spotify',
-                          icon: SvgPicture.asset(
-                            'assets/icon4star.svg',
-                            width: 10,
-                            height: 10,
-                          ),
-                          backgroundColor:
-                              const Color.fromARGB(255, 79, 162, 114),
+                          backgroundColor: kUiGreen,
                           onPressed: _isLoading
                               ? () {}
-                              : () => _authenticate('spotify'),
-                          hasPadding: true,
-                        ),
-                      ),
-                      Container(
-                        width: Get.width,
-                        padding: const EdgeInsets.only(
-                          bottom: 35,
-                          left: 20,
-                          right: 20,
-                        ),
-                        child: TextButton(
-                          onPressed: _isLoading
-                              ? null
                               : () async {
                                   setState(() => _isLoading = true);
                                   await ref
@@ -394,15 +358,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       .startGuestSession();
                                   Get.offAll(() => const HomeScreen());
                                 },
-                          child: const Text(
-                            "Try Instant Preview (No Login Needed)",
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
+                          hasPadding: true,
                         ),
                       ),
                     ],
