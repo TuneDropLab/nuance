@@ -120,7 +120,7 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                           color: Color(0xffFF581A),
                         ),
                       ),
-                      if (widget.recommendation.popularity! >= 70)
+                      if ((widget.recommendation.popularity ?? 0) >= 70)
                         TextSpan(
                           text: "${widget.recommendation.popularity}%",
                           style: const TextStyle(
@@ -264,7 +264,7 @@ class _MusicListTileState extends ConsumerState<MusicListTile> {
                             color: Color(0xffFF581A),
                           ),
                         ),
-                        if (widget.recommendation.popularity! >= 70)
+                        if ((widget.recommendation.popularity ?? 0) >= 70)
                           TextSpan(
                             text: "${widget.recommendation.popularity}%",
                             style: const TextStyle(

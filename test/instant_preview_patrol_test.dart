@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol_finders/patrol_finders.dart';
+import 'package:nuance/models/song_model.dart';
+import 'package:nuance/widgets/music_listtile.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/playlist_screen.dart';
 import 'package:get/get.dart';
@@ -44,6 +47,38 @@ void main() {
 
       // 5. Verify the PlaylistScreen initializes and displays query title
       expect(find.textContaining(RegExp('high-energy trap', caseSensitive: false)), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'MusicListTile safely renders iTunes song with null popularity without crashing',
+    (tester) async {
+      final itunesSong = SongModel(
+        id: '12345',
+        title: 'Cosmic Stargazing Voyage',
+        artist: 'Ambient Explorer',
+        albumName: 'Deep Space',
+        popularity: null,
+        previewUrl: 'https://audio-ssl.itunes.apple.com/preview.m4a',
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: MusicListTile(
+                recommendation: itunesSong,
+                isPlaying: false,
+                trailingOnTap: () {},
+                isSelected: false,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.textContaining('Ambient Explorer', findRichText: true), findsOneWidget);
+      expect(tester.takeException(), isNull);
     },
   );
 }
