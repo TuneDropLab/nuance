@@ -56,6 +56,11 @@
                 background-size: 100% 100%;
             }
 
+            #splash {
+                pointer-events: none;
+                transition: opacity 0.4s ease-out;
+            }
+
             .center {
                 margin: 0;
                 position: absolute;
@@ -148,8 +153,19 @@
         </picture>
 
         <script>
-            window.addEventListener("load", function (ev) {
-                // Download main.dart.js
+            function initFlutter() {
+                // Ensure splash removes after timeout as safety guarantee
+                setTimeout(function () {
+                    if (typeof removeSplashFromWeb === "function") {
+                        removeSplashFromWeb();
+                    }
+                }, 3500);
+
+                if (!window._flutter || !window._flutter.loader) {
+                    console.error("Flutter loader not available");
+                    return;
+                }
+
                 _flutter.loader.loadEntrypoint({
                     serviceWorker: {
                         serviceWorkerVersion: serviceWorkerVersion,
@@ -158,11 +174,28 @@
                         engineInitializer
                             .initializeEngine()
                             .then(function (appRunner) {
-                                appRunner.runApp();
+                                return appRunner.runApp();
+                            })
+                            .then(function () {
+                                if (typeof removeSplashFromWeb === "function") {
+                                    removeSplashFromWeb();
+                                }
+                            })
+                            .catch(function (err) {
+                                console.error("Engine run error:", err);
+                                if (typeof removeSplashFromWeb === "function") {
+                                    removeSplashFromWeb();
+                                }
                             });
                     },
                 });
-            });
+            }
+
+            if (document.readyState === "complete" || document.readyState === "interactive") {
+                initFlutter();
+            } else {
+                window.addEventListener("load", initFlutter);
+            }
         </script>
     </body>
 </html>
