@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nuance/models/session_data_model.dart';
 import 'package:nuance/providers/auth_provider.dart';
+import 'package:nuance/providers/history_provider.dart';
+import 'package:nuance/providers/session_notifier.dart';
 import 'package:nuance/screens/auth/login_screen.dart';
 import 'package:nuance/screens/home_screen.dart';
 
@@ -27,6 +32,33 @@ class _InitialScreenState extends ConsumerState<InitialScreen> {
     Widget targetScreen = const LoginScreen();
     try {
       final authService = ref.read(authServiceProvider);
+
+      if (kIsWeb) {
+        final sessionParam = Uri.base.queryParameters['session'];
+        if (sessionParam != null && sessionParam.isNotEmpty) {
+          try {
+            final sessionJson = jsonDecode(sessionParam) as Map<String, dynamic>;
+            sessionJson['provider'] = 'google';
+            if (sessionJson['user'] is Map<String, dynamic>) {
+              final userMap = sessionJson['user'] as Map<String, dynamic>;
+              userMap['app_metadata'] = {
+                ...(userMap['app_metadata'] as Map<String, dynamic>? ?? {}),
+                'provider': 'google',
+                'is_guest': false,
+              };
+            }
+            final sessionString = jsonEncode(sessionJson);
+            await authService.storeSessionData(sessionString);
+            final newSession = SessionData.fromJson(sessionJson);
+            ref.read(sessionProvider.notifier).setSession(newSession);
+            ref.invalidate(historyProvider);
+            targetScreen = const HomeScreen();
+          } catch (e) {
+            debugPrint("InitialScreen web sessionParam error: $e");
+          }
+        }
+      }
+
       final sessionMap = await authService.getSessionData().timeout(
         const Duration(milliseconds: 1000),
         onTimeout: () => null,

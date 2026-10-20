@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_auth/flutter_web_auth.dart';
@@ -44,6 +45,10 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
       return Future.error(e);
     }
     return null;
+  }
+
+  void setSession(SessionData session) {
+    state = AsyncData(session);
   }
 
   Future<void> storeSessionAndSaveToState({
@@ -105,8 +110,18 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
     final previousSession = state.value;
     state = const AsyncLoading();
     try {
-      final authUrl = '$baseURL/auth/google?redirect_uri=nuance://auth/callback';
-      const callbackScheme = 'nuance';
+      final String authUrl;
+      final String callbackScheme;
+
+      if (kIsWeb) {
+        final origin = Uri.base.origin;
+        final callbackUrl = '$origin/auth.html';
+        authUrl = '$baseURL/auth/google?redirect_uri=${Uri.encodeComponent(callbackUrl)}';
+        callbackScheme = Uri.base.scheme.isNotEmpty ? Uri.base.scheme : 'https';
+      } else {
+        authUrl = '$baseURL/auth/google?redirect_uri=nuance://auth/callback';
+        callbackScheme = 'nuance';
+      }
 
       log('Opening Google Sign-In sheet: $authUrl');
       final result = await FlutterWebAuth.authenticate(
@@ -116,8 +131,8 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
 
       final uri = Uri.parse(result);
       if (uri.path.contains('cancel') ||
-          uri.queryParameters['error'] == 'cancelled') {
-        log('Google Sign-In was cancelled by user');
+          uri.queryParameters['error'] != null) {
+        log('Google Sign-In was cancelled or error: ${uri.queryParameters['error']}');
         state = AsyncData(previousSession);
         return false;
       }

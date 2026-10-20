@@ -1,7 +1,15 @@
 {
   "outputDirectory": "build/web",
-  "cleanUrls": true,
+  "cleanUrls": false,
   "rewrites": [
+    {
+      "source": "/auth.html",
+      "destination": "/auth.html"
+    },
+    {
+      "source": "/auth",
+      "destination": "/auth.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

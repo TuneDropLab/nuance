@@ -20,6 +20,24 @@
         <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
         <meta name="description" content="A new Flutter project." />
 
+        <script>
+          (function() {
+            if (window.opener && window.location.search && (window.location.search.indexOf('session=') !== -1 || window.location.search.indexOf('error=') !== -1)) {
+              try {
+                var message = {
+                  'flutter-web-auth': window.location.href,
+                  'flutter-web-auth-2': window.location.href
+                };
+                window.opener.postMessage(message, window.location.origin);
+                window.opener.postMessage(message, '*');
+                setTimeout(function() {
+                  try { window.close(); } catch (e) {}
+                }, 400);
+              } catch (e) {}
+            }
+          })();
+        </script>
+
         <!-- iOS meta tags & icons -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black" />
