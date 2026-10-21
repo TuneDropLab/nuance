@@ -69,7 +69,7 @@
                 color-scheme: dark;
             }
 
-            flt-glass-pane, flt-scene-host {
+            flt-glass-pane, flt-scene-host, flutter-view {
                 background-color: transparent !important;
                 background: transparent !important;
             }
@@ -77,6 +77,23 @@
             #splash {
                 pointer-events: none;
                 transition: opacity 0.4s ease-out;
+            }
+
+            .splash-loader {
+                position: absolute;
+                top: calc(50% + 70px);
+                left: 50%;
+                transform: translateX(-50%);
+                width: 28px;
+                height: 28px;
+                border: 2px solid rgba(255, 255, 255, 0.15);
+                border-top-color: #3D9261;
+                border-radius: 50%;
+                animation: splashSpin 0.9s linear infinite;
+            }
+
+            @keyframes splashSpin {
+                to { transform: translateX(-50%) rotate(360deg); }
             }
 
             .center {
@@ -140,16 +157,20 @@
                 if (splash) {
                     splash.style.opacity = "0";
                     setTimeout(function() {
-                        splash.remove();
+                        try { splash.remove(); } catch (e) {}
                     }, 400);
                 }
                 var branding = document.getElementById("splash-branding");
                 if (branding) {
-                    branding.remove();
+                    try { branding.remove(); } catch (e) {}
                 }
                 document.body.style.backgroundColor = "#000000";
                 document.body.style.background = "#000000";
             }
+            // Fallback safety: guarantee splash screen is removed within 6 seconds
+            setTimeout(function() {
+                removeSplashFromWeb();
+            }, 6000);
         </script>
     </head>
     <body style="background-color: #000000; background: #000000;">
@@ -178,6 +199,7 @@
                 src="splash/img/light-1x.png"
                 alt=""
             />
+            <div class="splash-loader"></div>
         </picture>
 
         <script>

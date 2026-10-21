@@ -63,8 +63,9 @@
 <body>
   <div class="card">
     <div class="spinner"></div>
-    <h2>Signing in to Nuance</h2>
-    <p>Authenticating your account, please wait...</p>
+    <h2 id="status-title">Signing in to Nuance</h2>
+    <p id="status-desc">Authenticating your account, please wait...</p>
+    <button id="return-btn" style="display:none; margin-top:20px; padding:10px 20px; border-radius:10px; background:#3D9261; color:#fff; border:none; font-weight:600; cursor:pointer;" onclick="manualReturn()">Return to Nuance</button>
   </div>
 
   <script>
@@ -75,54 +76,67 @@
         'flutter-web-auth-2': currentUrl
       };
 
-      var delivered = false;
-
-      // 1. Post to window.opener (standard popup workflow)
-      if (window.opener) {
-        try {
-          window.opener.postMessage(message, window.location.origin);
-          delivered = true;
-        } catch (e) {
-          console.error('Error posting to opener with origin:', e);
-        }
-        try {
-          window.opener.postMessage(message, '*');
-          delivered = true;
-        } catch (e) {
-          console.error('Error posting to opener with wildcard:', e);
-        }
-      }
-
-      // 2. Post to window.parent (if embedded in an iframe)
-      if (window.parent && window.parent !== window) {
-        try {
-          window.parent.postMessage(message, window.location.origin);
-          window.parent.postMessage(message, '*');
-          delivered = true;
-        } catch (e) {
-          console.error('Error posting to parent:', e);
-        }
-      }
-
-      // 3. Fallback: LocalStorage
+      // 1. Multi-channel dispatch: BroadcastChannel
       try {
-        localStorage.setItem('flutter-web-auth', currentUrl);
+        var bc = new BroadcastChannel('nuance_auth_channel');
+        bc.postMessage(message);
       } catch (e) {}
 
-      // 4. Close popup or redirect fallback
-      if (delivered && window.opener) {
-        setTimeout(function() {
+      // 2. Multi-channel dispatch: LocalStorage
+      try {
+        localStorage.setItem('flutter_web_auth_session', currentUrl);
+        localStorage.setItem('flutter_web_auth_timestamp', String(Date.now()));
+      } catch (e) {}
+
+      // 3. Post to window.opener with retries
+      var attempts = 0;
+      function sendPostMessage() {
+        if (window.opener) {
+          try {
+            window.opener.postMessage(message, window.location.origin);
+          } catch (e) {}
+          try {
+            window.opener.postMessage(message, '*');
+          } catch (e) {}
+        }
+        if (window.parent && window.parent !== window) {
+          try {
+            window.parent.postMessage(message, window.location.origin);
+            window.parent.postMessage(message, '*');
+          } catch (e) {}
+        }
+        attempts++;
+        if (attempts < 6) {
+          setTimeout(sendPostMessage, 150);
+        } else if (window.opener) {
           try {
             window.close();
-          } catch (e) {}
-        }, 500);
-      } else {
-        // If not in a popup (e.g. redirected directly in same tab), return to app root
+          } catch (e) {
+            document.getElementById('return-btn').style.display = 'block';
+          }
+        }
+      }
+      sendPostMessage();
+
+      // 4. If opened in full tab without opener (e.g. mobile Safari tab takeover), redirect to app
+      if (!window.opener) {
         setTimeout(function() {
           var target = window.location.origin + '/' + window.location.search;
           window.location.replace(target);
-        }, 800);
+        }, 600);
+      } else {
+        // Show fallback return button after 2.5s if window didn't close
+        setTimeout(function() {
+          var btn = document.getElementById('return-btn');
+          if (btn) btn.style.display = 'block';
+        }, 2500);
       }
+
+      window.manualReturn = function() {
+        try { window.close(); } catch (e) {}
+        var target = window.location.origin + '/' + window.location.search;
+        window.location.replace(target);
+      };
     })();
   </script>
 </body>

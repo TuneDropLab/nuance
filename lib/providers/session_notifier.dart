@@ -14,6 +14,7 @@ import 'package:nuance/services/auth_service.dart';
 import 'package:nuance/services/all_services.dart';
 import 'package:nuance/utils/constants.dart';
 import 'package:nuance/widgets/custom_dialog.dart';
+import 'package:nuance/utils/web_auth_bridge.dart';
 
 class SessionNotifier extends AsyncNotifier<SessionData?> {
   late final AuthService authService;
@@ -124,10 +125,32 @@ class SessionNotifier extends AsyncNotifier<SessionData?> {
       }
 
       log('Opening Google Sign-In sheet: $authUrl');
-      final result = await FlutterWebAuth.authenticate(
-        url: authUrl,
-        callbackUrlScheme: callbackScheme,
-      );
+      final String result;
+      if (kIsWeb) {
+        clearWebAuthStorage();
+        final webAuthFuture = FlutterWebAuth.authenticate(
+          url: authUrl,
+          callbackUrlScheme: callbackScheme,
+        );
+        final storageFuture = listenForWebAuthSession(const Duration(seconds: 120));
+
+        final outcome = await Future.any<String?>([
+          webAuthFuture.then<String?>((v) => v).catchError((_) => null),
+          storageFuture,
+        ]);
+
+        if (outcome == null || outcome.isEmpty) {
+          log('Google Sign-In sheet dismissed or timed out');
+          state = AsyncData(previousSession);
+          return false;
+        }
+        result = outcome;
+      } else {
+        result = await FlutterWebAuth.authenticate(
+          url: authUrl,
+          callbackUrlScheme: callbackScheme,
+        );
+      }
 
       final uri = Uri.parse(result);
       if (uri.path.contains('cancel') ||

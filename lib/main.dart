@@ -22,6 +22,9 @@ import 'package:uni_links/uni_links.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 
+import 'dart:convert';
+import 'package:nuance/utils/web_auth_bridge.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -41,16 +44,33 @@ void main() async {
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
-    );
+    ).timeout(const Duration(seconds: 2));
     if (!kIsWeb) {
       FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     }
   } catch (e) {
-    debugPrint("Firebase initializeApp error (non-fatal): $e");
+    debugPrint("Firebase initializeApp non-fatal: $e");
   }
 
   final container = ProviderContainer();
   final authService = container.read(authServiceProvider);
+
+  // Check for incoming web OAuth callback session in URL (e.g. Safari full-tab redirect)
+  if (kIsWeb) {
+    try {
+      final initialWebSession = getInitialWebSession();
+      if (initialWebSession != null && initialWebSession.isNotEmpty) {
+        final decoded = jsonDecode(initialWebSession);
+        if (decoded is Map<String, dynamic>) {
+          decoded['provider'] = 'google';
+          await authService.storeSessionData(jsonEncode(decoded));
+        }
+      }
+    } catch (e) {
+      debugPrint("Failed to recover initial web session: $e");
+    }
+  }
+
   Map<String, dynamic>? sessionData;
   try {
     sessionData = await authService.getSessionData();
