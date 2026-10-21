@@ -256,7 +256,10 @@ class AllServices {
     List<String> trackIds,
     isAppleProvider,
   ) async {
-    // final isAppleProvider = await _isAppleProvider();
+    if (isAppleProvider != 'apple' && isAppleProvider != 'spotify') {
+      log("addTracksToExistingPlaylist: saved to Nuance playlist $playlistId");
+      return;
+    }
     final basePath = isAppleProvider == 'apple' ? '/apple-music' : '/spotify';
     try {
       final response = await http.post(

@@ -1153,7 +1153,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                 color: Colors.transparent,
                 padding: const EdgeInsets.only(
                   top: 25,
-                  bottom: 20,
+                  bottom: 12,
                   left: 15,
                   right: 15,
                 ),
@@ -1168,22 +1168,198 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                         fontSize: 18,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      "Select an exisiting playlist",
+                      "Bookmark this soundscape or add to a playlist",
                       style: subtitleTextStyle.copyWith(
                         wordSpacing: 0.1,
                         letterSpacing: 0.11,
-                        // fontSize: 18,
+                        fontSize: 13,
                       ),
                     ),
                   ],
                 ),
               ),
+
+              // Prominent 1-Tap Quick Bookmark Card
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () async {
+                  final queryTitle = widget.searchTitle ??
+                      widget.searchQuery ??
+                      widget.tagQuery ??
+                      "Nuance Soundscape";
+                  final activeSession = ref.read(sessionProvider).value;
+                  final isGuest = activeSession?.isGuest ?? true;
+                  final finalImage =
+                      playlistImage ?? generatedImage ?? widget.imageUrl;
+                  final currentRecs =
+                      widget.songs ?? recommendations ?? [];
+
+                  if (!isGuest &&
+                      activeSession != null &&
+                      activeSession.accessToken.isNotEmpty &&
+                      !activeSession.accessToken.startsWith('guest_')) {
+                    await AllServices().saveHistory(
+                      activeSession.accessToken,
+                      queryTitle,
+                      finalImage,
+                      currentRecs,
+                    );
+                    ref.invalidate(historyProvider);
+                    ref.invalidate(playlistProvider);
+                  } else {
+                    ref.read(guestHistoryProvider.notifier).update((list) {
+                      final newItem = HistoryModel(
+                        id: DateTime.now().millisecondsSinceEpoch,
+                        searchQuery: queryTitle,
+                        recommendations: currentRecs,
+                        imageUrl: finalImage,
+                        createdAt: DateTime.now(),
+                      );
+                      return [
+                        newItem,
+                        ...list.where((item) => item.searchQuery != queryTitle),
+                      ];
+                    });
+                    ref.invalidate(playlistProvider);
+                  }
+                  Get.back();
+                  CustomSnackbar().show("Bookmarked to your library!");
+                },
+                child: Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xffFDAD3C).withOpacity(0.5),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: (widget.imageUrl != null ||
+                                generatedImage != null ||
+                                playlistImage != null)
+                            ? CachedNetworkImage(
+                                imageUrl: widget.imageUrl ??
+                                    generatedImage ??
+                                    playlistImage ??
+                                    "",
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => Container(
+                                  width: 44,
+                                  height: 44,
+                                  color: const Color(0xffFDAD3C),
+                                  child: const Icon(
+                                    Icons.music_note,
+                                    color: Colors.black,
+                                    size: 22,
+                                  ),
+                                ),
+                              )
+                            : Container(
+                                width: 44,
+                                height: 44,
+                                color: const Color(0xffFDAD3C),
+                                child: const Icon(
+                                  Icons.music_note,
+                                  color: Colors.black,
+                                  size: 22,
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Bookmark This Soundscape",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              widget.searchTitle ??
+                                  widget.searchQuery ??
+                                  widget.tagQuery ??
+                                  "Nuance Soundscape",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.7),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffFDAD3C),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.bookmark, color: Colors.black, size: 15),
+                            SizedBox(width: 4),
+                            Text(
+                              "Bookmark",
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.white24, height: 1)),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        "OR ADD TO A PLAYLIST",
+                        style: TextStyle(
+                          color: Colors.white54,
+                          fontSize: 10,
+                          letterSpacing: 1.0,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: Colors.white24, height: 1)),
+                  ],
+                ),
+              ),
+
               Expanded(
                 child: Consumer(
                   builder: (context, ref, child) {
                     final playlistsState = ref.watch(playlistProvider);
-                    // final addTracksState = ref.watch(addTracksProvider);
 
                     final sessionStateFromProvider = ref.read(sessionProvider);
                     final provider = sessionStateFromProvider.value?.provider;
@@ -1202,36 +1378,57 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                       data: (playlists) {
                         return Stack(
                           children: [
-                            ListView.builder(
-                              padding: const EdgeInsets.only(bottom: 150),
-                              shrinkWrap: true,
-                              itemCount: playlists.length,
-                              itemBuilder: (context, index) {
-                                final playlist = playlists[index];
-                                final isCurrentLoading =
-                                    _loadingPlaylistId == playlist.id;
-                                dev.log("IDDDDD:   ${playlist.id}");
-                                final params = AddTracksParams(
-                                  accessToken:
-                                      widget.sessionState?.value!.accessToken ??
-                                          sessionStateFromProvider
-                                              .value?.accessToken ??
-                                          "",
-                                  searchQuery: widget.searchQuery ??
-                                      widget.tagQuery ??
-                                      widget.searchTitle ??
-                                      "",
-                                  playlistId: playlist.id ?? "",
-                                  imageUrl:
-                                      widget.imageUrl ?? generatedImage ?? "",
-                                  trackIds: trackIds.map((e) => e).toList(),
-                                  providerType: sessionStateFromProvider
-                                          .value?.provider ??
-                                      "",
-                                );
+                            if (playlists.isEmpty)
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                    bottom: 80,
+                                    left: 30,
+                                    right: 30,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.queue_music_rounded,
+                                        color: Colors.white.withOpacity(0.35),
+                                        size: 44,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      const Text(
+                                        "No custom playlists yet",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "Tap 'Bookmark' above to save this soundscape, or tap 'New Playlist' below to create one.",
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.6),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            else
+                              ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 120),
+                                shrinkWrap: true,
+                                itemCount: playlists.length,
+                                itemBuilder: (context, index) {
+                                  final playlist = playlists[index];
+                                  final isCurrentLoading =
+                                      _loadingPlaylistId == playlist.id;
+                                  dev.log("IDDDDD:   ${playlist.id}");
 
-                                return ListTile(
-                                  leading: CachedNetworkImage(
+                                  return ListTile(
+                                    leading: CachedNetworkImage(
                                       height: 40,
                                       width: 40,
                                       imageUrl: playlist.imageUrl ?? "",
@@ -1249,9 +1446,10 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                       },
                                       placeholder: (context, url) {
                                         return Container(
-                                            alignment: Alignment.center,
-                                            child:
-                                                const CupertinoActivityIndicator());
+                                          alignment: Alignment.center,
+                                          child:
+                                              const CupertinoActivityIndicator(),
+                                        );
                                       },
                                       errorWidget: (context, url, error) {
                                         return Container(
@@ -1273,66 +1471,149 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                                             color: Colors.orange,
                                           ),
                                         );
-                                      }),
-                                  title: Text(
-                                    playlist.name ?? "",
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  // subtitle: Text(
-                                  //   "${playlist.totalTracks} ${(playlist.totalTracks ?? 0) >= 2 ? "songs" : "song"} ",
-                                  //   style: subtitleTextStyle,
-                                  // ),
-                                  onTap: () {
-                                    if (widget.sessionState?.value
-                                                ?.accessToken !=
-                                            null ||
-                                        sessionStateFromProvider
-                                                .value!.accessToken !=
-                                            '') {
-                                      setState(() {
-                                        _loadingPlaylistId = playlist.id;
-                                      });
+                                      },
+                                    ),
+                                    title: Text(
+                                      playlist.name ?? "",
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                    ),
+                                    onTap: () async {
+                                      final currentSession =
+                                          widget.sessionState?.value ??
+                                              sessionStateFromProvider.value;
+                                      final providerType =
+                                          currentSession?.provider ?? '';
+                                      final isGuest =
+                                          currentSession?.isGuest ?? true;
 
-                                      ref
-                                          .read(addTracksProvider.notifier)
-                                          .addTracksToPlaylist(params)
-                                          .then((_) {
+                                      if (providerType == 'spotify' ||
+                                          providerType == 'apple') {
+                                        final params = AddTracksParams(
+                                          accessToken: currentSession
+                                                  ?.accessToken ??
+                                              "",
+                                          searchQuery: widget.searchQuery ??
+                                              widget.tagQuery ??
+                                              widget.searchTitle ??
+                                              "",
+                                          playlistId: playlist.id ?? "",
+                                          imageUrl: widget.imageUrl ??
+                                              generatedImage ??
+                                              "",
+                                          trackIds: trackIds,
+                                          providerType: providerType,
+                                        );
+
                                         setState(() {
-                                          _loadingPlaylistId = null;
+                                          _loadingPlaylistId = playlist.id;
                                         });
-                                        Get.back();
-                                        CustomSnackbar().show(
-                                            "Successfully added tracks to ${playlist.name} playlist.");
-                                      }).catchError(
-                                        (error) {
+
+                                        ref
+                                            .read(addTracksProvider.notifier)
+                                            .addTracksToPlaylist(params)
+                                            .then((_) {
+                                          setState(() {
+                                            _loadingPlaylistId = null;
+                                          });
+                                          Get.back();
+                                          CustomSnackbar().show(
+                                              "Successfully added tracks to ${playlist.name} playlist.");
+                                        }).catchError((error) {
                                           setState(() {
                                             _loadingPlaylistId = null;
                                           });
                                           CustomSnackbar().show(
                                             "Failed to add tracks to playlist",
                                           );
-                                        },
-                                      );
-                                    } else {
-                                      CustomSnackbar().show(
-                                        "No access token found.",
-                                      );
-                                    }
-                                  },
-                                  trailing: isCurrentLoading
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CupertinoActivityIndicator(
-                                            color: Colors.white,
-                                          ),
-                                        )
-                                      : null,
-                                );
-                              },
-                            ),
+                                        });
+                                      } else {
+                                        // Google, Email, or Guest: save to Nuance library
+                                        setState(() {
+                                          _loadingPlaylistId = playlist.id;
+                                        });
+                                        try {
+                                          final currentRecs = widget.songs ??
+                                              recommendations ??
+                                              [];
+                                          if (!isGuest &&
+                                              currentSession != null &&
+                                              currentSession
+                                                  .accessToken.isNotEmpty &&
+                                              !currentSession.accessToken
+                                                  .startsWith('guest_')) {
+                                            await AllServices().saveHistory(
+                                              currentSession.accessToken,
+                                              playlist.name ??
+                                                  (widget.searchQuery ??
+                                                      widget.tagQuery ??
+                                                      widget.searchTitle ??
+                                                      "Playlist"),
+                                              playlist.imageUrl ??
+                                                  widget.imageUrl ??
+                                                  generatedImage ??
+                                                  "",
+                                              currentRecs,
+                                            );
+                                            ref.invalidate(historyProvider);
+                                            ref.invalidate(playlistProvider);
+                                          } else {
+                                            ref
+                                                .read(guestHistoryProvider
+                                                    .notifier)
+                                                .update((list) {
+                                              final newItem = HistoryModel(
+                                                id: DateTime.now()
+                                                    .millisecondsSinceEpoch,
+                                                searchQuery: playlist.name ??
+                                                    (widget.searchQuery ??
+                                                        widget.tagQuery ??
+                                                        widget.searchTitle ??
+                                                        "Playlist"),
+                                                recommendations: currentRecs,
+                                                imageUrl: playlist.imageUrl ??
+                                                    widget.imageUrl ??
+                                                    generatedImage,
+                                                createdAt: DateTime.now(),
+                                              );
+                                              return [
+                                                newItem,
+                                                ...list.where((item) =>
+                                                    item.searchQuery !=
+                                                    playlist.name),
+                                              ];
+                                            });
+                                            ref.invalidate(playlistProvider);
+                                          }
+                                          setState(() {
+                                            _loadingPlaylistId = null;
+                                          });
+                                          Get.back();
+                                          CustomSnackbar().show(
+                                              "Successfully added tracks to ${playlist.name}.");
+                                        } catch (e) {
+                                          setState(() {
+                                            _loadingPlaylistId = null;
+                                          });
+                                          CustomSnackbar().show(
+                                              "Failed to add tracks: $e");
+                                        }
+                                      }
+                                    },
+                                    trailing: isCurrentLoading
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CupertinoActivityIndicator(
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        : null,
+                                  );
+                                },
+                              ),
                             Positioned(
-                              bottom: 30.0,
+                              bottom: 25.0,
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 15),
@@ -1374,7 +1655,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                             'assets/hdlogo.png',
                             height: 40,
                           ),
-                          // size: 10.0,
                           textList: const [
                             'Getting your playlists ...',
                             'Just a moment ...',
@@ -1383,11 +1663,36 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                           ],
                         ),
                       ),
-                      error: (error, stack) => const Center(
-                        child: Text(
-                          'Error loading playlist',
-                          style: TextStyle(
-                            color: Colors.white,
+                      error: (error, stack) => Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.bookmark_added_rounded,
+                                color: const Color(0xffFDAD3C).withOpacity(0.8),
+                                size: 40,
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Save directly to your library",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                "Tap 'Bookmark' above to save this soundscape to your Nuance library.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.6),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
