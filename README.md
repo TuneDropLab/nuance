@@ -156,7 +156,7 @@ npm run dev
 
 **Edem Kojo Agbakpe**  
 *Software Engineer | Transnational Coventry University Computing Science (2:1)*  
-- 🌐 Portfolio: [edemkojo.com](https://www.edemkojo.com) / [edemkojo-com.vercel.app](https://edemkojo-com.vercel.app)
+- 🌐 Portfolio: [edemkojo.com](https://edemkojo-com.vercel.app) / [edemkojo-com.vercel.app](https://edemkojo-com.vercel.app)
 - 🐙 GitHub: [@edem-cyber](https://github.com/edem-cyber)
 - 💼 LinkedIn: [linkedin.com/in/edem-agbakpe](https://linkedin.com/in/edem-agbakpe)
 - 📧 Contact: `edem.agbakpe@outlook.com`
